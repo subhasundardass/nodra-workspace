@@ -140,9 +140,15 @@ Examples:
     // Inject Nodra API
     Object.assign(replServer.context, context);
 
-    // Handle exit
-    replServer.on("exit", () => {
-      console.log("\nGoodbye!");
+    // Wait for the REPL to exit.
+    //
+    // This allows the caller to cleanly close the database
+    // connection pool after the user exits the console.
+    await new Promise<void>((resolve) => {
+      replServer.on("exit", () => {
+        console.log("\nGoodbye!");
+        resolve();
+      });
     });
   }
 }

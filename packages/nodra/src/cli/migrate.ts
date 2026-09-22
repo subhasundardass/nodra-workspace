@@ -4,7 +4,6 @@
 
 import type { Pool } from "pg";
 import type { Command, MigrateOptions } from "./types.js";
-import { NodraError } from "../core/errors.js";
 import { loadDocTypesFromDirectory } from "../core/doctype/loader.js";
 import { MetadataSync } from "../database/metadata-sync.js";
 import { SchemaSync } from "../database/schema-sync.js";
@@ -26,7 +25,7 @@ export class MigrateCommand implements Command {
 
   private readonly schemaSync: SchemaSync;
   private readonly metadataSync: MetadataSync;
-  private history: MigrationHistory;
+  private readonly history: MigrationHistory;
 
   constructor(private readonly pool: Pool) {
     this.schemaSync = new SchemaSync();
@@ -38,13 +37,17 @@ export class MigrateCommand implements Command {
    * Parse migrate-specific command arguments.
    *
    */
-  private parseArgs(args: string[]): Pick<MigrateOptions, "verbose"> & {
+  private parseArgs(args: string[]): Pick<
+    MigrateOptions,
+    "verbose" | "force"
+  > & {
     doctypeDir?: string;
   } {
-    const options: Pick<MigrateOptions, "verbose"> & {
+    const options: Pick<MigrateOptions, "verbose" | "force"> & {
       doctypeDir?: string;
     } = {
       verbose: false,
+      force: false,
     };
 
     for (const arg of args) {
@@ -52,6 +55,8 @@ export class MigrateCommand implements Command {
         options.doctypeDir = arg.slice("--doctype-dir=".length);
       } else if (arg === "--verbose") {
         options.verbose = true;
+      } else if (arg === "--force") {
+        options.force = true;
       }
     }
 
@@ -131,14 +136,6 @@ export class MigrateCommand implements Command {
     // ------------------------------------------------------------
     // Step 4: Migration configuration
     // ------------------------------------------------------------
-    // Temporarily force migration while the migration system
-    // is being developed.
-    //
-    // Later this should come from a real CLI flag:
-    //
-    //   const force = hasFlag(args, "force");
-    //
-    const force = true;
 
     // Migration history stores the hash of the last
     // successfully synchronized DocType definition.
@@ -167,7 +164,7 @@ export class MigrateCommand implements Command {
       // ----------------------------------------------------------
       // Step 6.1: Check migration history
       // ----------------------------------------------------------
-      if (!force) {
+      if (!options.force) {
         const appliedHash = await this.history.getAppliedHash(doctype.name);
 
         if (appliedHash === definitionHash) {
