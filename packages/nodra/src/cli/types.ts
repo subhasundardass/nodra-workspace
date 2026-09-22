@@ -8,24 +8,25 @@
  * cli/commands/ for real --help/option parsing).
  */
 export interface Command {
-	name: string;
-	description: string;
-	execute(args: string[]): Promise<void>;
+  name: string;
+  description: string;
+  execute(args: string[]): Promise<void>;
 }
 
 /**
  * Migrate command options
  */
 export interface MigrateOptions {
-	dbUrl: string;
-	siteName: string;
-	verbose?: boolean;
+  dbUrl: string;
+  siteName: string;
+  verbose?: boolean;
+  force?: boolean;
 }
 
 /**
  * Console (REPL) options
  */
 export interface ConsoleOptions {
-	dbUrl: string;
-	siteName: string;
+  dbUrl: string;
+  siteName: string;
 }

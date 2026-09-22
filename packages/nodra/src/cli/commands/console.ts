@@ -27,6 +27,10 @@ export function registerConsoleCommand(program: Command): void {
         max: config.pool.max,
       });
 
-      await new ConsoleCommand(pool).execute([]);
+      try {
+        await new ConsoleCommand(pool).execute([]);
+      } finally {
+        await pool.end();
+      }
     });
 }
