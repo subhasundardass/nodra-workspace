@@ -1,0 +1,40 @@
+{
+  "name": "nodra",
+  "version": "0.2.0",
+  "description": "A metadata-driven web framework inspired by Frappe, built on Node.js + TypeScript + PostgreSQL.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["framework", "metadata-driven", "doctype", "orm", "postgresql"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "cli": "tsx src/cli/main.ts",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "json2csv": "6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "pino": "^10.3.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/json2csv": "^5.0.7",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.7",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
