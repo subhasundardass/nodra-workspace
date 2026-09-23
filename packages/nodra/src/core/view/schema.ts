@@ -16,39 +16,66 @@ export type ViewType =
   | "dashboard"
   | "report";
 
-export interface ViewDefinition {
-  /**
-   * Unique view name.
-   *
-   * Example:
-   *   "Member List"
-   */
-  name: string;
-
-  /**
-   * DocType this view belongs to.
-   */
-  doctype: string;
-
-  /**
-   * Type of view.
-   */
-  type: ViewType;
-
-  /**
-   * Optional application/module name.
-   */
-  module?: string;
-
-  /**
-   * Whether this is the default view for this type.
-   */
-  default?: boolean;
-
-  /**
-   * View-specific configuration.
-   *
-   * This will be strongly typed later as the View DSL evolves.
-   */
-  config?: Record<string, unknown>;
+export interface ListViewConfig {
+  fields: string[];
+  sort?: {
+    field: string;
+    order: "asc" | "desc";
+  };
+  filters?: string[];
+  page_size?: number;
 }
+
+export interface FormSection {
+  label?: string;
+  fields: string[];
+  collapsible?: boolean;
+}
+
+export interface FormViewConfig {
+  fields: string[];
+  sections?: FormSection[];
+}
+
+export interface DetailViewConfig {
+  fields: string[];
+}
+
+export interface SearchViewConfig {
+  fields: string[];
+  search_fields: string[];
+}
+
+export interface KanbanViewConfig {
+  title_field: string;
+  group_by?: string;
+}
+
+export interface ViewBase {
+  name: string;
+  doctype: string;
+  module?: string;
+  default?: boolean;
+}
+
+export type ViewDefinition =
+  | (ViewBase & {
+      type: "list";
+      config: ListViewConfig;
+    })
+  | (ViewBase & {
+      type: "form";
+      config: FormViewConfig;
+    })
+  | (ViewBase & {
+      type: "detail";
+      config: DetailViewConfig;
+    })
+  | (ViewBase & {
+      type: "search";
+      config: SearchViewConfig;
+    })
+  | (ViewBase & {
+      type: "kanban";
+      config: KanbanViewConfig;
+    });
