@@ -1,5 +1,6 @@
 import path from "node:path";
 import { defineConfig } from "vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitroV2Plugin } from "@tanstack/nitro-v2-vite-plugin";
 import viteReact from "@vitejs/plugin-react";
@@ -10,6 +11,10 @@ const nodraSrc = path.resolve("../../packages/nodra/src");
 export default defineConfig({
   plugins: [
     viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+    }),
     tanstackStart(),
     nitroV2Plugin({
       preset: "node-server",
@@ -26,7 +31,7 @@ export default defineConfig({
       },
       {
         find: "nodra",
-        replacement: nodraSrc,
+        replacement: `${nodraSrc}/index.ts`,
       },
     ],
   },
