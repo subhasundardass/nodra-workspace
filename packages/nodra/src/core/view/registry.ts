@@ -1,3 +1,4 @@
+import { DuplicateError } from "../errors.js";
 import type { ViewDefinition, ViewType } from "./schema.js";
 
 /**
@@ -13,9 +14,7 @@ export class ViewRegistry {
     const key = this.getKey(view.doctype, view.type, view.name);
 
     if (this.views.has(key)) {
-      throw new Error(
-        `View "${view.name}" already registered for ${view.doctype}.`,
-      );
+      throw new DuplicateError(view.doctype, view.name);
     }
 
     this.views.set(key, view);
