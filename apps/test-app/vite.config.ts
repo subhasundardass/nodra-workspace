@@ -5,6 +5,8 @@ import { nitroV2Plugin } from "@tanstack/nitro-v2-vite-plugin";
 import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
+const nodraSrc = path.resolve("../../packages/nodra/src");
+
 export default defineConfig({
   plugins: [
     viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
@@ -17,9 +19,16 @@ export default defineConfig({
   ],
 
   resolve: {
-    alias: {
-      nodra: path.resolve("../../packages/nodra/src"),
-    },
+    alias: [
+      {
+        find: /^nodra\/(.+)\.js$/,
+        replacement: `${nodraSrc}/$1.ts`,
+      },
+      {
+        find: "nodra",
+        replacement: nodraSrc,
+      },
+    ],
   },
 
   server: {
