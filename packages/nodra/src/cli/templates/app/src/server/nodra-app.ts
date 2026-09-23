@@ -10,16 +10,20 @@
  * Import `getNodra()` from any server route to get a lazily-initialized,
  * request-shared singleton (db pool + registry + ORM).
  */
-import { createRequire } from 'node:module';
-import path from 'node:path';
-import { Database } from 'nodra/database/connection.js';
-import { DocTypeRegistry } from 'nodra/core/doctype/registry.js';
-import { loadDocTypesFromDirectory } from 'nodra/core/doctype/loader.js';
-import { ORM } from 'nodra/orm/crud.js';
-import { createLogger, type Logger } from 'nodra/utils/logger.js';
-import { loadConfig, type NodraConfig } from 'nodra/core/config.js';
-import { DefaultMethodRegistry, type MethodRegistry } from 'nodra/api/method.js';
-import { registerAppMethods } from './methods.js';
+import { createRequire } from "node:module";
+import path from "node:path";
+import { Database } from "nodra/database/connection.js";
+import { DocTypeRegistry } from "nodra/core/doctype/registry.js";
+import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader.js";
+import { ORM } from "nodra/orm/crud.js";
+import { createLogger, type Logger } from "nodra/utils/logger.js";
+import { loadConfig, type NodraConfig } from "nodra/core/config.js";
+import {
+  DefaultMethodRegistry,
+  type MethodRegistry,
+} from "nodra/api/method.js";
+import { registerAppMethods } from "./methods.js";
+import { ResourceAPI } from "nodra";
 
 const require = createRequire(import.meta.url);
 
@@ -30,8 +34,8 @@ const require = createRequire(import.meta.url);
  * needs a newer Node than this project otherwise requires.
  */
 function frameworkDoctypesDir(): string {
-  const nodraPackageJson = require.resolve('nodra/package.json');
-  return path.join(path.dirname(nodraPackageJson), 'doctypes');
+  const nodraPackageJson = require.resolve("nodra/package.json");
+  return path.join(path.dirname(nodraPackageJson), "doctypes");
 }
 
 export class NodraApp {
@@ -41,12 +45,14 @@ export class NodraApp {
   readonly orm: ORM;
   readonly logger: Logger;
   readonly methods: MethodRegistry;
+  readonly resource: ResourceAPI;
 
   private constructor(config: NodraConfig) {
     this.config = config;
     this.db = new Database(config.db);
     this.registry = new DocTypeRegistry();
     this.orm = new ORM(this.db, this.registry);
+    this.resource = new ResourceAPI(this.orm, this.registry);
     this.logger = createLogger(config.logging);
     this.methods = new DefaultMethodRegistry();
   }
@@ -56,7 +62,7 @@ export class NodraApp {
     const app = new NodraApp(config);
 
     await app.db.connect();
-    app.logger.info('Database connected');
+    app.logger.info("Database connected");
 
     // Doctype metadata: framework built-ins (User, Role, ...) from the
     // `nodra` package, then this app's own doctypes — in that order, so
@@ -64,7 +70,7 @@ export class NodraApp {
     // are optional; a missing one just yields an empty array.
     const [frameworkDoctypes, appDoctypes] = await Promise.all([
       loadDocTypesFromDirectory(frameworkDoctypesDir()),
-      loadDocTypesFromDirectory(path.join(process.cwd(), 'doctypes')),
+      loadDocTypesFromDirectory(path.join(process.cwd(), "doctypes")),
     ]);
 
     for (const doctype of [...frameworkDoctypes, ...appDoctypes]) {
