@@ -4,7 +4,13 @@
   "description": "A metadata-driven web framework inspired by Frappe, built on Node.js + TypeScript + PostgreSQL.",
   "type": "module",
   "license": "MIT",
-  "keywords": ["framework", "metadata-driven", "doctype", "orm", "postgresql"],
+  "keywords": [
+    "framework",
+    "metadata-driven",
+    "doctype",
+    "orm",
+    "postgresql"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json",
