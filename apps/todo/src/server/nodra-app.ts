@@ -23,7 +23,6 @@ import {
   type MethodRegistry,
 } from "nodra/api/method.js";
 import { registerAppMethods } from "./methods.js";
-
 import { ResourceAPI } from "nodra";
 
 const require = createRequire(import.meta.url);
@@ -44,9 +43,9 @@ export class NodraApp {
   readonly db: Database;
   readonly registry: DocTypeRegistry;
   readonly orm: ORM;
-  readonly resource: ResourceAPI;
   readonly logger: Logger;
   readonly methods: MethodRegistry;
+  readonly resource: ResourceAPI;
 
   private constructor(config: NodraConfig) {
     this.config = config;

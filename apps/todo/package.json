@@ -14,10 +14,11 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "nodra": "*",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-start": "^1.168.56",
     "commander": "^14.0.3",
+    "nodra": "*",
+    "pino-pretty": "^13.1.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

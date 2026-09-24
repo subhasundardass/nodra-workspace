@@ -6,7 +6,7 @@ A two-package monorepo:
   lifecycle hooks, generic CRUD, validation, permissions, ORM, naming,
   events, workflow, transactions. Pure TypeScript, no HTTP framework baked
   in.
-- **`apps/mfi`** — a TanStack Start app that calls straight into
+- **`apps/todo`** — a TanStack Start app that calls straight into
   `packages/nodra`'s ORM from **server functions** (`createServerFn`), with
   a React UI on top via TanStack Router/Query.
 
@@ -25,38 +25,35 @@ production server** — not just written and assumed correct. See
 ## Prerequisites
 
 - Node.js ≥ 20
-- npm ≥ 10 (workspaces support; this repo uses npm workspaces, not
-  pnpm/yarn — see [Package manager](#package-manager-note) if you'd rather
+- pnpm ≥ 10 (workspaces support; this repo uses pnpm workspaces, not
+  ppnpm/yarn — see [Package manager](#package-manager-note) if you'd rather
   use one of those)
 - PostgreSQL (any version Nodra's `pg` driver supports)
 
 ## Setup
 
-```bash
-# 1. Install everything (root + both packages) in one shot
-npm install --legacy-peer-deps
-```
-
-`--legacy-peer-deps` is required here, not optional — plain `npm install`
-hits a known npm/Arborist resolver crash
+`--legacy-peer-deps` is required here, not optional — plain `pnpm install`
+hits a known pnpm/Arborist resolver crash
 (`Cannot read properties of null (reading 'edgesOut')`) triggered by
-Vitest 4's peer dependency graph. This is an npm bug, not a problem with
+Vitest 4's peer dependency graph. This is an pnpm bug, not a problem with
 this repo's dependencies; `--legacy-peer-deps` sidesteps it cleanly.
 
 ```bash
 # 2. Configure the app
-cp apps/mfi/.env.example apps/mfi/.env
-# then edit apps/mfi/.env with real DB credentials
+cp apps/todo/.env.example apps/todo/.env
+# then edit apps/todo/.env with real DB credentials
+ppnpm install
+
 ```
 
 ```bash
 # 3. Run it
-npm run dev
+ppnpm run dev
 # → http://localhost:3000
 ```
 
-`npm run dev` (defined at the workspace root) runs `vite dev` inside
-`apps/mfi`. First run generates `apps/mfi/src/routeTree.gen.ts`
+`pnpm run dev` (defined at the workspace root) runs `vite dev` inside
+`apps/todo`. First run generates `apps/todo/src/routeTree.gen.ts`
 automatically — don't hand-write this file, it's gitignored.
 
 ## CLI
@@ -66,17 +63,17 @@ app you point them at.
 
 ```bash
 # Global — the only thing that has to run before an app exists
-npm run new:app -- my-shop          # scaffolds apps/my-shop from scratch
+pnpm run new:app -- todo          # scaffolds apps/my-shop from scratch
 
-# App-scoped — default to mfi via the root shortcuts below
-npm run new:doctype -- Loan         # doctypes/loan/{loan.json,loan.ts}
-npm run new:server-fn -- Loan       # src/server/functions/loan.ts (needs the doctype first)
-npm run migrate
-npm run console
+# App-scoped — default to todo via the root shortcuts below
+pnpm run new:doctype -- Todo         # doctypes/loan/{loan.json,loan.ts}
+pnpm run new:server-fn -- Todo       # src/server/functions/loan.ts (needs the doctype first)
+pnpm run migrate
+pnpm run console
 
 # Any other app, or the full command set: go through its own workspace
-# npm run cli --workspace=my-shop -- new:doctype Invoice
-# npm run cli --workspace=my-shop -- --help
+# pnpm run cli --workspace=my-shop -- new:doctype Invoice
+# pnpm run cli --workspace=my-shop -- --help
 ```
 
 **Why `new:app` is the only global command:** `migrate`, `console`,
@@ -91,7 +88,7 @@ _before_ an app exists, so it lives on the framework's global CLI instead
 
 **`new:app` isn't a from-scratch template** — it copies
 `packages/nodra/src/cli/templates/app/`, which is a snapshot of the exact
-`apps/mfi` wiring that was actually built, typechecked, and booted in this
+`apps/todo` wiring that was actually built, typechecked, and booted in this
 repo (not a parallel, never-run template that might drift). Placeholders
 (`__APP_NAME__`) get substituted into `package.json` and the landing page;
 everything else — `vite.config.ts`, `src/router.tsx`, `src/server/*` — is
@@ -106,7 +103,7 @@ yet, the command refuses with a message telling you to run `new:doctype`
 first, rather than silently generating something that wouldn't run
 lifecycle hooks.
 
-`apps/mfi` currently has a working `Loan` doctype + server functions
+`apps/todo` currently has a working `Loan` doctype + server functions
 (`doctypes/loan/`, `src/server/functions/loan.ts`) generated exactly this
 way, left in as a real, typechecked, build-verified example — not
 something you asked for as a permanent feature, just proof the generators
@@ -115,15 +112,15 @@ produce working code. Delete both if you don't want them.
 ### Other commands
 
 ```bash
-npm run build             # production build (apps/mfi) → apps/mfi/.output
-npm start                 # node apps/mfi/.output/server/index.mjs
-npm run typecheck         # tsc --noEmit across both packages
+pnpm run build             # production build (apps/todo) → apps/todo/.output
+pnpm start                 # node apps/todo/.output/server/index.mjs
+pnpm run typecheck         # tsc --noEmit across both packages
 ```
 
 ## Architecture
 
 ```
-packages/nodra                         apps/mfi
+packages/nodra                         apps/todo
 ┌─────────────────────────┐            ┌──────────────────────────────┐
 │ DocType metadata          │           │ TanStack Start                │
 │ Document / lifecycle      │◄──────────┤  Server Functions              │
@@ -134,13 +131,13 @@ packages/nodra                         apps/mfi
 └─────────────────────────┘
 ```
 
-`apps/mfi/src/server/nodra-app.ts` (`getNodra()`) is the one seam where
-`apps/mfi` reaches into `packages/nodra` — a lazily-initialized singleton
+`apps/todo/src/server/nodra-app.ts` (`getNodra()`) is the one seam where
+`apps/todo` reaches into `packages/nodra` — a lazily-initialized singleton
 (DB pool + `DocTypeRegistry` + `ORM`), loaded from both
 `packages/nodra/doctypes` (framework built-ins: User, Role, ...) and
-`apps/mfi/doctypes` (this app's own doctypes), merged into one registry.
+`apps/todo/doctypes` (this app's own doctypes), merged into one registry.
 
-**Server functions, not a REST API.** `apps/mfi/src/server/functions/document.ts`
+**Server functions, not a REST API.** `apps/todo/src/server/functions/document.ts`
 exports `getDocument` / `listDocuments` / `createDocument` /
 `updateDocument` / `deleteDocument` — plain `createServerFn()` calls that
 invoke `app.orm.getDoc()` etc. directly, in-process. There is currently no
@@ -150,7 +147,7 @@ API consumers, not this app's own UI), that's a server-_route_ concern
 — server function URLs aren't a stable public contract meant for arbitrary
 external HTTP clients to call directly.
 
-**Auth** (`apps/mfi/src/server/auth.ts`) is `requireAuth`/`optionalAuth`
+**Auth** (`apps/todo/src/server/auth.ts`) is `requireAuth`/`optionalAuth`
 **function middleware**, attached via `.middleware([...])` on a
 `createServerFn()` — not the same thing as server-_route_ request
 middleware. Function middleware doesn't receive a raw `Request` object (it
@@ -173,7 +170,7 @@ Two directories, merged at boot (framework first, so app doctypes can
 safely reference framework ones):
 
 - `packages/nodra/doctypes/core/` — built-ins (User, Role, File, ...)
-- `apps/mfi/doctypes/` — this app's own doctypes (a `README.md` explaining
+- `apps/todo/doctypes/` — this app's own doctypes (a `README.md` explaining
   the convention, plus a `loan/` example generated by `new:doctype` — see
   [CLI](#cli))
 
@@ -207,10 +204,10 @@ for lifecycle hooks to have any effect, not an optional nicety.
 
 ## Package manager note
 
-This repo uses **npm workspaces** (`"workspaces"` in the root
-`package.json`, `"nodra": "*"` in `apps/mfi/package.json` resolving to the
-local `packages/nodra` symlink). If you'd rather use **pnpm**, swap the
-root `package.json`'s `workspaces` field for a `pnpm-workspace.yaml`
+This repo uses **pnpm workspaces** (`"workspaces"` in the root
+`package.json`, `"nodra": "*"` in `apps/todo/package.json` resolving to the
+local `packages/nodra` symlink). If you'd rather use **ppnpm**, swap the
+root `package.json`'s `workspaces` field for a `ppnpm-workspace.yaml`
 listing `packages/*` and `apps/*`, and change `"nodra": "*"` to
 `"nodra": "workspace:*"`. Everything else (subpath `exports`, no build
 step for `nodra`) works identically either way.
@@ -220,7 +217,7 @@ step for `nodra`) works identically either way.
 `packages/nodra/package.json` deliberately has **no `bin` field**. A `bin`
 entry pointing at `src/cli/main.ts` would be broken by design — plain
 `node` can't parse TypeScript, so running it directly as an installed
-binary would fail. Run it via the `cli` npm script instead (which goes
+binary would fail. Run it via the `cli` pnpm script instead (which goes
 through `tsx`), as shown above.
 
 ## Verification
@@ -228,11 +225,11 @@ through `tsx`), as shown above.
 This isn't a "looks right" port — the following was actually run, not just
 reasoned about:
 
-1. **Real `npm install`** at the workspace root (surfaced and fixed: two
+1. **Real `pnpm install`** at the workspace root (surfaced and fixed: two
    deprecated `@types/*` stub packages that ship their own types now).
 2. **`tsc --noEmit` on both packages**, clean. This surfaced and fixed
    several real bugs along the way:
-   - `packages/nodra/src/api/method.ts` was imported by `apps/mfi` but had
+   - `packages/nodra/src/api/method.ts` was imported by `apps/todo` but had
      never actually been copied into the package — a dangling import.
    - The original library barrel (`packages/nodra/src/index.ts`)
      re-exported the CLI, which side-effect-imports `main.ts` and runs
@@ -271,9 +268,9 @@ reasoned about:
    confirming the error-handling path works under an actual failure
    condition, not just in theory.
 5. **Every CLI command was actually run, not just written:**
-   - `npm run new:app -- test-shop` — really scaffolded `apps/test-shop`,
+   - `pnpm run new:app -- test-shop` — really scaffolded `apps/test-shop`,
      confirmed `__APP_NAME__` substitution landed correctly, added it to
-     the workspace with a real `npm install`, ran `tsc --noEmit` (clean
+     the workspace with a real `pnpm install`, ran `tsc --noEmit` (clean
      apart from the expected pre-routeTree-generation cascade) and a real
      `vite build`, then **booted it** and got `GET / → 200`. Deleted
      afterward — it was a verification run, not a feature you asked for.
@@ -285,10 +282,10 @@ reasoned about:
      they're not meant to compile there at all, only after being copied
      into a real app). Fixed by excluding `src/cli/templates` from
      `packages/nodra/tsconfig.json`.
-   - `npm run new:doctype -- Loan` then `npm run new:server-fn -- Loan` —
+   - `pnpm run new:doctype -- Loan` then `pnpm run new:server-fn -- Loan` —
      really generated `doctypes/loan/` and
-     `src/server/functions/loan.ts` into `apps/mfi`, then `tsc --noEmit`
-     and a full `vite build` on `apps/mfi` with the generated files
+     `src/server/functions/loan.ts` into `apps/todo`, then `tsc --noEmit`
+     and a full `vite build` on `apps/todo` with the generated files
      included — both clean.
    - Deliberately re-ran `new:doctype -- Loan`, `new:app -- test-shop`,
      and `new:server-fn` for a doctype with no controller yet — all three
