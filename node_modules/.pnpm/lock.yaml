@@ -24,58 +24,6 @@ importers:
         specifier: ^8.70.0
         version: 8.70.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
 
-  apps/test-app:
-    dependencies:
-      '@tanstack/react-router':
-        specifier: ^1.170.38
-        version: 1.170.38(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@tanstack/react-start':
-        specifier: ^1.168.56
-        version: 1.168.57(crossws@0.4.12(srvx@0.11.22))(esbuild@0.28.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
-      commander:
-        specifier: ^14.0.3
-        version: 14.0.3
-      nodra:
-        specifier: '*'
-        version: 0.0.5
-      react:
-        specifier: ^19.3.0
-        version: 19.3.0
-      react-dom:
-        specifier: ^19.3.0
-        version: 19.3.0(react@19.3.0)
-    devDependencies:
-      '@tanstack/nitro-v2-vite-plugin':
-        specifier: ^1.155.2
-        version: 1.155.2(rolldown@1.2.9)(srvx@0.11.22)(vite@8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
-      '@tanstack/router-plugin':
-        specifier: ^1.168.40
-        version: 1.168.40(@tanstack/react-router@1.170.38(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.28.2)(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
-      '@types/node':
-        specifier: ^25.9.7
-        version: 25.9.8
-      '@types/react':
-        specifier: ^19.2.0
-        version: 19.3.0
-      '@types/react-dom':
-        specifier: ^19.2.0
-        version: 19.3.0(@types/react@19.3.0)
-      '@vitejs/plugin-react':
-        specifier: ^6.1.1
-        version: 6.1.1(vite@8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
-      tsx:
-        specifier: ^4.23.13
-        version: 4.23.15
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^8.3.0
-        version: 8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)
-      vite-tsconfig-paths:
-        specifier: ^6.1.1
-        version: 6.1.1(typescript@5.9.3)(vite@8.3.0(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
-
   apps/todo:
     dependencies:
       '@tanstack/react-router':
