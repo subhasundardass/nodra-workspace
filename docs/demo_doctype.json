@@ -1,0 +1,376 @@
+{
+  "name": "Loan",
+  "module": "Microfinance",
+  "description": "Loan application and lending lifecycle",
+  "naming_rule": "format",
+  "autoname": "LOAN-.#####",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "track_changes": true,
+  "fields": [
+    {
+      "fieldname": "loan_number",
+      "fieldtype": "Data",
+      "label": "Loan Number",
+      "read_only": true,
+      "unique": true,
+      "in_list_view": true,
+      "in_filter": true
+    },
+    {
+      "fieldname": "branch",
+      "fieldtype": "Link",
+      "label": "Branch",
+      "options": "Branch",
+      "reqd": true,
+      "in_list_view": true,
+      "in_filter": true
+    },
+    {
+      "fieldname": "group",
+      "fieldtype": "Link",
+      "label": "Group",
+      "options": "Group",
+      "reqd": true,
+      "in_list_view": true,
+      "depends_on": "branch"
+    },
+    {
+      "fieldname": "member",
+      "fieldtype": "Link",
+      "label": "Member",
+      "options": "Member",
+      "reqd": true,
+      "in_list_view": true,
+      "in_filter": true
+    },
+    {
+      "fieldname": "loan_product",
+      "fieldtype": "Link",
+      "label": "Loan Product",
+      "options": "Loan Product",
+      "reqd": true
+    },
+    {
+      "fieldname": "loan_amount",
+      "fieldtype": "Currency",
+      "label": "Loan Amount",
+      "reqd": true,
+      "precision": 2,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "interest_rate",
+      "fieldtype": "Percent",
+      "label": "Interest Rate",
+      "reqd": true,
+      "precision": 2
+    },
+    {
+      "fieldname": "interest_method",
+      "fieldtype": "Select",
+      "label": "Interest Method",
+      "options": [
+        "Flat",
+        "Reducing Balance"
+      ],
+      "default": "Flat",
+      "reqd": true
+    },
+    {
+      "fieldname": "repayment_frequency",
+      "fieldtype": "Select",
+      "label": "Repayment Frequency",
+      "options": [
+        "Daily",
+        "Weekly",
+        "Monthly"
+      ],
+      "default": "Weekly",
+      "reqd": true
+    },
+    {
+      "fieldname": "tenure",
+      "fieldtype": "Int",
+      "label": "Tenure",
+      "reqd": true
+    },
+    {
+      "fieldname": "total_interest",
+      "fieldtype": "Currency",
+      "label": "Total Interest",
+      "read_only": true,
+      "precision": 2
+    },
+    {
+      "fieldname": "total_payable",
+      "fieldtype": "Currency",
+      "label": "Total Payable",
+      "read_only": true,
+      "precision": 2,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "installment_amount",
+      "fieldtype": "Currency",
+      "label": "Installment Amount",
+      "read_only": true,
+      "precision": 2
+    },
+    {
+      "fieldname": "application_date",
+      "fieldtype": "Date",
+      "label": "Application Date",
+      "default": "Today",
+      "reqd": true,
+      "in_filter": true
+    },
+    {
+      "fieldname": "approval_date",
+      "fieldtype": "Date",
+      "label": "Approval Date",
+      "read_only": true
+    },
+    {
+      "fieldname": "disbursement_date",
+      "fieldtype": "Date",
+      "label": "Disbursement Date",
+      "read_only": true
+    },
+    {
+      "fieldname": "maturity_date",
+      "fieldtype": "Date",
+      "label": "Maturity Date",
+      "read_only": true
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": [
+        "Draft",
+        "Pending Approval",
+        "Approved",
+        "Rejected",
+        "Disbursed",
+        "Active",
+        "Closed"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "in_list_view": true,
+      "in_filter": true
+    },
+    {
+      "fieldname": "approved_by",
+      "fieldtype": "Link",
+      "label": "Approved By",
+      "options": "User",
+      "read_only": true
+    },
+    {
+      "fieldname": "disbursed_by",
+      "fieldtype": "Link",
+      "label": "Disbursed By",
+      "options": "User",
+      "read_only": true
+    },
+    {
+      "fieldname": "notes",
+      "fieldtype": "Text",
+      "label": "Notes"
+    },
+    {
+      "fieldname": "installments",
+      "fieldtype": "Table",
+      "label": "Repayment Schedule",
+      "options": "Loan Installment"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Branch Manager",
+      "read": true,
+      "create": true,
+      "write": true,
+      "delete": false,
+      "submit": true,
+      "cancel": false
+    },
+    {
+      "role": "Accountant",
+      "read": true,
+      "create": false,
+      "write": false,
+      "delete": false,
+      "submit": false,
+      "cancel": false
+    },
+    {
+      "role": "Field Officer",
+      "read": true,
+      "create": true,
+      "write": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false
+    }
+  ],
+  "field_permissions": [
+    {
+      "fieldname": "interest_rate",
+      "role": "Field Officer",
+      "read": true,
+      "write": false
+    },
+    {
+      "fieldname": "total_interest",
+      "role": "Field Officer",
+      "read": true,
+      "write": false
+    },
+    {
+      "fieldname": "total_payable",
+      "role": "Field Officer",
+      "read": true,
+      "write": false
+    }
+  ],
+  "search_fields": [
+    "loan_number",
+    "member",
+    "group",
+    "branch"
+  ],
+  "sort_field": "creation",
+  "sort_order": "desc",
+  "title_field": "loan_number",
+  "workflow": {
+    "state_field": "status",
+    "states": [
+      {
+        "name": "Draft",
+        "docstatus": 0
+      },
+      {
+        "name": "Pending Approval",
+        "docstatus": 0
+      },
+      {
+        "name": "Approved",
+        "docstatus": 1
+      },
+      {
+        "name": "Rejected",
+        "docstatus": 0
+      },
+      {
+        "name": "Disbursed",
+        "docstatus": 1
+      },
+      {
+        "name": "Active",
+        "docstatus": 1
+      },
+      {
+        "name": "Closed",
+        "docstatus": 1
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Submit",
+        "from": "Draft",
+        "to": "Pending Approval",
+        "roles": [
+          "Field Officer",
+          "Branch Manager"
+        ]
+      },
+      {
+        "action": "Approve",
+        "from": "Pending Approval",
+        "to": "Approved",
+        "roles": [
+          "Branch Manager"
+        ]
+      },
+      {
+        "action": "Reject",
+        "from": "Pending Approval",
+        "to": "Rejected",
+        "roles": [
+          "Branch Manager"
+        ],
+        "requires_comment": true
+      },
+      {
+        "action": "Disburse",
+        "from": "Approved",
+        "to": "Disbursed",
+        "roles": [
+          "Accountant",
+          "Branch Manager"
+        ]
+      },
+      {
+        "action": "Activate",
+        "from": "Disbursed",
+        "to": "Active",
+        "roles": [
+          "Accountant"
+        ]
+      },
+      {
+        "action": "Close",
+        "from": "Active",
+        "to": "Closed",
+        "roles": [
+          "Accountant",
+          "Branch Manager"
+        ]
+      }
+    ]
+  },
+  "actions": [
+    {
+      "name": "generate_schedule",
+      "label": "Generate Schedule",
+      "type": "method",
+      "method": "generate_schedule",
+      "position": "primary",
+      "permission": "write"
+    },
+    {
+      "name": "print_loan",
+      "label": "Print Loan",
+      "type": "method",
+      "method": "print_loan",
+      "position": "secondary"
+    },
+    {
+      "name": "send_sms",
+      "label": "Send SMS",
+      "type": "method",
+      "method": "send_sms",
+      "position": "menu"
+    }
+  ],
+  "validations": [
+    {
+      "field": "loan_amount",
+      "rule": "greater_than",
+      "value": 0,
+      "message": "Loan amount must be greater than zero"
+    },
+    {
+      "field": "tenure",
+      "rule": "greater_than",
+      "value": 0,
+      "message": "Tenure must be greater than zero"
+    }
+  ]
+}
