@@ -1,31 +1,13 @@
 {
   "name": "nodra-workspace",
   "private": true,
-  "version": "0.0.0",
-  "packageManager": "pnpm@9.15.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "cli": "pnpm --filter nodra cli",
-    "new:app": "pnpm --filter nodra cli create",
-    "dev": "pnpm --filter todo dev",
-    "build": "pnpm --filter todo build",
-    "start": "pnpm --filter todo start",
-    "new:doctype": "pnpm --filter todo cli new:doctype",
-    "migrate": "pnpm --filter todo cli migrate",
-    "console": "pnpm --filter todo cli console",
-    "typecheck": "pnpm --filter '*' typecheck",
-    "lint": "pnpm --filter '*' lint",
-    "new:server-fn": "pnpm --filter todo cli new:server-fn",
-    "test": "pnpm --filter '*' test"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "eslint": "^9.39.5",
-    "prettier": "^3.9.8",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.70.0"
-  },
-  "engines": {
-    "node": ">=20.0.0"
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
   }
 }

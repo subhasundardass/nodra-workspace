@@ -13,6 +13,11 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@nodra/ui": ["packages/nodra-ui/src"],
+      "@nodra/ui/*": ["packages/nodra-ui/src/*"]
+    }
   }
 }
