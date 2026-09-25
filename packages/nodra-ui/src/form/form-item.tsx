@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-export interface FormItemProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface NodraFormItemProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export function FormItem({ className, ...props }: FormItemProps) {
-  return (
-    <div data-slot="form-item" className={className} {...props} />
-  );
+export function NodraFormItem({ className, ...props }: NodraFormItemProps) {
+  return <div data-slot="form-item" className={className} {...props} />;
 }
+
+export const FormItem = NodraFormItem;

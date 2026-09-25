@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { useFormField } from './form-field';
+import { useNodraFormField } from './form-field';
 
-export interface FormMessageProps
+export interface NodraFormMessageProps
   extends React.HTMLAttributes<HTMLParagraphElement> {
   children?: React.ReactNode;
 }
 
-export function FormMessage({
+export function NodraFormMessage({
   className,
   children,
   ...props
-}: FormMessageProps) {
-  const { field } = useFormField();
+}: NodraFormMessageProps) {
+  const { field } = useNodraFormField();
   const errors = field.state.meta.errors;
   const body = errors.length > 0 ? errors[0] : children;
 
@@ -31,3 +31,5 @@ export function FormMessage({
     </p>
   );
 }
+
+export const FormMessage = NodraFormMessage;

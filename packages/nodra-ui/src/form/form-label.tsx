@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { useFormField } from './form-field';
+import { useNodraFormField } from './form-field';
 
-export interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+export interface NodraFormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   children: React.ReactNode;
 }
 
-export function FormLabel({ className, children, ...props }: FormLabelProps) {
-  const { field } = useFormField();
+export function NodraFormLabel({ className, children, ...props }: NodraFormLabelProps) {
+  const { field } = useNodraFormField();
   const hasError = field.state.meta.errors.length > 0;
 
   return (
@@ -20,3 +20,5 @@ export function FormLabel({ className, children, ...props }: FormLabelProps) {
     </label>
   );
 }
+
+export const FormLabel = NodraFormLabel;

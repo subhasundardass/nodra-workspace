@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { useFormField } from './form-field';
+import { useNodraFormField } from './form-field';
 
-export interface FormDescriptionProps
+export interface NodraFormDescriptionProps
   extends React.HTMLAttributes<HTMLParagraphElement> {
   children: React.ReactNode;
 }
 
-export function FormDescription({
+export function NodraFormDescription({
   className,
   children,
   ...props
-}: FormDescriptionProps) {
-  const { field } = useFormField();
+}: NodraFormDescriptionProps) {
+  const { field } = useNodraFormField();
 
   return (
     <p
@@ -24,3 +24,5 @@ export function FormDescription({
     </p>
   );
 }
+
+export const FormDescription = NodraFormDescription;

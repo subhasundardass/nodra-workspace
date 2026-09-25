@@ -1,19 +1,19 @@
 import * as React from 'react';
 
-export interface FormSubmitProps
+export interface NodraFormSubmitProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   isLoading?: boolean;
 }
 
-export function FormSubmit({
+export function NodraFormSubmit({
   className,
   type = 'submit',
   disabled,
   isLoading = false,
   children,
   ...props
-}: FormSubmitProps) {
+}: NodraFormSubmitProps) {
   return (
     <button
       type={type}
@@ -27,3 +27,5 @@ export function FormSubmit({
     </button>
   );
 }
+
+export const FormSubmit = NodraFormSubmit;

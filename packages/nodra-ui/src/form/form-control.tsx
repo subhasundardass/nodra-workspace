@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { useFormField } from './form-field';
+import { useNodraFormField } from './form-field';
 
-export interface FormControlProps
+export interface NodraFormControlProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'onBlur'> {
   children?: React.ReactNode;
 }
 
-export function FormControl({
+export function NodraFormControl({
   className,
   type = 'text',
   ...props
-}: FormControlProps) {
-  const { field } = useFormField();
+}: NodraFormControlProps) {
+  const { field } = useNodraFormField();
   const hasError = field.state.meta.errors.length > 0;
 
   return (
@@ -29,3 +29,5 @@ export function FormControl({
     />
   );
 }
+
+export const FormControl = NodraFormControl;
