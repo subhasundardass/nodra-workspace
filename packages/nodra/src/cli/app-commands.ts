@@ -6,15 +6,19 @@
  * process.cwd()), which is what happens naturally when invoked via
  * `npm run cli --workspace=<app> -- <command>`.
  */
-import type { Command } from 'commander';
-import { registerMigrateCommand } from './commands/migrate.js';
-import { registerConsoleCommand } from './commands/console.js';
-import { registerNewDoctypeCommand } from './commands/new-doctype.js';
-import { registerNewServerFnCommand } from './commands/new-server-fn.js';
+import type { Command } from "commander";
+import { registerMigrateCommand } from "./commands/migrate.js";
+import { registerConsoleCommand } from "./commands/console.js";
+import { registerNewDoctypeCommand } from "./commands/new-doctype.js";
+import { registerNewServerFnCommand } from "./commands/new-server-fn.js";
+import { registerAdminResetCommand } from "./commands/admin-reset.js";
+import { registerCreateCommand } from "./commands/create.js";
 
 export function registerAppCommands(program: Command): void {
+  registerCreateCommand(program);
   registerMigrateCommand(program);
   registerConsoleCommand(program);
   registerNewDoctypeCommand(program);
   registerNewServerFnCommand(program);
+  registerAdminResetCommand(program);
 }
