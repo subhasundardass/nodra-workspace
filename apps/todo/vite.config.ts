@@ -1,25 +1,23 @@
-import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { nitroV2Plugin } from "@tanstack/nitro-v2-vite-plugin";
 import viteReact from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import { devtools } from "@tanstack/devtools-vite";
 
 export default defineConfig({
-  plugins: [
-    tanstackStart(),
-
-    nitroV2Plugin({
-      preset: "node-server",
-      compatibilityDate: "2026-09-20",
-    }),
-
-    viteReact(),
-  ],
+  server: {
+    port: 3000,
+  },
 
   resolve: {
     tsconfigPaths: true,
   },
 
-  server: {
-    port: Number(process.env.PORT ?? 3000),
+  ssr: {
+    external: ["argon2", "pino", "thread-stream"],
   },
+
+  plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
 });
+
+
