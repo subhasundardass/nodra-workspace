@@ -7,25 +7,12 @@ export const Route = createFileRoute('/')({
 function Home() {
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem', maxWidth: 640 }}>
-      <h1>__APP_NAME__</h1>
-      <p>
-        A Nodra app on TanStack Start. Server functions call{' '}
-        <code>app.orm</code>/<code>app.registry</code> directly — see{' '}
-        <code>src/server/functions/</code>.
+       <div className="p-8">
+      <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
+      <p className="mt-4 text-lg">
+        Edit <code>src/routes/index.tsx</code> to get started.
       </p>
-      <ul>
-        <li>
-          <code>npm run cli --workspace=__APP_NAME__ -- new:doctype &lt;Name&gt;</code> — scaffold a
-          DocType
-        </li>
-        <li>
-          <code>npm run cli --workspace=__APP_NAME__ -- new:server-fn &lt;Doctype&gt;</code> —
-          scaffold its server functions
-        </li>
-        <li>
-          <code>GET /health</code>
-        </li>
-      </ul>
+    </div>
     </main>
   );
 }

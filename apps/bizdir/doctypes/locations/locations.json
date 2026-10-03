@@ -1,0 +1,159 @@
+{
+  "name": "Locations",
+  "module": "App",
+  "naming_rule": "field",
+  "naming_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": true,
+  "is_virtual": false,
+  "title_field": "title",
+  "search_fields": [
+    "title",
+    "slug",
+    "short_name",
+    "meta_title"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Location Name",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "slug",
+      "fieldtype": "Data",
+      "label": "Slug",
+      "reqd": true,
+      "unique": true,
+      "max_length": 160,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "short_name",
+      "fieldtype": "Data",
+      "label": "Short Name",
+      "max_length": 50
+    },
+    {
+      "fieldname": "parent_id",
+      "fieldtype": "Int",
+      "label": "Parent Location",
+      "default": 0,
+      "reqd": true,
+      "in_list_view": true,
+      "description": "Parent location ID. 0 means this is a root location."
+    },
+    {
+      "fieldname": "location_type",
+      "fieldtype": "Select",
+      "label": "Location Type",
+      "options": [
+        "Country",
+        "State",
+        "Region",
+        "Division",
+        "District",
+        "Subdistrict",
+        "City",
+        "Town",
+        "Village",
+        "Locality",
+        "Area",
+        "Pincode"
+      ],
+      "in_list_view": true
+    },
+    {
+      "fieldname": "code",
+      "fieldtype": "Data",
+      "label": "Code",
+      "max_length": 30,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "postal_code",
+      "fieldtype": "Data",
+      "label": "Postal Code",
+      "max_length": 20
+    },
+    {
+      "fieldname": "latitude",
+      "fieldtype": "Float",
+      "label": "Latitude"
+    },
+    {
+      "fieldname": "longitude",
+      "fieldtype": "Float",
+      "label": "Longitude"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Text",
+      "label": "Description"
+    },
+    {
+      "fieldname": "meta_title",
+      "fieldtype": "Data",
+      "label": "Meta Title",
+      "max_length": 160
+    },
+    {
+      "fieldname": "meta_description",
+      "fieldtype": "Text",
+      "label": "Meta Description",
+      "max_length": 320
+    },
+    {
+      "fieldname": "meta_keywords",
+      "fieldtype": "Text",
+      "label": "Meta Keywords"
+    },
+    {
+      "fieldname": "content",
+      "fieldtype": "Text",
+      "label": "SEO Content"
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Active",
+      "default": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "is_featured",
+      "fieldtype": "Check",
+      "label": "Featured",
+      "default": false
+    },
+    {
+      "fieldname": "sort_order",
+      "fieldtype": "Int",
+      "label": "Sort Order",
+      "default": 0
+    },
+    {
+      "fieldname": "path",
+      "fieldtype": "Data",
+      "label": "Location Path",
+      "max_length": 500,
+      "in_list_view": false,
+      "description": "Materialized hierarchy path used for fast filtering and URLs."
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}
