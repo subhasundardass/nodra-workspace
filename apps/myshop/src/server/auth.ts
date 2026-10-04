@@ -14,72 +14,119 @@
  * the doctype/document name as real arguments instead of trying to parse
  * them back out of something ambient.
  */
-import { createMiddleware } from '@tanstack/react-start';
-import { getRequestHeader } from '@tanstack/react-start/server';
-import { getNodra, type NodraApp } from './nodra-app';
-import { extractTokenFromHeader, verifyToken } from 'nodra/auth/session';
+import { createMiddleware } from "@tanstack/react-start";
+import {
+  getRequestHeader,
+  getRequestHeaders,
+} from "@tanstack/react-start/server";
+import { getNodra, type NodraApp } from "./nodra-app";
+import { extractSessionToken } from "nodra/auth";
 import {
   hasPermission,
   getRoleHierarchy,
   type PermissionAction,
   type UserContext,
-} from 'nodra/permissions/permission';
-import { logPermissionCheck } from 'nodra/permissions/audit-log';
-import { AuthenticationError, NotFoundError, PermissionError } from 'nodra/core/errors';
+} from "nodra/permissions/permission";
+import { logPermissionCheck } from "nodra/permissions/audit-log";
+import {
+  AuthenticationError,
+  NotFoundError,
+  PermissionError,
+} from "nodra/core/errors";
 
 export interface AuthUser {
+  id: string;
   email: string;
   fullName?: string;
   userType: string;
 }
 
-/** Require a valid Bearer token. Throws AuthenticationError (rejects the call) if missing/invalid. */
-export const requireAuth = createMiddleware({ type: 'function' }).server(async ({ next }) => {
-  const token = extractTokenFromHeader(getRequestHeader('authorization'));
+/** Attach the user if a valid token is present; never rejects the call. */
+export const requireAuth = createMiddleware({ type: "function" }).server(
+  async ({ next }) => {
+    const token = extractSessionToken(getRequestHeaders(), "session_token");
 
-  if (!token) {
-    throw new AuthenticationError('No authentication token provided');
-  }
+    if (!token) {
+      throw new AuthenticationError("Authentication required");
+    }
 
-  const app = await getNodra();
-  const payload = verifyToken(token, app.config.auth.secret as string);
-  const user: AuthUser = {
-    email: payload.email,
-    fullName: payload.fullName,
-    userType: payload.userType,
-  };
+    const app = await getNodra();
 
-  return next({ context: { user } });
-});
+    const session = await app.sessions.resolve(token);
+
+    if (!session) {
+      throw new AuthenticationError("Session expired or invalid");
+    }
+
+    if (session.subject.type !== "User") {
+      throw new AuthenticationError("Invalid session subject");
+    }
+
+    const user = await app.orm.getDoc("User", session.subject.id);
+
+    if (!user.get("active")) {
+      throw new AuthenticationError("User account is inactive");
+    }
+
+    return next({
+      context: {
+        user: {
+          id: session.subject.id,
+          email: user.get("email") as string,
+          fullName: user.get("full_name") as string | undefined,
+          userType: user.get("user_type") as string,
+        },
+      },
+    });
+  },
+);
 
 /** Attach the user if a valid token is present; never rejects the call. */
-export const optionalAuth = createMiddleware({ type: 'function' }).server(async ({ next }) => {
-  const token = extractTokenFromHeader(getRequestHeader('authorization'));
-  let user: AuthUser | null = null;
+export const optionalAuth = createMiddleware({ type: "function" }).server(
+  async ({ next }) => {
+    const token = extractSessionToken(getRequestHeaders(), "session_token");
 
-  if (token) {
-    try {
-      const app = await getNodra();
-      const payload = verifyToken(token, app.config.auth.secret as string);
-      user = { email: payload.email, fullName: payload.fullName, userType: payload.userType };
-    } catch {
-      user = null;
+    let user: AuthUser | null = null;
+
+    if (token) {
+      try {
+        const app = await getNodra();
+
+        const session = await app.sessions.resolve(token);
+
+        if (session && session.subject.type === "User") {
+          const dbUser = await app.orm.getDoc("User", session.subject.id);
+
+          if (dbUser.get("active")) {
+            user = {
+              id: session.subject.id,
+              email: dbUser.get("email") as string,
+              fullName: dbUser.get("full_name") as string | undefined,
+              userType: dbUser.get("user_type") as string,
+            };
+          }
+        }
+      } catch {
+        user = null;
+      }
     }
-  }
 
-  // A single next() call with a consistently-typed `user` (rather than one
-  // per branch) — calling next() separately per branch made TS infer two
-  // different, incompatible context shapes instead of one AuthUser | null.
-  return next({ context: { user } });
-});
+    return next({
+      context: { user },
+    });
+  },
+);
 
-async function getUserRoles(app: NodraApp, userEmail: string): Promise<string[]> {
+async function getUserRoles(
+  app: NodraApp,
+  userEmail: string,
+): Promise<string[]> {
   try {
-    const user = await app.orm.getDoc('User', userEmail);
-    const roles = user.get('roles') as Array<{ role: string }> | undefined;
+    const user = await app.orm.getDoc("User", userEmail);
+    const roles = user.get("roles") as Array<{ role: string }> | undefined;
 
     if (!roles || roles.length === 0) {
-      return ['Guest'];
+      return ["Guest"];
     }
 
     const userRoles = roles.map((r) => r.role);
@@ -87,20 +134,22 @@ async function getUserRoles(app: NodraApp, userEmail: string): Promise<string[]>
     return getRoleHierarchy(userRoles, hierarchy);
   } catch (error) {
     if (error instanceof NotFoundError) {
-      throw new AuthenticationError('User not found');
+      throw new AuthenticationError("User not found");
     }
     throw error;
   }
 }
 
-async function getRoleHierarchyFromDB(app: NodraApp): Promise<Map<string, string>> {
+async function getRoleHierarchyFromDB(
+  app: NodraApp,
+): Promise<Map<string, string>> {
   const hierarchy = new Map<string, string>();
 
   try {
-    const roles = await app.orm.getList('Role', { filters: { disabled: 0 } });
+    const roles = await app.orm.getList("Role", { filters: { disabled: 0 } });
     for (const role of roles) {
-      const parentRole = role.get('parent_role') as string | undefined;
-      const roleName = role.get('role_name') as string;
+      const parentRole = role.get("parent_role") as string | undefined;
+      const roleName = role.get("role_name") as string;
       if (parentRole) {
         hierarchy.set(roleName, parentRole);
       }
@@ -127,24 +176,24 @@ export async function assertResourcePermission(
   docName: string | undefined,
 ): Promise<void> {
   if (!user) {
-    throw new AuthenticationError('Authentication required');
+    throw new AuthenticationError("Authentication required");
   }
 
   let doctype;
   try {
     doctype = app.registry.get(doctypeName);
   } catch {
-    throw new NotFoundError('DocType', doctypeName);
+    throw new NotFoundError("DocType", doctypeName);
   }
 
   const roles = await getUserRoles(app, user.email);
   const userContext: UserContext = { email: user.email, roles };
 
   let documentOwner: string | undefined;
-  if (['write', 'delete'].includes(action) && docName) {
+  if (["write", "delete"].includes(action) && docName) {
     try {
       const doc = await app.orm.getDoc(doctypeName, docName);
-      documentOwner = doc.get('owner') as string;
+      documentOwner = doc.get("owner") as string;
     } catch {
       // Document not found — the caller will surface a proper NotFoundError itself.
     }
@@ -157,8 +206,9 @@ export async function assertResourcePermission(
     action,
     doctype: doctypeName,
     documentName: docName,
-    result: hasPerm ? 'Allowed' : 'Denied',
-    ipAddress: getRequestHeader('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown',
+    result: hasPerm ? "Allowed" : "Denied",
+    ipAddress:
+      getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown",
   });
 
   if (!hasPerm) {
