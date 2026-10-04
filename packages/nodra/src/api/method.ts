@@ -68,6 +68,7 @@ export interface MethodCallInit {
   request: MethodRequest;
   user?: MethodUser | null;
   session?: Session | null;
+  state?: Map<string, unknown>;
 }
 
 export type MethodHandler<
@@ -169,7 +170,7 @@ export class DefaultMethodRegistry implements MethodRegistry {
       args: init.args ?? {},
       user: init.user ?? null,
       session: init.session ?? null,
-      state: new Map(),
+      state: init.state ?? new Map(),
       startedAt: Date.now(),
     };
 
