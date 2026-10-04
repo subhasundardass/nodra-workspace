@@ -4,8 +4,8 @@
  * Implements role-based access control (RBAC) with DocType-level permissions
  */
 
-import type { DocTypeDefinition, PermissionRule } from '../core/doctype/schema.js';
-import { PermissionError } from '../core/errors.js';
+import type { DocTypeDefinition, PermissionRule } from '../core/doctype/schema';
+import { PermissionError } from '../core/errors';
 
 /**
  * Permission action types

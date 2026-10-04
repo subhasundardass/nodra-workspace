@@ -2,10 +2,10 @@
  * Background Jobs - Exports
  */
 
-export { PostgresJobQueue, JobQueueError } from './queue.js';
-export { JobScheduler } from './scheduler.js';
-export { JobWorker } from './worker.js';
-export { CronParser, CronParseError, parseCronExpression, isCronTimeMatch } from './cron.js';
+export { PostgresJobQueue, JobQueueError } from './queue';
+export { JobScheduler } from './scheduler';
+export { JobWorker } from './worker';
+export { CronParser, CronParseError, parseCronExpression, isCronTimeMatch } from './cron';
 
 export type {
   Job,
@@ -17,6 +17,6 @@ export type {
   ScheduledJob,
   WorkerConfig,
   CronSchedule,
-} from './types.js';
+} from './types';
 
-export { JOB_PRIORITY_VALUES } from './types.js';
+export { JOB_PRIORITY_VALUES } from './types';

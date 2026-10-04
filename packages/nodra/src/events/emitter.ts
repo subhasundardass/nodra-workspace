@@ -12,8 +12,8 @@ import type {
   EventHandlerRegistration,
   EventPriority,
   EventEmitterOptions,
-} from './types.js';
-import { EVENT_PRIORITY_VALUES } from './types.js';
+} from './types';
+import { EVENT_PRIORITY_VALUES } from './types';
 
 /**
  * Type-safe event emitter with priority support.

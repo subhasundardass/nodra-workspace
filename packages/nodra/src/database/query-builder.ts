@@ -7,7 +7,7 @@
  * parameterized.
  */
 
-import { DatabaseError } from '../core/errors.js';
+import { DatabaseError } from '../core/errors';
 
 /**
  * Supported comparison operators for WHERE clauses.

@@ -1,25 +1,26 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 
-/**
- * Exported name is load-bearing: the framework's virtual router-entry
- * module re-exports whatever this file calls `getRouter` (verified against
- * the installed @tanstack/start-client-core — its fake-entries/router.d.ts
- * literally declares `export declare function getRouter(): void;` as the
- * contract this file must satisfy). An export named `createRouter` here
- * builds fine but fails at bundle time with a "getRouter is not exported"
- * error.
- */
+import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { getContext } from "./integrations/tanstack-query/root-provider";
+
 export function getRouter() {
+  const context = getContext();
+
   const router = createTanStackRouter({
     routeTree,
+    context,
     scrollRestoration: true,
+    defaultPreload: "intent",
+    defaultPreloadStaleTime: 0,
   });
+
+  setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
 
   return router;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: ReturnType<typeof getRouter>;
   }

@@ -6,10 +6,10 @@
  * with a details array containing every failure.
  */
 
-import type { Document } from '../document/document.js';
-import type { DocTypeDefinition, FieldDefinition } from '../doctype/schema.js';
-import type { ErrorDetail } from '../errors.js';
-import { ValidationError } from '../errors.js';
+import type { Document } from '../document/document';
+import type { DocTypeDefinition, FieldDefinition } from '../doctype/schema';
+import type { ErrorDetail } from '../errors';
+import { ValidationError } from '../errors';
 
 /**
  * Validate a Document against its DocType definition.

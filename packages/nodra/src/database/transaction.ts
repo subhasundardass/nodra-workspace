@@ -7,8 +7,8 @@
  */
 
 import type { PoolClient } from 'pg';
-import type { Database } from './connection.js';
-import { DatabaseError } from '../core/errors.js';
+import type { Database } from './connection';
+import { DatabaseError } from '../core/errors';
 
 // --- Public types ---
 

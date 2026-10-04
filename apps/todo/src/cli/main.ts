@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * todo's own CLI: framework-provided app-scoped commands
+ * bizdir's own CLI: framework-provided app-scoped commands
  * (migrate, console, new:doctype, new:server-fn) via registerAppCommands.
  *
  * Add bespoke commands specific to this app below — e.g.
@@ -12,11 +12,11 @@ import { registerAppCommands } from 'nodra/cli/app-commands.js';
 
 const program = new Command();
 
-program.name('todo').description("todo's CLI").version('0.1.0');
+program.name('bizdir').description("bizdir's CLI").version('0.1.0');
 
 registerAppCommands(program);
 
-// Add todo-specific commands here, e.g.:
+// Add bizdir-specific commands here, e.g.:
 // program
 //   .command('seed')
 //   .description('Load sample data')

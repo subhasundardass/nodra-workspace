@@ -5,8 +5,8 @@
 import type {
   WorkflowExecutionContext,
   WorkflowTransition,
-} from './types.js';
-import { WorkflowManager } from './workflow.js';
+} from './types';
+import { WorkflowManager } from './workflow';
 
 /**
  * Workflow execution error

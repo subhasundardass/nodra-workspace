@@ -1,142 +1,108 @@
 import {
-  createRootRoute,
   HeadContent,
-  Outlet,
+  Link,
   Scripts,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 
-export const Route = createRootRoute({
+import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+
+import appCss from "@/styles/styles.css?url";
+
+import type { QueryClient } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import { seo } from "@/lib/seo";
+
+const META_THEME_COLORS = {
+  light: "#ffffff",
+  dark: "#09090b",
+};
+
+interface MyRouterContext {
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nodra" },
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
+      },
+      {
+        title: "TanStack Start Starter",
+      },
+      ...seo(),
+    ],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", href: "/favicon.svg" },
     ],
   }),
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
+  shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 });
 
-function RootComponent() {
+function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html>
+    <html lang="en" suppressHydrationWarning data-theme={null}>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
       </head>
       <body>
-        <Outlet />
+        {children}
+        {import.meta.env.DEV && <DevTools />}
+        <Toaster />
         <Scripts />
       </body>
     </html>
   );
 }
 
-function NotFoundComponent() {
+function NotFound() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-        background: "#0f172a",
-        color: "#e2e8f0",
-        fontFamily:
-          "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    <div className="page-wrap py-20 text-center">
+      <h1 className="text-3xl font-extrabold text-ink">Page not found</h1>
+      <p className="mt-2 text-sub">
+        The page you're looking for doesn't exist or has moved.
+      </p>
+      <Link to="/" className="btn btn-primary mt-6">
+        Back to home
+      </Link>
+    </div>
+  );
+}
+
+function DevTools() {
+  return (
+    <TanStackDevtools
+      config={{
+        position: "bottom-right",
       }}
-    >
-      {" "}
-      <div style={{ width: "100%", maxWidth: "520px", textAlign: "center" }}>
-        {" "}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "72px",
-            height: "72px",
-            marginBottom: "24px",
-            borderRadius: "18px",
-            background: "linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)",
-            color: "white",
-            fontSize: "32px",
-            fontWeight: 800,
-            boxShadow: "0 10px 30px rgba(59, 130, 246, 0.25)",
-          }}
-        >
-          {" "}
-          N{" "}
-        </div>{" "}
-        <div
-          style={{
-            marginBottom: "8px",
-            color: "#94a3b8",
-            fontSize: "14px",
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
-          {" "}
-          Nodra Framework{" "}
-        </div>{" "}
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "64px",
-            lineHeight: 1,
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-          }}
-        >
-          {" "}
-          404{" "}
-        </h1>{" "}
-        <h2
-          style={{
-            marginTop: "20px",
-            marginBottom: "10px",
-            fontSize: "24px",
-            fontWeight: 700,
-            color: "#f8fafc",
-          }}
-        >
-          {" "}
-          Page not found{" "}
-        </h2>{" "}
-        <p
-          style={{
-            margin: 0,
-            color: "#94a3b8",
-            fontSize: "15px",
-            lineHeight: 1.7,
-          }}
-        >
-          {" "}
-          The route you requested does not exist or may have been moved.{" "}
-        </p>{" "}
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href = "/";
-          }}
-          style={{
-            marginTop: "28px",
-            padding: "10px 18px",
-            border: 0,
-            borderRadius: "10px",
-            background: "#2563eb",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          {" "}
-          Go back home{" "}
-        </button>{" "}
-      </div>{" "}
-    </main>
+      plugins={[
+        {
+          name: "Tanstack Router",
+          render: <TanStackRouterDevtoolsPanel />,
+        },
+        TanStackQueryDevtools,
+      ]}
+    />
   );
 }
