@@ -8,7 +8,7 @@
 
 import type { Pool } from "pg";
 import { createHash } from "node:crypto";
-import type { DocTypeDefinition } from "../core/doctype/schema.js";
+import type { DocTypeDefinition } from "../core/doctype/schema";
 
 /**
  * Compute a stable hash of a DocType definition.

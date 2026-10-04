@@ -5,8 +5,8 @@
  * lookup, listing, and cross-reference queries (e.g. linked DocTypes).
  */
 
-import { DuplicateError, NotFoundError } from '../errors.js';
-import type { DocTypeDefinition } from './schema.js';
+import { DuplicateError, NotFoundError } from '../errors';
+import type { DocTypeDefinition } from './schema';
 
 /**
  * In-memory registry for DocType definitions.

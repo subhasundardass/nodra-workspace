@@ -2,7 +2,7 @@
  * Job Worker - processes jobs from the queue
  */
 
-import type { Job, JobQueue, JobHandler, WorkerConfig } from './types.js';
+import type { Job, JobQueue, JobHandler, WorkerConfig } from './types';
 
 export class JobWorker {
   private queue: JobQueue;

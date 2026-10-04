@@ -2,8 +2,8 @@
  * File upload validation
  */
 
-import type { FileUpload, FileValidationConfig } from './types.js';
-import { ValidationError } from '../core/errors.js';
+import type { FileUpload, FileValidationConfig } from './types';
+import { ValidationError } from '../core/errors';
 
 /**
  * File validation error

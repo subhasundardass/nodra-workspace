@@ -4,8 +4,8 @@
 
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import type { App, AppManifest, AppLoader } from './types.js';
-import { NotFoundError, ValidationError } from '../core/errors.js';
+import type { App, AppManifest, AppLoader } from './types';
+import { NotFoundError, ValidationError } from '../core/errors';
 
 /**
  * Default app loader implementation

@@ -4,7 +4,7 @@
  * Application hook system for the Nodra framework.
  */
 
-export { HookRegistryManager } from './registry.js';
+export { HookRegistryManager } from './registry';
 export type {
   HooksConfig,
   DocEventsConfig,
@@ -14,4 +14,4 @@ export type {
   BootHookHandler,
   ScheduledHookHandler,
   MethodOverrideHandler,
-} from './types.js';
+} from './types';

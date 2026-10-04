@@ -1,4 +1,4 @@
-import type { UserContext } from './permission.js';
+import type { UserContext } from './permission';
 
 export interface UserPermissionRule {
   doctype: string;

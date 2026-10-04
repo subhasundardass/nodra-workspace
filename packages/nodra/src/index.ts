@@ -6,7 +6,7 @@
 export const VERSION = "0.2.0";
 
 // Document
-export { Document } from "./core/document/document.js";
+export { Document } from "./core/document/document";
 
 // Errors
 export {
@@ -21,7 +21,7 @@ export {
   InvalidStateError,
   DatabaseError,
   AppError,
-} from "./core/errors.js";
+} from "./core/errors";
 
 // Types
 export type {
@@ -29,12 +29,12 @@ export type {
   FieldDefinition,
   PermissionRule,
   NamingRule,
-} from "./core/doctype/schema.js";
+} from "./core/doctype/schema";
 
-export type { NodraConfig } from "./core/config.js";
+export type { NodraConfig } from "./core/config";
 
 // Events
-export { EventEmitter, EVENT_PRIORITY_VALUES } from "./events/index.js";
+export { EventEmitter, EVENT_PRIORITY_VALUES } from "./events";
 
 export type {
   EventType,
@@ -44,10 +44,10 @@ export type {
   DocumentEvent,
   UserEvent,
   SystemEvent,
-} from "./events/index.js";
+} from "./events";
 
 // Hooks
-export { HookRegistryManager } from "./hooks/index.js";
+export { HookRegistryManager } from "./hooks";
 
 export type {
   HooksConfig,
@@ -58,7 +58,7 @@ export type {
   BootHookHandler,
   ScheduledHookHandler,
   MethodOverrideHandler,
-} from "./hooks/index.js";
+} from "./hooks";
 
 // Workflow
 export {
@@ -66,7 +66,7 @@ export {
   WorkflowValidationError,
   WorkflowExecutor,
   WorkflowExecutionError,
-} from "./workflow/index.js";
+} from "./workflow";
 
 export type {
   WorkflowState,
@@ -75,7 +75,7 @@ export type {
   WorkflowExecutionContext,
   WorkflowExecutionResult,
   WorkflowRegistry,
-} from "./workflow/index.js";
+} from "./workflow";
 
 // Background Jobs
 export {
@@ -88,7 +88,7 @@ export {
   parseCronExpression,
   isCronTimeMatch,
   JOB_PRIORITY_VALUES,
-} from "./jobs/index.js";
+} from "./jobs";
 
 export type {
   Job,
@@ -100,7 +100,7 @@ export type {
   ScheduledJob,
   WorkerConfig,
   CronSchedule,
-} from "./jobs/index.js";
+} from "./jobs";
 
 // Real-time WebSocket
 // Not ported yet — src/realtime/ depended on @fastify/websocket and needs
@@ -115,7 +115,7 @@ export {
   getFileExtension,
   formatFileSize,
   getMimeTypeFromExtension,
-} from "./files/index.js";
+} from "./files";
 
 export type {
   FileStorage,
@@ -124,7 +124,7 @@ export type {
   FileValidationConfig,
   FileStorageConfig,
   FileAttachment,
-} from "./files/index.js";
+} from "./files";
 
 // Reporting
 export {
@@ -136,7 +136,7 @@ export {
   createColumnFormatter,
   formatRow,
   formatRows,
-} from "./reports/index.js";
+} from "./reports";
 
 export type {
   ReportType,
@@ -154,43 +154,43 @@ export type {
   ReportRegistry,
   ColumnFormatter,
   ExportFormat,
-} from "./reports/index.js";
+} from "./reports";
 
 // Views
-export {
-  ViewRegistry,
-  ViewResolver,
-  ViewService,
-  createDefaultView,
-} from "./core/view/index.js";
+// export {
+//   ViewRegistry,
+//   ViewResolver,
+//   ViewService,
+//   createDefaultView,
+// } from "./core/view";
 
-export type {
-  ViewDefinition,
-  ViewType,
-  ListViewConfig,
-  FormViewConfig,
-  FormSection,
-  DetailViewConfig,
-  SearchViewConfig,
-  KanbanViewConfig,
-} from "./core/view/index.js";
+// export type {
+//   ViewDefinition,
+//   ViewType,
+//   ListViewConfig,
+//   FormViewConfig,
+//   FormSection,
+//   DetailViewConfig,
+//   SearchViewConfig,
+//   KanbanViewConfig,
+// } from "./core/view";
 
 // Resource API
-export { ResourceAPI } from "./api/resource.js";
+export { ResourceAPI } from "./api/resource";
 
 export type {
   ResourceListOptions,
   ResourceListResult,
   DocumentFactory,
-} from "./api/resource.js";
+} from "./api/resource";
 
 // CLI
-// Deliberately NOT re-exported here. `cli/index.ts` side-effect-imports
-// `main.ts`, which parses `process.argv` and runs immediately — fine for
+// Deliberately NOT re-exported here. `cli/index` side-effect-imports
+// `main`, which parses `process.argv` and runs immediately — fine for
 // the `nodra` bin, but importing it through this library barrel would run
 // the CLI as a side effect of `import 'nodra'` anywhere else (e.g. inside
 // an SSR app). Import CLI commands directly if you need them
-// programmatically, e.g. `import { MigrateCommand } from 'nodra/cli/migrate.js'`.
+// programmatically, e.g. `import { MigrateCommand } from 'nodra/cli/migrate'`.
 
 // Apps
 export {
@@ -198,7 +198,7 @@ export {
   DefaultAppRegistry,
   DefaultAppInstaller,
   DependencyResolver,
-} from "./apps/index.js";
+} from "./apps";
 
 export type {
   AppManifest,
@@ -209,16 +209,54 @@ export type {
   AppInstaller,
   AppRegistry,
   DependencyResolution,
-} from "./apps/index.js";
+} from "./apps";
 
 // API Methods
 export {
   DefaultMethodRegistry,
+  compose,
+  authenticate,
+  requireAuth,
+  requireRoles,
+  validateArgs,
+  logging,
   hasRequiredRole,
   formatResult,
-} from "./api/method.js";
+  methodErrorStatus,
+} from "./api/method";
 
-export type { MethodDefinition, MethodRegistry } from "./api/method.js";
+export type {
+  MethodContext,
+  MethodCallInit,
+  MethodDefinition,
+  MethodHandler,
+  MethodMiddleware,
+  MethodOptions,
+  MethodRegistry,
+  MethodRequest,
+  MethodUser,
+  ResolvedIdentity,
+  ArgsSchema,
+  MethodLogger,
+} from "./api/method";
+
+// Sessions
+export {
+  SessionManager,
+  RedisSessionStore,
+  MemorySessionStore,
+  DEFAULT_SESSION_CONFIG,
+  extractSessionToken,
+  generateSessionToken,
+  hashToken,
+} from "./auth/session";
+
+export type {
+  Session,
+  SessionSubject,
+  SessionStore,
+  SessionConfig,
+} from "./auth/session";
 
 // API Key Authentication
 export {
@@ -231,14 +269,14 @@ export {
   listUserAPIKeys,
   rotateAPIKey,
   DEFAULT_API_KEY_CONFIG,
-} from "./auth/api-key.js";
+} from "./auth/api-key";
 
 export type {
   APIKeyConfig,
   APIKeyRecord,
   APIKeyPair,
   APIKeyStore,
-} from "./auth/api-key.js";
+} from "./auth/api-key";
 
 // Permissions
 export {
@@ -246,7 +284,7 @@ export {
   assertPermission,
   getAccessibleDocTypes,
   hasAnyPermission,
-} from "./permissions/permission.js";
+} from "./permissions/permission";
 
 export {
   hasFieldPermission,
@@ -254,23 +292,20 @@ export {
   getEditableFields,
   filterDocumentByFieldPermissions,
   assertFieldPermission,
-} from "./permissions/field-permission.js";
+} from "./permissions/field-permission";
 
 export {
   hasRowPermission,
   getRowPermissionFilter,
   applyRowPermissions,
   checkUserPermission,
-} from "./permissions/row-permission.js";
+} from "./permissions/row-permission";
 
-export type {
-  UserContext,
-  PermissionAction,
-} from "./permissions/permission.js";
+export type { UserContext, PermissionAction } from "./permissions/permission";
 
-export type { FieldPermissionRule } from "./permissions/field-permission.js";
+export type { FieldPermissionRule } from "./permissions/field-permission";
 
 export type {
   UserPermissionRule,
   RowPermissionContext,
-} from "./permissions/row-permission.js";
+} from "./permissions/row-permission";

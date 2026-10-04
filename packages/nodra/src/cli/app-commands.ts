@@ -7,10 +7,10 @@
  * `npm run cli --workspace=<app> -- <command>`.
  */
 import type { Command } from 'commander';
-import { registerMigrateCommand } from './commands/migrate.js';
-import { registerConsoleCommand } from './commands/console.js';
-import { registerNewDoctypeCommand } from './commands/new-doctype.js';
-import { registerNewServerFnCommand } from './commands/new-server-fn.js';
+import { registerMigrateCommand } from './commands/migrate';
+import { registerConsoleCommand } from './commands/console';
+import { registerNewDoctypeCommand } from './commands/new-doctype';
+import { registerNewServerFnCommand } from './commands/new-server-fn';
 
 export function registerAppCommands(program: Command): void {
   registerMigrateCommand(program);

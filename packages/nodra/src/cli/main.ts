@@ -10,7 +10,7 @@
  * relative to process.cwd()), which `create` runs before any app exists.
  */
 import { Command } from 'commander';
-import { registerCreateCommand } from './commands/create.js';
+import { registerCreateCommand } from './commands/create';
 
 const program = new Command();
 
