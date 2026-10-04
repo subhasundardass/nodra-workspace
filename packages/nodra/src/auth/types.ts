@@ -1,7 +1,7 @@
 export interface AuthUser {
   id: string;
   username: string;
-  email?: string | null;
+  email: string;
   name?: string | null;
   passwordHash: string;
   active: boolean;
@@ -10,7 +10,7 @@ export interface AuthUser {
 export interface PublicUser {
   id: string;
   username: string;
-  email?: string | null;
+  email: string;
   name?: string | null;
 }
 

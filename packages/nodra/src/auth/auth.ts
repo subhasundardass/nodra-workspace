@@ -12,7 +12,7 @@ import { verifyPassword } from "./password";
 function toPublicUser(user: AuthUser): PublicUser {
   return {
     id: user.id,
-    username: user.username,
+    username: user.email,
     email: user.email,
     name: user.name,
   };

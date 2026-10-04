@@ -98,3 +98,26 @@ packages/nodra                         apps/<app-name>
 ## Admin Reset
 
 pnpm --filter <app-name> cli admin-reset --username admin --password 'Admin@123'
+
+## Test CURL
+
+1.
+
+curl -X POST http://localhost:3000/api/method/debug.doctypes -H "Content-Type: application/json" -d '{}'
+
+2.
+
+curl -i -X POST http://localhost:3000/api/method/auth.login \
+-H "Content-Type: application/json" \
+-d '{
+"email": "admin@localhost.com",
+"password": "Admin@123"
+}'
+
+3.
+
+curl -i \
+-X POST http://localhost:3000/api/method/auth.me \
+-H "Content-Type: application/json" \
+-H "Cookie: session_token=278d57d7f19a2dcbf1f5ca42ba178764d3a06eaf318645de7bbb67ccff9bcf37" \
+-d '{}'
