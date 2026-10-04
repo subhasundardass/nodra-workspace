@@ -4,8 +4,8 @@
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import type { FileStorage, FileUpload } from './types.js';
-import { sanitizeFilename } from './validation.js';
+import type { FileStorage, FileUpload } from './types';
+import { sanitizeFilename } from './validation';
 
 /**
  * Local filesystem storage implementation

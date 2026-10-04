@@ -9,15 +9,13 @@
  * cwd = an existing app (doctypes/, src/server/functions/ resolve
  * relative to process.cwd()), which `create` runs before any app exists.
  */
-import { Command } from "commander";
-import { registerCreateCommand } from "./commands/create.js";
-import { registerAdminResetCommand } from "./commands/admin-reset.js";
-import { registerAppCommands } from "./app-commands.js";
+import { Command } from 'commander';
+import { registerCreateCommand } from './commands/create';
 
 const program = new Command();
 
-program.name("nodra").description("Nodra framework CLI").version("0.2.0");
+program.name('nodra').description('Nodra framework CLI').version('0.2.0');
 
-registerAppCommands(program);
+registerCreateCommand(program);
 
 await program.parseAsync(process.argv);

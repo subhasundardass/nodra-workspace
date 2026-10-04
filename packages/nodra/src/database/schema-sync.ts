@@ -6,12 +6,12 @@
  * This separation makes the engine easy to test without a database.
  */
 
-import { toTableName } from "../core/doctype/naming.js";
-import { getPgType, isDataField } from "../core/doctype/field-types.js";
+import { toTableName } from "../core/doctype/naming";
+import { getPgType, isDataField } from "../core/doctype/field-types";
 import type {
   DocTypeDefinition,
   FieldDefinition,
-} from "../core/doctype/schema.js";
+} from "../core/doctype/schema";
 
 // --- Public types ---
 

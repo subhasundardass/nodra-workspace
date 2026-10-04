@@ -8,7 +8,7 @@ import type {
   ScriptReportFunction,
   ReportContext,
   ReportResult,
-} from './types.js';
+} from './types';
 
 /**
  * Script report executor
