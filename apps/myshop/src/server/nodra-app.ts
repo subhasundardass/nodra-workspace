@@ -10,16 +10,17 @@
  * Import `getNodra()` from any server route to get a lazily-initialized,
  * request-shared singleton (db pool + registry + ORM).
  */
-import { createRequire } from 'node:module';
-import path from 'node:path';
-import { Database } from 'nodra/database/connection';
-import { DocTypeRegistry } from 'nodra/core/doctype/registry';
-import { loadDocTypesFromDirectory } from 'nodra/core/doctype/loader';
-import { ORM } from 'nodra/orm/crud';
-import { createLogger, type Logger } from 'nodra/utils/logger';
-import { loadConfig, type NodraConfig } from 'nodra/core/config';
-import { DefaultMethodRegistry, type MethodRegistry } from 'nodra/api/method';
-import { registerAppMethods } from './methods';
+import { createRequire } from "node:module";
+import path from "node:path";
+import { Database } from "nodra/database/connection";
+import { DocTypeRegistry } from "nodra/core/doctype/registry";
+import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader";
+import { ORM } from "nodra/orm/crud";
+import { createLogger, type Logger } from "nodra/utils/logger";
+import { loadConfig, type NodraConfig } from "nodra/core/config";
+import { DefaultMethodRegistry, type MethodRegistry } from "nodra/api/method";
+import { registerAppMethods } from "./methods";
+import { RedisSessionStore, SessionManager } from "nodra/auth/session";
 
 const require = createRequire(import.meta.url);
 
@@ -30,8 +31,8 @@ const require = createRequire(import.meta.url);
  * needs a newer Node than this project otherwise requires.
  */
 function frameworkDoctypesDir(): string {
-  const nodraPackageJson = require.resolve('nodra/package.json');
-  return path.join(path.dirname(nodraPackageJson), 'doctypes');
+  const nodraPackageJson = require.resolve("nodra/package.json");
+  return path.join(path.dirname(nodraPackageJson), "doctypes");
 }
 
 export class NodraApp {
@@ -41,6 +42,7 @@ export class NodraApp {
   readonly orm: ORM;
   readonly logger: Logger;
   readonly methods: MethodRegistry;
+  readonly sessions: SessionManager;
 
   private constructor(config: NodraConfig) {
     this.config = config;
@@ -49,6 +51,13 @@ export class NodraApp {
     this.orm = new ORM(this.db, this.registry);
     this.logger = createLogger(config.logging);
     this.methods = new DefaultMethodRegistry();
+
+    const sessionStore = new RedisSessionStore(
+      process.env.REDIS_URL ?? "redis://localhost:6380",
+      "myapp",
+    );
+
+    this.sessions = new SessionManager(sessionStore);
   }
 
   static async create(): Promise<NodraApp> {
@@ -56,7 +65,7 @@ export class NodraApp {
     const app = new NodraApp(config);
 
     await app.db.connect();
-    app.logger.info('Database connected');
+    app.logger.info("Database connected");
 
     // Doctype metadata: framework built-ins (User, Role, ...) from the
     // `nodra` package, then this app's own doctypes — in that order, so
@@ -64,7 +73,7 @@ export class NodraApp {
     // are optional; a missing one just yields an empty array.
     const [frameworkDoctypes, appDoctypes] = await Promise.all([
       loadDocTypesFromDirectory(frameworkDoctypesDir()),
-      loadDocTypesFromDirectory(path.join(process.cwd(), 'doctypes')),
+      loadDocTypesFromDirectory(path.join(process.cwd(), "doctypes")),
     ]);
 
     for (const doctype of [...frameworkDoctypes, ...appDoctypes]) {
