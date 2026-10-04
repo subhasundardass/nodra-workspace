@@ -1,5 +1,5 @@
-import type { Database } from '../database/connection.js';
-import { toTableName } from '../core/doctype/naming.js';
+import type { Database } from '../database/connection';
+import { toTableName } from '../core/doctype/naming';
 import { Parser } from 'json2csv';
 
 export interface SearchOptions {

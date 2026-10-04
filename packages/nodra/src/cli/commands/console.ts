@@ -7,8 +7,8 @@
 
 import type { Command } from "commander";
 import { Pool } from "pg";
-import { ConsoleCommand } from "../console.js";
-import { getDatabaseConfig } from "./migrate.js";
+import { ConsoleCommand } from "../console";
+import { getDatabaseConfig } from "./migrate";
 
 export function registerConsoleCommand(program: Command): void {
   program
@@ -27,10 +27,6 @@ export function registerConsoleCommand(program: Command): void {
         max: config.pool.max,
       });
 
-      try {
-        await new ConsoleCommand(pool).execute([]);
-      } finally {
-        await pool.end();
-      }
+      await new ConsoleCommand(pool).execute([]);
     });
 }

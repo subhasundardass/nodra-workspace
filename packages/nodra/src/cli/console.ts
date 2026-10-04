@@ -3,8 +3,8 @@
  */
 
 import type { Pool } from "pg";
-import type { Command } from "./types.js";
-import { toTableName } from "../core/doctype/naming.js";
+import type { Command } from "./types";
+import { toTableName } from "../core/doctype/naming";
 import * as repl from "node:repl";
 
 /**
@@ -140,15 +140,9 @@ Examples:
     // Inject Nodra API
     Object.assign(replServer.context, context);
 
-    // Wait for the REPL to exit.
-    //
-    // This allows the caller to cleanly close the database
-    // connection pool after the user exits the console.
-    await new Promise<void>((resolve) => {
-      replServer.on("exit", () => {
-        console.log("\nGoodbye!");
-        resolve();
-      });
+    // Handle exit
+    replServer.on("exit", () => {
+      console.log("\nGoodbye!");
     });
   }
 }

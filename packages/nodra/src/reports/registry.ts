@@ -2,7 +2,7 @@
  * Report registry for managing report definitions
  */
 
-import type { ReportDefinition, ReportRegistry } from './types.js';
+import type { ReportDefinition, ReportRegistry } from './types';
 
 /**
  * Default report registry implementation
