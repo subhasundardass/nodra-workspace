@@ -1,4 +1,4 @@
-import type { PermissionAction } from './permission.js';
+import type { PermissionAction } from './permission';
 
 export interface AuditLogEntry {
   userEmail: string;

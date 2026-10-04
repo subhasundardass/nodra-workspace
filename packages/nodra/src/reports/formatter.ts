@@ -2,7 +2,7 @@
  * Column formatting utilities
  */
 
-import type { ReportColumn, ColumnFormatter } from './types.js';
+import type { ReportColumn, ColumnFormatter } from './types';
 
 /**
  * Format a value based on column type

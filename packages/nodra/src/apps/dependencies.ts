@@ -2,7 +2,7 @@
  * Dependency resolver - resolves app dependencies and installation order
  */
 
-import type { App, DependencyResolution } from './types.js';
+import type { App, DependencyResolution } from './types';
 
 /**
  * Dependency resolver using topological sort

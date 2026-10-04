@@ -2,9 +2,9 @@
  * Report system module exports
  */
 
-export * from './types.js';
-export * from './query-executor.js';
-export * from './script-executor.js';
-export * from './executor.js';
-export * from './registry.js';
-export * from './formatter.js';
+export * from './types';
+export * from './query-executor';
+export * from './script-executor';
+export * from './executor';
+export * from './registry';
+export * from './formatter';

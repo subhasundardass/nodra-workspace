@@ -2,8 +2,8 @@
  * App registry - tracks installed apps
  */
 
-import type { App, AppRegistry } from './types.js';
-import { NotFoundError } from '../core/errors.js';
+import type { App, AppRegistry } from './types';
+import { NotFoundError } from '../core/errors';
 
 /**
  * Default in-memory app registry

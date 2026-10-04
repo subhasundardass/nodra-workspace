@@ -1,7 +1,7 @@
 {
   "name": "Permission Audit",
   "module": "Core",
-  "naming_rule": "autoincrement",
+  "naming_rule": "datetime",
   "is_submittable": false,
   "is_child": false,
   "is_single": true,
