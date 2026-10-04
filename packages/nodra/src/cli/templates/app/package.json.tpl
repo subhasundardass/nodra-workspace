@@ -14,7 +14,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "nodra": "*",
+    "nodra": "workspace:*",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-start": "^1.168.56",
     "@tanstack/store": "^0.11.1",

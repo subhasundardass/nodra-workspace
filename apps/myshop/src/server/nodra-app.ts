@@ -18,6 +18,8 @@ import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader";
 import { ORM } from "nodra/orm/crud";
 import { createLogger, type Logger } from "nodra/utils/logger";
 import { loadConfig, type NodraConfig } from "nodra/core/config";
+import { AuthService } from "nodra/auth/auth";
+import { ORMAuthUserRepository } from "nodra/auth/user-repository";
 import { DefaultMethodRegistry, type MethodRegistry } from "nodra/api/method";
 import { registerAppMethods } from "./methods";
 import { RedisSessionStore, SessionManager } from "nodra/auth/session";
@@ -43,6 +45,7 @@ export class NodraApp {
   readonly logger: Logger;
   readonly methods: MethodRegistry;
   readonly sessions: SessionManager;
+  readonly auth: AuthService;
 
   private constructor(config: NodraConfig) {
     this.config = config;
@@ -56,8 +59,10 @@ export class NodraApp {
       process.env.REDIS_URL ?? "redis://localhost:6380",
       "myapp",
     );
-
     this.sessions = new SessionManager(sessionStore);
+
+    const users = new ORMAuthUserRepository(this.orm);
+    this.auth = new AuthService(users, this.sessions);
   }
 
   static async create(): Promise<NodraApp> {
@@ -66,6 +71,12 @@ export class NodraApp {
 
     await app.db.connect();
     app.logger.info("Database connected");
+
+    const frameworkDir = frameworkDoctypesDir();
+    const appDir = path.join(process.cwd(), "doctypes");
+
+    console.log("Framework DocTypes directory:", frameworkDir);
+    console.log("App DocTypes directory:", appDir);
 
     // Doctype metadata: framework built-ins (User, Role, ...) from the
     // `nodra` package, then this app's own doctypes — in that order, so
