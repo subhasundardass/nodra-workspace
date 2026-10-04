@@ -210,18 +210,32 @@ export class RedisSessionStore implements SessionStore {
   private connecting: Promise<void> | null = null;
 
   constructor(
-    url = "redis://localhost:6379",
+    url = process.env.REDIS_URL ?? "redis://localhost:6379",
     private readonly keyPrefix = "",
   ) {
-    this.client = createClient({ url });
+    this.client = createClient({
+      url,
+      socket: {
+        connectTimeout: 5_000,
+        // Retry a few times, then give up so callers get an error instead of
+        // hanging forever while Redis is down. `getClient()` reconnects
+        // lazily on the next call, so a later Redis restart still recovers.
+        reconnectStrategy: (retries) =>
+          retries >= 3 ? new Error("Redis unavailable") : (retries + 1) * 200,
+      },
+    });
     this.client.on("error", (error) => {
       console.error("[Redis] Client error:", error);
     });
   }
 
-  /** Lazily connect; concurrent callers share one in-flight connect. */
+  /**
+   * Lazily connect. While the socket is open (connected or reconnecting)
+   * commands are queued by node-redis, so just reuse the client; otherwise
+   * start one shared connect().
+   */
   private async getClient(): Promise<RedisClientType> {
-    if (this.client.isReady) return this.client;
+    if (this.client.isOpen) return this.client;
 
     if (!this.connecting) {
       this.connecting = this.client
@@ -317,7 +331,7 @@ export class RedisSessionStore implements SessionStore {
 
     await client
       .multi()
-      .set(key, this.serialise(session), { EX: ttl })
+      .set(key, this.serialise(session), { EX: ttl, XX: true })
       .expire(subjectKey, ttl + 86_400)
       .exec();
   }
