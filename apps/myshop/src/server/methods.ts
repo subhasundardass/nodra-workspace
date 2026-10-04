@@ -155,7 +155,7 @@ export function registerAppMethods(registry: MethodRegistry): void {
       return {
         authenticated: true,
         user: ctx.user,
-        session: ctx.session,
+        expiresAt: ctx.session?.expiresAt ?? null,
       };
     },
     {

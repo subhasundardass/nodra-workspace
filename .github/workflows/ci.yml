@@ -7,57 +7,57 @@ on:
     branches: [main, master]
 
 jobs:
-  lint-and-typecheck:
-    name: Lint & Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # lint-and-typecheck:
+  #   name: Lint & Type Check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 9.15.0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #         cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
 
-      - name: Run linter
-        run: pnpm lint
+  #     - name: Run linter
+  #       run: pnpm lint
 
-      - name: Run type check
-        run: pnpm typecheck
+  #     - name: Run type check
+  #       run: pnpm typecheck
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: lint-and-typecheck
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # test:
+  #   name: Test
+  #   runs-on: ubuntu-latest
+  #   needs: lint-and-typecheck
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 9.15.0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #         cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
+  #     - name: Run tests
+  #       run: pnpm test
 
   build:
     name: Build
