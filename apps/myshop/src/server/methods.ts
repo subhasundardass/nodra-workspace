@@ -1,29 +1,100 @@
 /**
- * Whitelisted server methods, callable via POST /api/method/:methodPath
- * (see app/routes/api/method/$methodPath.ts).
- *
- * `MethodRegistry` (src/api/method.ts) was already framework-agnostic — it
- * never depended on Fastify — so it's reused unchanged. This file is just
- * the registration point that `NodraApp.create()` calls once at boot.
- * Add your app's business-logic methods here, e.g.:
- *
- *   registry.register('crm.get_pipeline_summary', async (args) => {
- *     const app = await getNodra();
- *     return app.orm.getList('Opportunity', { ... });
- *   }, { requireAuth: true, requiredRoles: ['Sales Manager'] });
+ * Whitelisted server methods, callable via POST /api/method/:methodPath.
  */
-import type { MethodRegistry } from "nodra/api/method";
-import { AuthenticationError } from "nodra/auth";
+
+import {
+  authenticate,
+  type MethodContext,
+  type MethodRegistry,
+  type ResolvedIdentity,
+} from "nodra/api/method";
+import { AuthenticationError, extractSessionToken } from "nodra/auth";
+
 import { getNodra } from "./nodra-app";
 
+async function resolveMethodIdentity(
+  ctx: MethodContext,
+): Promise<ResolvedIdentity | null> {
+  const token = extractSessionToken(ctx.request.headers, "session_token");
+
+  // No session cookie/token means anonymous request.
+  if (!token) {
+    return null;
+  }
+
+  const app = await getNodra();
+
+  // Resolve the opaque session from Redis.
+  const session = await app.sessions.resolve(token);
+
+  // Invalid or expired session.
+  if (!session) {
+    return null;
+  }
+
+  // Only User sessions can authenticate application methods.
+  if (session.subject.type !== "User") {
+    return null;
+  }
+
+  // Session subject ID is the User document name.
+  const user = await app.orm.getDoc("User", session.subject.id);
+
+  // Disabled user cannot authenticate.
+  if (!user.get("enabled")) {
+    return null;
+  }
+
+  const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
+
+  const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
+
+  return {
+    user: {
+      email: String(user.get("email") ?? ""),
+      fullName: String(user.get("full_name") ?? ""),
+      userType: String(user.get("user_type") ?? ""),
+      roles,
+    },
+    session,
+  };
+}
+
 export function registerAppMethods(registry: MethodRegistry): void {
+  /**
+   * Authentication must run before access control.
+   *
+   * Pipeline:
+   *
+   * authenticate()
+   *     ↓
+   * accessControl
+   *     ↓
+   * method middleware
+   *     ↓
+   * method handler
+   */
+  registry.use(authenticate(resolveMethodIdentity));
+
+  // ---------------------------------------------------------------------------
+  // Ping
+  // ---------------------------------------------------------------------------
+
   registry.register(
     "ping",
-    () => ({ pong: true, time: new Date().toISOString() }),
-    { requireAuth: false },
+    () => ({
+      pong: true,
+      time: new Date().toISOString(),
+    }),
+    {
+      requireAuth: false,
+    },
   );
 
-  //--Doctypes
+  // ---------------------------------------------------------------------------
+  // Debug
+  // ---------------------------------------------------------------------------
+
   registry.register(
     "debug.doctypes",
     async () => {
@@ -33,14 +104,20 @@ export function registerAppMethods(registry: MethodRegistry): void {
         doctypes: app.registry.list(),
       };
     },
-    { requireAuth: false },
+    {
+      requireAuth: false,
+    },
   );
 
-  //--Login
+  // ---------------------------------------------------------------------------
+  // Login
+  // ---------------------------------------------------------------------------
+
   registry.register(
     "auth.login",
     async (ctx) => {
       const email = String(ctx.args.email ?? "").trim();
+
       const password = String(ctx.args.password ?? "");
 
       if (!email || !password) {
@@ -54,44 +131,68 @@ export function registerAppMethods(registry: MethodRegistry): void {
         password,
       });
 
+      // The HTTP transport reads this value and
+      // converts it into an HttpOnly cookie.
+      ctx.state.set("sessionToken", result.token);
+
       return {
         user: result.user,
         expiresAt: result.expiresAt,
-        token: result.token,
       };
     },
-    { requireAuth: false },
+    {
+      requireAuth: false,
+    },
   );
 
-  //-- me
+  // ---------------------------------------------------------------------------
+  // Current user
+  // ---------------------------------------------------------------------------
+
   registry.register(
     "auth.me",
     async (ctx) => {
-      if (!ctx.user) {
-        throw new AuthenticationError("Authentication required");
-      }
-
       return {
         authenticated: true,
         user: ctx.user,
         session: ctx.session,
       };
     },
-    { requireAuth: true },
+    {
+      requireAuth: true,
+    },
   );
 
-  //-- logout
+  // ---------------------------------------------------------------------------
+  // Logout
+  // ---------------------------------------------------------------------------
+
   registry.register(
     "auth.logout",
     async (ctx) => {
       if (!ctx.session) {
-        return { success: true };
+        return {
+          success: true,
+        };
       }
+
+      const app = await getNodra();
+
+      const token = extractSessionToken(ctx.request.headers, "session_token");
+
+      if (token) {
+        await app.auth.logout(token);
+      }
+
+      // Tell the HTTP transport to remove the cookie.
+      ctx.state.set("clearSessionCookie", true);
 
       return {
         success: true,
       };
     },
-    { requireAuth: true },
+    {
+      requireAuth: true,
+    },
   );
 }
