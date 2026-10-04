@@ -9,9 +9,9 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
-import { NotFoundError, ValidationError } from '../errors.js';
-import { parseDocType, injectStandardFields } from './schema.js';
-import type { DocTypeDefinition } from './schema.js';
+import { NotFoundError, ValidationError } from '../errors';
+import { parseDocType, injectStandardFields } from './schema';
+import type { DocTypeDefinition } from './schema';
 
 // ---------------------------------------------------------------------------
 // Helpers

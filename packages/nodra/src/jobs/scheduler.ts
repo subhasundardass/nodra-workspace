@@ -2,8 +2,8 @@
  * Job Scheduler - schedules recurring jobs based on cron expressions
  */
 
-import type { JobQueue, ScheduledJob } from './types.js';
-import { CronParser } from './cron.js';
+import type { JobQueue, ScheduledJob } from './types';
+import { CronParser } from './cron';
 
 export class JobScheduler {
   private scheduledJobs: Map<string, ScheduledJob> = new Map();

@@ -4,7 +4,7 @@
  * Defines the types and interfaces for the application hook system.
  */
 
-import type { DocumentEvent, SystemEvent } from '../events/types.js';
+import type { DocumentEvent, SystemEvent } from '../events/types';
 
 // --- Hook Configuration ---
 

@@ -2,6 +2,6 @@
  * File management module exports
  */
 
-export * from './types.js';
-export * from './validation.js';
-export * from './storage.js';
+export * from './types';
+export * from './validation';
+export * from './storage';

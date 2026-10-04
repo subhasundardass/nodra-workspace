@@ -5,9 +5,9 @@
  * and permission rules. Provides parsing/validation and standard field injection.
  */
 
-import { ValidationError } from "../errors.js";
-import { isFieldType } from "./field-types.js";
-import type { FieldType } from "./field-types.js";
+import { ValidationError } from "../errors";
+import { isFieldType } from "./field-types";
+import type { FieldType } from "./field-types";
 
 // --- Types ---
 

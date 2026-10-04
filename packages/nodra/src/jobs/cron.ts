@@ -2,7 +2,7 @@
  * Cron Expression Parser
  */
 
-import type { CronSchedule } from './types.js';
+import type { CronSchedule } from './types';
 
 export class CronParseError extends Error {
   constructor(message: string) {

@@ -80,7 +80,7 @@ function buildControllerTs(className: string): string {
  * ORM operations (app.orm.insert/update/deleteDoc) call these automatically
  * — see the ORM's insert()/update() for the exact order they run in.
  */
-import { Document } from 'nodra/core/document/document.js';
+import { Document } from 'nodra/core/document/document';
 
 export class ${className} extends Document {
   title!: string;

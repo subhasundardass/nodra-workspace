@@ -8,7 +8,7 @@ import type {
   ReportContext,
   ReportResult,
   ReportRow,
-} from './types.js';
+} from './types';
 
 /**
  * Query report executor

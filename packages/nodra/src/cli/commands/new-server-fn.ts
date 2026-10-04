@@ -70,11 +70,11 @@ function buildServerFnTs(doctypeName: string, className: string, slug: string): 
  * ../auth.ts.
  */
 import { createServerFn } from '@tanstack/react-start';
-import type { ListOptions } from 'nodra/orm/crud.js';
-import { ${className} } from '../../../doctypes/${slug}/${slug}.js';
-import { getNodra } from '../nodra-app.js';
-import { serialise } from '../http.js';
-import { optionalAuth } from '../auth.js';
+import type { ListOptions } from 'nodra/orm/crud';
+import { ${className} } from '../../../doctypes/${slug}/${slug}';
+import { getNodra } from '../nodra-app';
+import { serialise } from '../http';
+import { optionalAuth } from '../auth';
 
 interface Get${className}Input {
   name: string;

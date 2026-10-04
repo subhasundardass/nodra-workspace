@@ -2,8 +2,8 @@
  * Workflow Engine - Exports
  */
 
-export { WorkflowManager, WorkflowValidationError } from './workflow.js';
-export { WorkflowExecutor, WorkflowExecutionError } from './executor.js';
+export { WorkflowManager, WorkflowValidationError } from './workflow';
+export { WorkflowExecutor, WorkflowExecutionError } from './executor';
 export type {
   WorkflowState,
   WorkflowTransition,
@@ -11,4 +11,4 @@ export type {
   WorkflowExecutionContext,
   WorkflowExecutionResult,
   WorkflowRegistry,
-} from './types.js';
+} from './types';
