@@ -5,7 +5,7 @@
  * Priority: env vars > file config > defaults.
  */
 
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "./errors";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -30,9 +30,19 @@ export interface ServerConfig {
 }
 
 export interface AuthConfig {
-  secret: string;
-  tokenExpiry: string;
+  /** Name of the HTTP-only session cookie. */
+  cookieName: string;
+  /** Session lifetime in seconds. */
+  sessionTtlSeconds: number;
+  /** Extend sessions that are past half of their lifetime. */
+  sessionSliding: boolean;
   passwordHashRounds: number;
+}
+
+export interface RedisConfig {
+  url: string;
+  /** Optional key prefix, useful when sharing one Redis between apps. */
+  keyPrefix: string;
 }
 
 export interface JobsConfig {
@@ -53,6 +63,7 @@ export interface NodraConfig {
   db: DatabaseConfig;
   server: ServerConfig;
   auth: AuthConfig;
+  redis: RedisConfig;
   jobs: JobsConfig;
   logging: LoggingConfig;
   installedApps: string[];
@@ -87,9 +98,14 @@ export function getDefaults(): NodraConfig {
       port: 8000,
     },
     auth: {
-      secret: "",
-      tokenExpiry: "24h",
+      cookieName: "session_token",
+      sessionTtlSeconds: 60 * 60 * 24 * 7,
+      sessionSliding: true,
       passwordHashRounds: 12,
+    },
+    redis: {
+      url: "redis://localhost:6379",
+      keyPrefix: "",
     },
     jobs: {
       concurrency: 5,
@@ -165,11 +181,24 @@ const ENV_MAP: Record<string, (config: NodraConfig, value: string) => void> = {
   NODRA_SERVER_PORT: (c, v) => {
     c.server.port = parseInt(v, 10);
   },
-  NODRA_AUTH_SECRET: (c, v) => {
-    c.auth.secret = v;
+  NODRA_AUTH_COOKIE_NAME: (c, v) => {
+    c.auth.cookieName = v;
   },
-  NODRA_AUTH_TOKEN_EXPIRY: (c, v) => {
-    c.auth.tokenExpiry = v;
+  NODRA_AUTH_SESSION_TTL: (c, v) => {
+    c.auth.sessionTtlSeconds = parseInt(v, 10);
+  },
+  NODRA_AUTH_SESSION_SLIDING: (c, v) => {
+    c.auth.sessionSliding = v !== "false" && v !== "0";
+  },
+  // REDIS_URL is accepted too, matching what hosting platforms inject.
+  REDIS_URL: (c, v) => {
+    c.redis.url = v;
+  },
+  NODRA_REDIS_URL: (c, v) => {
+    c.redis.url = v;
+  },
+  NODRA_REDIS_KEY_PREFIX: (c, v) => {
+    c.redis.keyPrefix = v;
   },
   NODRA_LOGGING_LEVEL: (c, v) => {
     c.logging.level = v as LogLevel;
@@ -255,6 +284,12 @@ export function validateConfig(config: NodraConfig): void {
 
   if (!config.db.database) {
     errors.push("db.database is required");
+  }
+  if (!config.redis.url) {
+    errors.push("redis.url is required (sessions are stored in Redis)");
+  }
+  if (!(config.auth.sessionTtlSeconds > 0)) {
+    errors.push("auth.sessionTtlSeconds must be a positive number");
   }
   if (config.db.port < 1 || config.db.port > 65535) {
     errors.push("db.port must be between 1 and 65535");

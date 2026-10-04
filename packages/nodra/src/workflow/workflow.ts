@@ -8,7 +8,7 @@ import type {
   WorkflowExecutionContext,
   WorkflowExecutionResult,
   WorkflowRegistry,
-} from './types.js';
+} from './types';
 
 /**
  * Workflow validation error

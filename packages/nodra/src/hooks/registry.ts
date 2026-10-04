@@ -8,8 +8,8 @@ import type {
   HooksConfig, 
   RegisteredHook, 
   HookRegistry
-} from './types.js';
-import type { EventEmitter } from '../events/emitter.js';
+} from './types';
+import type { EventEmitter } from '../events/emitter';
 
 export class HookRegistryManager {
   private registry: HookRegistry;

@@ -13,7 +13,7 @@ import type {
   DocTypeDefinition,
   FieldDefinition,
   PermissionRule,
-} from "../core/doctype/schema.js";
+} from "../core/doctype/schema";
 
 export class MetadataSync {
   constructor(private readonly pool: Pool) {}

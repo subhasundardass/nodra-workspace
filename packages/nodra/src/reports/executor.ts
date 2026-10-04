@@ -8,9 +8,9 @@ import type {
   ReportContext,
   ReportResult,
   ReportExecutor as IReportExecutor,
-} from './types.js';
-import { QueryReportExecutor } from './query-executor.js';
-import { ScriptReportExecutor } from './script-executor.js';
+} from './types';
+import { QueryReportExecutor } from './query-executor';
+import { ScriptReportExecutor } from './script-executor';
 
 /**
  * Main report executor

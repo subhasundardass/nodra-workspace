@@ -1,6 +1,6 @@
-import type { DocTypeDefinition, FieldPermissionRule } from '../core/doctype/schema.js';
-import { PermissionError } from '../core/errors.js';
-import type { UserContext } from './permission.js';
+import type { DocTypeDefinition, FieldPermissionRule } from '../core/doctype/schema';
+import { PermissionError } from '../core/errors';
+import type { UserContext } from './permission';
 
 export type { FieldPermissionRule };
 

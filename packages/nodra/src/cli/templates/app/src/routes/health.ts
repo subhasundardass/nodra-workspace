@@ -7,7 +7,7 @@
  * old json() helper (built for the REST layer) was removed along with it.
  */
 import { createFileRoute } from '@tanstack/react-router';
-import { getNodra } from '../server/nodra-app.js';
+import { getNodra } from '../server/nodra-app';
 
 export const Route = createFileRoute('/health')({
   server: {

@@ -10,7 +10,7 @@ import type {
   JobQueueConfig,
   JobStatus,
   JobPriority,
-} from './types.js';
+} from './types';
 
 export class JobQueueError extends Error {
   constructor(message: string) {
