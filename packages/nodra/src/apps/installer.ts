@@ -3,8 +3,8 @@
  */
 
 import type { Pool } from 'pg';
-import type { App, AppInstaller, AppRegistry, InstallOptions, UninstallOptions } from './types.js';
-import { ValidationError, DuplicateError, NotFoundError } from '../core/errors.js';
+import type { App, AppInstaller, AppRegistry, InstallOptions, UninstallOptions } from './types';
+import { ValidationError, DuplicateError, NotFoundError } from '../core/errors';
 
 /**
  * Default app installer implementation

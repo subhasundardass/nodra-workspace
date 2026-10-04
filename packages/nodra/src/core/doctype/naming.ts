@@ -7,7 +7,7 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import { ValidationError } from '../errors.js';
+import { ValidationError } from '../errors';
 
 /**
  * Generate a random hex string of the given length.

@@ -4,7 +4,7 @@
  * Event system for the Nodra framework.
  */
 
-export { EventEmitter } from './emitter.js';
+export { EventEmitter } from './emitter';
 export type {
   EventType,
   BaseEvent,
@@ -15,5 +15,5 @@ export type {
   DocumentEvent,
   UserEvent,
   SystemEvent,
-} from './types.js';
-export { EVENT_PRIORITY_VALUES } from './types.js';
+} from './types';
+export { EVENT_PRIORITY_VALUES } from './types';

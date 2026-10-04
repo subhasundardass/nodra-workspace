@@ -5,15 +5,15 @@
  * that combine lifecycle hooks, validation, and database access.
  */
 
-import type { Database } from '../database/connection.js';
-import type { DocTypeRegistry } from '../core/doctype/registry.js';
-import type { DocTypeDefinition } from '../core/doctype/schema.js';
-import { Document } from '../core/document/document.js';
-import { validateDocument } from '../core/validation/validator.js';
-import { toTableName } from '../core/doctype/naming.js';
-import { generateHash } from '../core/doctype/naming.js';
-import { NotFoundError } from '../core/errors.js';
-import { QueryBuilder } from '../database/query-builder.js';
+import type { Database } from '../database/connection';
+import type { DocTypeRegistry } from '../core/doctype/registry';
+import type { DocTypeDefinition } from '../core/doctype/schema';
+import { Document } from '../core/document/document';
+import { validateDocument } from '../core/validation/validator';
+import { toTableName } from '../core/doctype/naming';
+import { generateHash } from '../core/doctype/naming';
+import { NotFoundError } from '../core/errors';
+import { QueryBuilder } from '../database/query-builder';
 
 /**
  * Options for the getList operation.

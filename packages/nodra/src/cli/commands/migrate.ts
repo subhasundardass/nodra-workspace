@@ -22,7 +22,7 @@
 
 import type { Command } from "commander";
 import { Pool } from "pg";
-import { MigrateCommand } from "../migrate.js";
+import { MigrateCommand } from "../migrate";
 
 export interface DatabaseConfig {
   host: string;
@@ -63,11 +63,7 @@ export function registerMigrateCommand(program: Command): void {
     .command("migrate")
     .description("Sync this app's DocType definitions to the database schema")
     .option("--verbose", "Show detailed migration information")
-    .option(
-      "--force",
-      "Run migration even when DocType definitions are unchanged",
-    )
-    .action(async (opts: { verbose?: boolean; force?: boolean }) => {
+    .action(async (opts: { verbose?: boolean }) => {
       const config = getDatabaseConfig();
 
       const pool = new Pool({
@@ -84,10 +80,6 @@ export function registerMigrateCommand(program: Command): void {
 
       if (opts.verbose) {
         args.push("--verbose");
-      }
-
-      if (opts.force) {
-        args.push("--force");
       }
 
       try {

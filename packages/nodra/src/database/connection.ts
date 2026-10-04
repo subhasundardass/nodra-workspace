@@ -5,11 +5,10 @@
  * parameterized queries, and proper error wrapping.
  */
 
-import pg from 'pg';
-import type { Pool, PoolConfig } from 'pg';
-import type { DatabaseConfig } from '../core/config.js';
-import { DatabaseError } from '../core/errors.js';
-
+import pg from "pg";
+import type { Pool, PoolConfig } from "pg";
+import type { DatabaseConfig } from "../core/config";
+import { DatabaseError } from "../core/errors";
 /**
  * Database connection manager.
  *
@@ -45,11 +44,11 @@ export class Database {
 
     // Verify the pool works
     try {
-      await this.pool.query('SELECT 1');
+      await this.pool.query("SELECT 1");
     } catch (error) {
       this.pool = null;
       this.connected = false;
-      throw new DatabaseError('Failed to connect to database', {
+      throw new DatabaseError("Failed to connect to database", {
         cause: error instanceof Error ? error : new Error(String(error)),
       });
     }
@@ -71,7 +70,10 @@ export class Database {
    *
    * @throws {DatabaseError} If the database is not connected or the query fails.
    */
-  async query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]> {
+  async query<T = Record<string, unknown>>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<T[]> {
     const pool = this.ensureConnected();
 
     try {
@@ -90,7 +92,10 @@ export class Database {
    *
    * @throws {DatabaseError} If the database is not connected or the query fails.
    */
-  async queryOne<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T | null> {
+  async queryOne<T = Record<string, unknown>>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<T | null> {
     const rows = await this.query<T>(sql, params);
     return rows[0] ?? null;
   }
@@ -125,7 +130,7 @@ export class Database {
     }
 
     try {
-      await this.pool.query('SELECT 1');
+      await this.pool.query("SELECT 1");
       return true;
     } catch {
       return false;
@@ -152,7 +157,7 @@ export class Database {
 
   private ensureConnected(): Pool {
     if (!this.pool || !this.connected) {
-      throw new DatabaseError('Database is not connected');
+      throw new DatabaseError("Database is not connected");
     }
     return this.pool;
   }

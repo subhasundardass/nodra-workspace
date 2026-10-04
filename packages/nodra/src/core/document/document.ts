@@ -6,7 +6,7 @@
  * overridable lifecycle hooks for subclasses (controllers).
  */
 
-import type { DocTypeDefinition } from '../doctype/schema.js';
+import type { DocTypeDefinition } from '../doctype/schema';
 
 // Standard field names that are stored as top-level properties
 const STANDARD_FIELD_NAMES = new Set([

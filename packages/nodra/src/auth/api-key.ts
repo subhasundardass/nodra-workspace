@@ -6,7 +6,7 @@
  */
 
 import { hash, verify } from 'argon2';
-import { AuthenticationError } from '../core/errors.js';
+import { AuthenticationError } from '../core/errors';
 
 /**
  * API Key configuration
