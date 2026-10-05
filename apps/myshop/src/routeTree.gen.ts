@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HealthRouteImport } from './routes/health'
+import { Route as AdminAuthenticatedRouteRouteImport } from './routes/admin/_authenticated/route'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminAuthenticatedIndexRouteImport } from './routes/admin/_authenticated/index'
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +26,21 @@ const HealthRoute = HealthRouteImport.update({
   path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuthenticatedRouteRoute = AdminAuthenticatedRouteRouteImport.update({
+  id: '/admin/_authenticated',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuthenticatedIndexRoute = AdminAuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminAuthenticatedRouteRoute,
+} as any)
 const ApiMethodMethodPathRoute = ApiMethodMethodPathRouteImport.update({
   id: '/api/method/$methodPath',
   path: '/api/method/$methodPath',
@@ -32,30 +50,53 @@ const ApiMethodMethodPathRoute = ApiMethodMethodPathRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
+  '/admin': typeof AdminAuthenticatedRouteRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/admin/': typeof AdminAuthenticatedIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/admin': typeof AdminAuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
+  '/admin/_authenticated': typeof AdminAuthenticatedRouteRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/admin/_authenticated/': typeof AdminAuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/health' | '/api/method/$methodPath'
+  fullPaths:
+    | '/'
+    | '/health'
+    | '/admin'
+    | '/admin/login'
+    | '/api/method/$methodPath'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/health' | '/api/method/$methodPath'
-  id: '__root__' | '/' | '/health' | '/api/method/$methodPath'
+  to: '/' | '/health' | '/admin/login' | '/api/method/$methodPath' | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/health'
+    | '/admin/_authenticated'
+    | '/admin/login'
+    | '/api/method/$methodPath'
+    | '/admin/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HealthRoute: typeof HealthRoute
+  AdminAuthenticatedRouteRoute: typeof AdminAuthenticatedRouteRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   ApiMethodMethodPathRoute: typeof ApiMethodMethodPathRoute
 }
 
@@ -75,6 +116,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_authenticated': {
+      id: '/admin/_authenticated'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminAuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_authenticated/': {
+      id: '/admin/_authenticated/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminAuthenticatedIndexRouteImport
+      parentRoute: typeof AdminAuthenticatedRouteRoute
+    }
     '/api/method/$methodPath': {
       id: '/api/method/$methodPath'
       path: '/api/method/$methodPath'
@@ -85,9 +147,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminAuthenticatedRouteRouteChildren {
+  AdminAuthenticatedIndexRoute: typeof AdminAuthenticatedIndexRoute
+}
+
+const AdminAuthenticatedRouteRouteChildren: AdminAuthenticatedRouteRouteChildren =
+  {
+    AdminAuthenticatedIndexRoute: AdminAuthenticatedIndexRoute,
+  }
+
+const AdminAuthenticatedRouteRouteWithChildren =
+  AdminAuthenticatedRouteRoute._addFileChildren(
+    AdminAuthenticatedRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HealthRoute: HealthRoute,
+  AdminAuthenticatedRouteRoute: AdminAuthenticatedRouteRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   ApiMethodMethodPathRoute: ApiMethodMethodPathRoute,
 }
 export const routeTree = rootRouteImport

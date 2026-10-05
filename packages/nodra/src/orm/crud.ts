@@ -23,6 +23,7 @@ import { toTableName } from "../core/doctype/naming";
 import { generateHash } from "../core/doctype/naming";
 import { NotFoundError } from "../core/errors";
 import { QueryBuilder } from "../database/query-builder";
+import { withTransaction } from "../database/transaction";
 
 // ---------------------------------------------------------------------------
 // Errors
@@ -152,6 +153,18 @@ type PType = "read" | "write" | "create" | "delete" | "submit" | "cancel";
 type Mode = "update" | "submit" | "cancel";
 
 type Row = Record<string, unknown>;
+/** What the ORM needs from either the pool-backed Database or a transaction client. */
+interface Queryable {
+  query<T = Record<string, unknown>>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<T[]>;
+  queryOne<T = Record<string, unknown>>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<T | null>;
+  execute(sql: string, params?: unknown[]): Promise<number>;
+}
 type Field = DocTypeDefinition["fields"][number];
 interface Cond {
   doctype?: string;
@@ -270,7 +283,11 @@ export class ORM {
   private readonly db: Database;
   private readonly registry: DocTypeRegistry;
   private readonly options: ORMOptions;
-  private seriesReady: Promise<void> | undefined;
+  /** Where queries run: the pool-backed Database, or one transaction client. */
+  private q: Queryable;
+  private inTx = false;
+  /** Shared with transaction-scoped copies so the series table is created once. */
+  private seriesState: { ready?: Promise<void> } = {};
 
   constructor(
     db: Database,
@@ -278,8 +295,30 @@ export class ORM {
     options: ORMOptions = {},
   ) {
     this.db = db;
+    this.q = db;
     this.registry = registry;
     this.options = options;
+  }
+
+  /**
+   * Run several ORM calls in ONE database transaction (BEGIN ... COMMIT, ROLLBACK on throw).
+   * `fn` receives an ORM bound to the transaction; use it for every call that must be atomic.
+   * Calling transaction() on that ORM again joins the same transaction (no nesting).
+   *
+   *   await app.orm.transaction(async (tx) => {
+   *     await tx.insert(loan);
+   *     await tx.submit(loan);
+   *   });
+   */
+  async transaction<T>(fn: (orm: ORM) => Promise<T>): Promise<T> {
+    if (this.inTx) return fn(this);
+    return withTransaction(this.db, (client) => {
+      const scoped = new ORM(this.db, this.registry, this.options);
+      scoped.q = client;
+      scoped.inTx = true;
+      scoped.seriesState = this.seriesState;
+      return fn(scoped);
+    });
   }
 
   get database(): Database {
@@ -375,7 +414,7 @@ export class ORM {
     const meta = this.registry.get(doctype);
     const tableName = toTableName(doctype);
 
-    const row = await this.db.queryOne<Row>(
+    const row = await this.q.queryOne<Row>(
       `SELECT * FROM ${tableName} WHERE name = $1`,
       [name],
     );
@@ -387,7 +426,7 @@ export class ORM {
     this.checkDocAccess(meta, "read", (k) => row[k]);
 
     const children = this.hasChildren(meta)
-      ? await this.loadChildren(this.db, meta, name)
+      ? await this.loadChildren(this.q, meta, name)
       : {};
     return this.rowToDocument(meta, row, children);
   }
@@ -445,7 +484,7 @@ export class ORM {
     }
 
     const { sql, params } = qb.build();
-    const rows = await this.db.query<Row>(sql, params);
+    const rows = await this.q.query<Row>(sql, params);
 
     return rows.map((row) => this.rowToDocument(meta, row));
   }
@@ -672,7 +711,7 @@ export class ORM {
         this.permClauses(meta, ctx),
       );
       const joins = [...ctx.joins.values()].join(" ");
-      const row = await this.db.queryOne<{ count: string }>(
+      const row = await this.q.queryOne<{ count: string }>(
         `SELECT COUNT(*) AS count FROM ${tableName} t ${joins}${where}`,
         ctx.params,
       );
@@ -691,7 +730,7 @@ export class ORM {
     }
 
     const { sql, params } = qb.build();
-    const row = await this.db.queryOne<{ count: string }>(sql, params);
+    const row = await this.q.queryOne<{ count: string }>(sql, params);
 
     return Number(row?.count ?? 0);
   }
@@ -722,7 +761,7 @@ export class ORM {
       !this.options.enforcePermissions
     ) {
       const tableName = toTableName(doctype);
-      const row = await this.db.queryOne<Row>(
+      const row = await this.q.queryOne<Row>(
         `SELECT ${this.safeColumn(fieldname)} FROM ${tableName} WHERE name = $1`,
         [nameOrFilters],
       );
@@ -771,7 +810,7 @@ export class ORM {
     if (cols.length === 0) return;
 
     if (typeof fieldname === "string" && !user) {
-      await this.db.execute(
+      await this.q.execute(
         `UPDATE ${tableName} SET ${this.safeColumn(fieldname)} = $1, modified = $2 WHERE name = $3`,
         [value, now, name],
       );
@@ -788,7 +827,7 @@ export class ORM {
       params.push(user);
     }
     params.push(name);
-    await this.db.execute(
+    await this.q.execute(
       `UPDATE ${tableName} SET ${sets.join(", ")} WHERE name = $${n + 1}`,
       params,
     );
@@ -806,7 +845,7 @@ export class ORM {
 
     if (typeof nameOrFilters === "string" && !this.options.enforcePermissions) {
       const tableName = toTableName(doctype);
-      const row = await this.db.queryOne<{ name: string }>(
+      const row = await this.q.queryOne<{ name: string }>(
         `SELECT name FROM ${tableName} WHERE name = $1`,
         [nameOrFilters],
       );
@@ -939,7 +978,7 @@ export class ORM {
   ): Promise<void> {
     const a = this.access(meta, ptype);
     if (a.bypass) return;
-    const row = await this.db.queryOne<Row>(
+    const row = await this.q.queryOne<Row>(
       `SELECT * FROM ${toTableName(meta.name)} WHERE name = $1`,
       [name],
     );
@@ -1002,14 +1041,14 @@ export class ORM {
     };
     const prefix = parts.map((p) => tokens[p] ?? p).join("");
 
-    this.seriesReady ??= this.db
+    this.seriesState.ready ??= this.db
       .execute(
         "CREATE TABLE IF NOT EXISTS nodra_series (name TEXT PRIMARY KEY, counter BIGINT NOT NULL DEFAULT 0)",
       )
       .then(() => undefined);
-    await this.seriesReady;
+    await this.seriesState.ready;
 
-    const rows = await this.db.query<{ counter: string }>(
+    const rows = await this.q.query<{ counter: string }>(
       `INSERT INTO nodra_series (name, counter) VALUES ($1, 1)
        ON CONFLICT (name) DO UPDATE SET counter = nodra_series.counter + 1
        RETURNING counter`,
@@ -1143,7 +1182,7 @@ export class ORM {
     if (o.limit !== undefined) tail += ` LIMIT ${this.int(o.limit)}`;
     if (o.offset !== undefined) tail += ` OFFSET ${this.int(o.offset)}`;
 
-    const rows = await this.db.query<Row>(
+    const rows = await this.q.query<Row>(
       `SELECT ${o.distinct ? "DISTINCT " : ""}${select} FROM ${toTableName(doctype)} t ${joins}${where}${group}${order}${tail}`,
       ctx.params,
     );
@@ -1335,7 +1374,7 @@ export class ORM {
   }
 
   private async loadChildren(
-    db: Database,
+    db: Queryable,
     meta: DocTypeDefinition,
     name: string,
   ): Promise<Row> {
@@ -1351,7 +1390,7 @@ export class ORM {
 
   /** Replace child rows for every Table field present on the document. */
   private async saveChildren(
-    db: Database,
+    db: Queryable,
     doc: Document,
     meta: DocTypeDefinition,
     now: Date,
@@ -1409,7 +1448,7 @@ export class ORM {
       else if (ftype(f) === "Dynamic Link")
         target = doc.get(opts(f)) as string | undefined;
       if (!target) continue;
-      const row = await this.db.queryOne<{ name: string }>(
+      const row = await this.q.queryOne<{ name: string }>(
         `SELECT name FROM ${toTableName(target)} WHERE name = $1`,
         [String(value)],
       );
@@ -1421,17 +1460,15 @@ export class ORM {
     }
   }
 
-  /** Runs in a transaction only when needed and supported; otherwise exactly as before. */
+  /**
+   * Runs `fn` inside withTransaction (BEGIN/COMMIT/ROLLBACK on one pooled client)
+   * when `transactional` is true; otherwise directly on the pool, exactly as before.
+   */
   private async run<T>(
     transactional: boolean,
-    fn: (db: Database) => Promise<T>,
+    fn: (db: Queryable) => Promise<T>,
   ): Promise<T> {
-    if (!transactional) return fn(this.db);
-    const d = this.db as unknown as {
-      transaction?: <R>(f: (db: Database) => Promise<R>) => Promise<R>;
-    };
-    return typeof d.transaction === "function"
-      ? d.transaction(fn)
-      : fn(this.db);
+    if (this.inTx || !transactional) return fn(this.q); // already in (or no need for) a transaction
+    return withTransaction(this.db, fn);
   }
 }

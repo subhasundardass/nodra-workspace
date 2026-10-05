@@ -10,6 +10,7 @@
  * Import `getNodra()` from any server route to get a lazily-initialized,
  * request-shared singleton (db pool + registry + ORM).
  */
+
 import { createRequire } from "node:module";
 import path from "node:path";
 import { Database } from "nodra/database/connection.js";
@@ -87,7 +88,7 @@ export class NodraApp {
 
     const sessionStore = new RedisSessionStore(
       process.env.REDIS_URL ?? "redis://localhost:6379",
-      "mfi:",
+      "yourkey:",
     );
     this.sessions = new SessionManager(sessionStore);
 
