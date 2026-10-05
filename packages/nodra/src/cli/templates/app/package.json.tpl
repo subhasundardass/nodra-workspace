@@ -15,12 +15,15 @@
   },
   "dependencies": {
     "nodra": "workspace:*",
+    "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-start": "^1.168.56",
     "@tanstack/store": "^0.11.1",
+    "clsx": "^2.1.1",
     "commander": "^14.0.3",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "tailwind-merge": "^3.0.2"  
   },
   "devDependencies": {
     "@tanstack/nitro-v2-vite-plugin": "^1.155.2",

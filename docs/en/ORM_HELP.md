@@ -260,6 +260,19 @@ await app.withSession(
 );
 ```
 
+OR
+
+```ts
+await app.orm.transaction(async (tx) => {
+  const loan = await tx.insert(
+    new Document(app.registry.get("Loan"), { member: "MEM-1", amount: 50000 }),
+  );
+  await tx.submit(loan);
+  await tx.setValue("Member", "MEM-1", "last_loan", loan.name);
+});
+// all three commit together; if any throws, none are saved
+```
+
 ## 14. Known gaps (do not assume these exist)
 
 `having`, nested filter groups, amend, naming by field with format, Single and tree doctypes, `fetch_from`, default values, field-type casting, row-level child validation, version history, rename/duplicate, link-integrity checks on delete, field-level permission levels, caching. The ORM has not been run against a production database in this repo; verify behavior with tests before relying on it.

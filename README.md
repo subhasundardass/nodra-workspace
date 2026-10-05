@@ -107,7 +107,7 @@ curl -X POST http://localhost:3000/api/method/debug.doctypes -H "Content-Type: a
 
 2.
 
-curl -i -b cookies.txt -X POST http://localhost:3000/api/method/auth.me -H "Content-Type: application/json" -d '{}' curl -i -c cookies.txt -X POST http://localhost:3000/api/method/auth.login -H "Content-Type: application/json" -d '{"email":"admin@localhost.com","password":"Admin@123"}'
+curl -i -c cookies.txt -X POST http://localhost:3000/api/method/auth.login -H "Content-Type: application/json" -d '{"email":"admin@localhost.com","password":"Admin@123"}'
 
 3.
 
