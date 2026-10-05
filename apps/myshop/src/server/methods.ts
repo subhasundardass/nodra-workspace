@@ -17,30 +17,27 @@ async function resolveMethodIdentity(
 ): Promise<ResolvedIdentity | null> {
   const token = extractSessionToken(ctx.request.headers, "session_token");
 
-  // No session cookie/token means anonymous request.
   if (!token) {
     return null;
   }
 
   const app = await getNodra();
 
-  // Resolve the opaque session from Redis.
   const session = await app.sessions.resolve(token);
 
-  // Invalid or expired session.
   if (!session) {
     return null;
   }
 
-  // Only User sessions can authenticate application methods.
   if (session.subject.type !== "User") {
     return null;
   }
 
-  // Session subject ID is the User document name.
-  const user = await app.orm.getDoc("User", session.subject.id);
+  // Identity lookup happens before the ORM user session is established.
+  const user = await app.asSystem(() =>
+    app.orm.getDoc("User", session.subject.id),
+  );
 
-  // Disabled user cannot authenticate.
   if (!user.get("enabled")) {
     return null;
   }
@@ -126,10 +123,12 @@ export function registerAppMethods(registry: MethodRegistry): void {
 
       const app = await getNodra();
 
-      const result = await app.auth.login({
-        username: email,
-        password,
-      });
+      const result = await app.asSystem(() =>
+        app.auth.login({
+          username: email,
+          password,
+        }),
+      );
 
       // The HTTP transport reads this value and
       // converts it into an HttpOnly cookie.
