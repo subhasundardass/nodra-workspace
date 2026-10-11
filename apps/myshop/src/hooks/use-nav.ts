@@ -1,30 +1,19 @@
-import { getRouteApi } from "@tanstack/react-router";
-import { canVisitDashboard } from "@/auth/dashboard-access";
-import { useMemo } from "react";
-import type { NavItem, NavGroup } from "@/types";
+import { useMemo } from 'react';
+import type { NavItem, NavGroup } from '@/types';
 
 /**
  * Hook to filter navigation items
- * Hide destinations outside the current account permissions and scope.
+ * RBAC has been removed — returns all items as-is
  */
 export function useFilteredNavItems(items: NavItem[]) {
-  const { currentUser, permissions } =
-    getRouteApi("/dashboard").useRouteContext();
   return useMemo(() => {
-    const filter = (entries: NavItem[]): NavItem[] =>
-      entries.flatMap((item) => {
-        if (item.items?.length) {
-          const children = filter(item.items);
-          return children.length ? [{ ...item, items: children }] : [];
-        }
-        return item.url &&
-          item.url !== "#" &&
-          canVisitDashboard(item.url, currentUser, permissions)
-          ? [item]
-          : [];
-      });
-    return filter(items);
-  }, [items, currentUser, permissions]);
+    return items.map((item) => {
+      if (item.items && item.items.length > 0) {
+        return { ...item, items: [...item.items] };
+      }
+      return item;
+    });
+  }, [items]);
 }
 
 /**
@@ -40,10 +29,8 @@ export function useFilteredNavGroups(groups: NavGroup[]) {
       .map((group) => ({
         ...group,
         items: filteredItems.filter((item) =>
-          group.items.some(
-            (gi) => gi.title === item.title && filteredSet.has(gi.title),
-          ),
-        ),
+          group.items.some((gi) => gi.title === item.title && filteredSet.has(gi.title))
+        )
       }))
       .filter((group) => group.items.length > 0);
   }, [groups, filteredItems]);

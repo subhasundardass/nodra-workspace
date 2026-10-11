@@ -115,6 +115,8 @@ export interface MethodRegistry {
   has(path: string): boolean;
   /** Run a method through the full pipeline. */
   execute(path: string, init: MethodCallInit): Promise<unknown>;
+  /** List all registered method paths. */
+  list(): string[];
 }
 
 const METHOD_PATH_PATTERN = /^[A-Za-z_][\w-]*(\.[A-Za-z_][\w-]*)*$/;
@@ -187,6 +189,10 @@ export class DefaultMethodRegistry implements MethodRegistry {
   clear(): void {
     this.methods.clear();
     this.globalMiddleware.length = 0;
+  }
+
+  list(): string[] {
+    return Array.from(this.methods.keys()).sort();
   }
 }
 
