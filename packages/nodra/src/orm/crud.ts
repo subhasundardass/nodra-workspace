@@ -13,17 +13,6 @@
  *   +  Frappe filters, Link dot-paths of any depth, opt-in child tables / link validation.
  */
 
-<<<<<<< HEAD
-import type { Database } from '../database/connection';
-import type { DocTypeRegistry } from '../core/doctype/registry';
-import type { DocTypeDefinition } from '../core/doctype/schema';
-import { Document } from '../core/document/document';
-import { validateDocument } from '../core/validation/validator';
-import { toTableName } from '../core/doctype/naming';
-import { generateHash } from '../core/doctype/naming';
-import { NotFoundError } from '../core/errors';
-import { QueryBuilder } from '../database/query-builder';
-=======
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { Database } from "../database/connection";
 import type { DocTypeRegistry } from "../core/doctype/registry";
@@ -119,7 +108,6 @@ export type FilterTuple =
 
 /** A plain object (as before) or a Frappe tuple list. */
 export type Filters = Record<string, unknown> | FilterTuple[];
->>>>>>> origin/core
 
 /**
  * Options for the getList operation.
