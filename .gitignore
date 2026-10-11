@@ -34,3 +34,4 @@ temp/
 *.pid
 cookies.txt
 node_modules/.modules.yaml
+pnpm-lock.yaml

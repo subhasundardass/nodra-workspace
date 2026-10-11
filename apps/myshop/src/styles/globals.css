@@ -1,53 +1,39 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
 
-/* -------------------------------------------------------
-   Fonts
-------------------------------------------------------- */
+@import 'tw-animate-css';
 
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/jetbrains-mono";
-
-/* -------------------------------------------------------
-   Tailwind / Theme
-------------------------------------------------------- */
+/* Fontsource font imports */
+@import '@fontsource/geist-sans';
+@import '@fontsource/geist-mono';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource-variable/mulish';
+@import '@fontsource-variable/outfit';
+@import '@fontsource-variable/playfair-display';
+@import '@fontsource/merriweather/300.css';
+@import '@fontsource/merriweather/400.css';
+@import '@fontsource/merriweather/700.css';
+@import '@fontsource/architects-daughter/400.css';
+@import '@fontsource-variable/fira-code';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/noto-sans-mono';
+@import '@fontsource/space-mono/400.css';
+@import '@fontsource/space-mono/700.css';
 
 @custom-variant dark (&:is(.dark *));
 
-@import "./theme.css";
-
-/* -------------------------------------------------------
-   Base
-------------------------------------------------------- */
+@import './theme.css';
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-
-  html {
-    font-family: "Inter", sans-serif;
-  }
-
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", sans-serif;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
   }
 
-  /* Code / account numbers / IDs */
-  code,
-  pre,
-  .font-mono {
-    font-family: "JetBrains Mono", monospace;
-  }
-
-  /* ---------------------------------------------------
-     Scrollbar
-  --------------------------------------------------- */
-
+  /* Global scrollbar styling to match ScrollArea */
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -74,10 +60,7 @@
   }
 }
 
-/* -------------------------------------------------------
-   View Transition
-------------------------------------------------------- */
-
+/* View Transition Wave Effect */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -85,59 +68,54 @@
 }
 
 ::view-transition-old(root) {
+  /* Ensure the outgoing view (old theme) is beneath */
   z-index: 0;
 }
 
 ::view-transition-new(root) {
+  /* Ensure the incoming view (new theme) is always on top */
   z-index: 1;
-  animation: reveal 0.4s ease-in-out forwards;
 }
 
 @keyframes reveal {
   from {
+    /* Use CSS variables for the origin, defaulting to center if not set */
     clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
     opacity: 0.7;
   }
-
   to {
+    /* Use CSS variables for the origin, defaulting to center if not set */
     clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
     opacity: 1;
   }
 }
 
-/* -------------------------------------------------------
-   Accordion
-------------------------------------------------------- */
-
+/* Base UI sets --accordion-panel-height on Accordion.Panel, but tw-animate-css's
+   accordion keyframes only read the radix-era variable. Redefine them (later in
+   the cascade, so these win) with a Base UI fallback so expand/collapse animates
+   instead of snapping to `auto`. */
 @keyframes accordion-down {
   from {
     height: 0;
   }
-
   to {
-    height: var(
-      --radix-accordion-content-height,
-      var(--accordion-panel-height, auto)
-    );
+    height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
   }
 }
 
 @keyframes accordion-up {
   from {
-    height: var(
-      --radix-accordion-content-height,
-      var(--accordion-panel-height, auto)
-    );
+    height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
   }
-
   to {
     height: 0;
   }
 }
 
-/* -------------------------------------------------------
-   Sidebar
-------------------------------------------------------- */
+::view-transition-new(root) {
+  /* Apply the reveal animation */
+  animation: reveal 0.4s ease-in-out forwards;
+}
 
 :root {
   --sidebar: hsl(0 0% 98%);
@@ -161,14 +139,7 @@
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-/* -------------------------------------------------------
-   Tailwind theme mapping
-------------------------------------------------------- */
-
 @theme inline {
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -177,14 +148,4 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@layer components {
-  tbody tr:hover {
-    background-color: hsl(220, 15%, 91%) !important;
-  }
-
-  .dark tbody tr:hover {
-    background-color: hsl(240, 4%, 9%) !important;
-  }
 }

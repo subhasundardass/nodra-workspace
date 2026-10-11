@@ -1,47 +1,89 @@
-import {
-  createRootRoute,
-  HeadContent,
-  Link,
-  Outlet,
-  Scripts,
-} from "@tanstack/react-router";
+import type { QueryClient } from '@tanstack/react-query';
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { createServerFn } from '@tanstack/react-start';
 
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nodra" },
-    ],
-  }),
-  shellComponent: RootComponent,
-  notFoundComponent: NotFound,
+import { Toaster } from '@/components/ui/sonner';
+import { ActiveThemeProvider } from '@/components/themes/active-theme';
+import ThemeProvider from '@/components/themes/theme-provider';
+import { DEFAULT_THEME, THEMES } from '@/components/themes/theme.config';
+import { seo } from '@/lib/seo';
+
+import appCss from '@/styles/globals.css?url';
+
+const META_THEME_COLORS = {
+  light: '#ffffff',
+  dark: '#09090b'
+};
+
+const getActiveTheme = createServerFn({ method: 'GET' }).handler(async () => {
+  const { getCookie } = await import('@tanstack/react-start/server');
+  const cookieValue = getCookie('active_theme');
+  if (cookieValue) {
+    const isValid = THEMES.some((t) => t.value === cookieValue);
+    if (isValid) return cookieValue;
+  }
+  return DEFAULT_THEME;
 });
 
-function RootComponent() {
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+}>()({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'theme-color', content: META_THEME_COLORS.light },
+      ...seo()
+    ],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'apple-touch-icon', href: '/favicon.svg' }
+    ]
+  }),
+  loader: async () => {
+    const activeTheme = await getActiveTheme();
+    return { activeTheme };
+  },
+  component: RootDocument
+});
+
+function RootDocument() {
+  const { activeTheme } = Route.useLoaderData();
+
   return (
-    <html>
+    <html lang='en' suppressHydrationWarning data-theme={activeTheme}>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `
+          }}
+        />
       </head>
-      <body>
-        <Outlet />
+      <body className='bg-background overflow-x-hidden overscroll-none font-sans antialiased'>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          disableTransitionOnChange
+          enableColorScheme
+        >
+          <ActiveThemeProvider initialTheme={activeTheme}>
+            <Toaster />
+            <Outlet />
+          </ActiveThemeProvider>
+        </ThemeProvider>
+        <TanStackRouterDevtools position='bottom-left' />
         <Scripts />
       </body>
     </html>
-  );
-}
-
-function NotFound() {
-  return (
-    <div className="page-wrap py-20 text-center">
-      <h1 className="text-3xl font-extrabold text-ink">Page not found</h1>
-      <p className="mt-2 text-sub">
-        The page you're looking for doesn't exist or has moved.
-      </p>
-      <Link to="/" className="btn btn-primary mt-6">
-        Back to home
-      </Link>
-    </div>
   );
 }

@@ -17,7 +17,6 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.8452 0 0);
   --input: oklch(0.97 0.0029 264.542);
-  /* --ring: oklch(0.6397 0.172 36.4421); */
   --ring: oklch(0.6397 0.172 36.4421);
   --chart-1: oklch(0.6693 0.0706 248.923);
   --chart-2: oklch(0.6678 0.1546 41.62);
@@ -157,22 +156,4 @@
     --shadow-xl: var(--shadow-xl);
     --shadow-2xl: var(--shadow-2xl);
   }
-}
-
-
-[data-theme='astro-vista'] input,
-[data-theme='astro-vista'] textarea,
-[data-theme='astro-vista'] select {
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--input);
-}
-
-/* 1px focus ring */
-[data-theme='astro-vista'] input:focus-visible,
-[data-theme='astro-vista'] textarea:focus-visible,
-[data-theme='astro-vista'] select:focus-visible {
-  outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 1px var(--ring);
 }
