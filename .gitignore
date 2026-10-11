@@ -33,3 +33,8 @@ temp/
 # Runtime data
 *.pid
 cookies.txt
+<<<<<<< HEAD
+=======
+node_modules/.modules.yaml
+pnpm-lock.yaml
+>>>>>>> origin/core

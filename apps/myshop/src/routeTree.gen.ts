@@ -10,24 +10,125 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+<<<<<<< HEAD
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
+=======
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as HealthRouteImport } from './routes/health'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardChatRouteImport } from './routes/dashboard/chat'
+import { Route as DashboardKanbanRouteImport } from './routes/dashboard/kanban'
+import { Route as DashboardNotificationsRouteImport } from './routes/dashboard/notifications'
+import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
+import { Route as DashboardReactQueryRouteImport } from './routes/dashboard/react-query'
+import { Route as DashboardUsersRouteImport } from './routes/dashboard/users'
+import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
+import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
+import { Route as AuthSignUpIndexRouteImport } from './routes/auth/sign-up/index'
+import { Route as DashboardElementsIconsRouteImport } from './routes/dashboard/elements/icons'
+import { Route as DashboardFormsIndexRouteImport } from './routes/dashboard/forms/index'
+import { Route as DashboardFormsAdvancedRouteImport } from './routes/dashboard/forms/advanced'
+import { Route as DashboardFormsBasicRouteImport } from './routes/dashboard/forms/basic'
+import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/forms/multi-step'
+import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
+import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
+import { Route as DashboardProductIndexRouteImport } from './routes/dashboard/product/index'
+import { Route as DashboardProductProductIdRouteImport } from './routes/dashboard/product/$productId'
+>>>>>>> origin/core
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
+=======
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+>>>>>>> origin/core
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
+=======
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardChatRoute = DashboardChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardKanbanRoute = DashboardKanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardNotificationsRoute = DashboardNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardOverviewRoute = DashboardOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReactQueryRoute = DashboardReactQueryRouteImport.update({
+  id: '/react-query',
+  path: '/react-query',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardUsersRoute = DashboardUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+>>>>>>> origin/core
 const ApiMethodMethodPathRoute = ApiMethodMethodPathRouteImport.update({
   id: '/api/method/$methodPath',
   path: '/api/method/$methodPath',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -38,10 +139,125 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/health': typeof HealthRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+=======
+const AuthSignInIndexRoute = AuthSignInIndexRouteImport.update({
+  id: '/sign-in/',
+  path: '/sign-in/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
+  id: '/sign-up/',
+  path: '/sign-up/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const DashboardElementsIconsRoute = DashboardElementsIconsRouteImport.update({
+  id: '/elements/icons',
+  path: '/elements/icons',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFormsIndexRoute = DashboardFormsIndexRouteImport.update({
+  id: '/forms/',
+  path: '/forms/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFormsAdvancedRoute = DashboardFormsAdvancedRouteImport.update({
+  id: '/forms/advanced',
+  path: '/forms/advanced',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFormsBasicRoute = DashboardFormsBasicRouteImport.update({
+  id: '/forms/basic',
+  path: '/forms/basic',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFormsMultiStepRoute = DashboardFormsMultiStepRouteImport.update({
+  id: '/forms/multi-step',
+  path: '/forms/multi-step',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFormsSheetFormRoute = DashboardFormsSheetFormRouteImport.update({
+  id: '/forms/sheet-form',
+  path: '/forms/sheet-form',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardNodraMethodsRoute = DashboardNodraMethodsRouteImport.update({
+  id: '/nodra/methods',
+  path: '/nodra/methods',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProductIndexRoute = DashboardProductIndexRouteImport.update({
+  id: '/product/',
+  path: '/product/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProductProductIdRoute =
+  DashboardProductProductIdRouteImport.update({
+    id: '/product/$productId',
+    path: '/product/$productId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/health': typeof HealthRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/dashboard/chat': typeof DashboardChatRoute
+  '/dashboard/kanban': typeof DashboardKanbanRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/react-query': typeof DashboardReactQueryRoute
+  '/dashboard/users': typeof DashboardUsersRoute
+  '/auth/': typeof AuthIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/elements/icons': typeof DashboardElementsIconsRoute
+  '/dashboard/forms/advanced': typeof DashboardFormsAdvancedRoute
+  '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
+  '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
+  '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
+  '/auth/sign-in/': typeof AuthSignInIndexRoute
+  '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/product/': typeof DashboardProductIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/health': typeof HealthRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/dashboard/chat': typeof DashboardChatRoute
+  '/dashboard/kanban': typeof DashboardKanbanRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/react-query': typeof DashboardReactQueryRoute
+  '/dashboard/users': typeof DashboardUsersRoute
+  '/auth': typeof AuthIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/elements/icons': typeof DashboardElementsIconsRoute
+  '/dashboard/forms/advanced': typeof DashboardFormsAdvancedRoute
+  '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
+  '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
+  '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
+  '/auth/sign-in': typeof AuthSignInIndexRoute
+  '/auth/sign-up': typeof AuthSignUpIndexRoute
+  '/dashboard/forms': typeof DashboardFormsIndexRoute
+  '/dashboard/product': typeof DashboardProductIndexRoute
+>>>>>>> origin/core
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+<<<<<<< HEAD
   '/health': typeof HealthRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
 }
@@ -51,11 +267,135 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/health' | '/api/method/$methodPath'
   id: '__root__' | '/' | '/health' | '/api/method/$methodPath'
+=======
+  '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/health': typeof HealthRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
+  '/dashboard/chat': typeof DashboardChatRoute
+  '/dashboard/kanban': typeof DashboardKanbanRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/react-query': typeof DashboardReactQueryRoute
+  '/dashboard/users': typeof DashboardUsersRoute
+  '/auth/': typeof AuthIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/elements/icons': typeof DashboardElementsIconsRoute
+  '/dashboard/forms/advanced': typeof DashboardFormsAdvancedRoute
+  '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
+  '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
+  '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
+  '/auth/sign-in/': typeof AuthSignInIndexRoute
+  '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/product/': typeof DashboardProductIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/dashboard'
+    | '/health'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/dashboard/chat'
+    | '/dashboard/kanban'
+    | '/dashboard/notifications'
+    | '/dashboard/overview'
+    | '/dashboard/react-query'
+    | '/dashboard/users'
+    | '/auth/'
+    | '/dashboard/'
+    | '/api/method/$methodPath'
+    | '/dashboard/elements/icons'
+    | '/dashboard/forms/advanced'
+    | '/dashboard/forms/basic'
+    | '/dashboard/forms/multi-step'
+    | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/methods'
+    | '/dashboard/product/$productId'
+    | '/auth/sign-in/'
+    | '/auth/sign-up/'
+    | '/dashboard/forms/'
+    | '/dashboard/product/'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/about'
+    | '/health'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/dashboard/chat'
+    | '/dashboard/kanban'
+    | '/dashboard/notifications'
+    | '/dashboard/overview'
+    | '/dashboard/react-query'
+    | '/dashboard/users'
+    | '/auth'
+    | '/dashboard'
+    | '/api/method/$methodPath'
+    | '/dashboard/elements/icons'
+    | '/dashboard/forms/advanced'
+    | '/dashboard/forms/basic'
+    | '/dashboard/forms/multi-step'
+    | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/methods'
+    | '/dashboard/product/$productId'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/dashboard/forms'
+    | '/dashboard/product'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/dashboard'
+    | '/health'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/dashboard/chat'
+    | '/dashboard/kanban'
+    | '/dashboard/notifications'
+    | '/dashboard/overview'
+    | '/dashboard/react-query'
+    | '/dashboard/users'
+    | '/auth/'
+    | '/dashboard/'
+    | '/api/method/$methodPath'
+    | '/dashboard/elements/icons'
+    | '/dashboard/forms/advanced'
+    | '/dashboard/forms/basic'
+    | '/dashboard/forms/multi-step'
+    | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/methods'
+    | '/dashboard/product/$productId'
+    | '/auth/sign-in/'
+    | '/auth/sign-up/'
+    | '/dashboard/forms/'
+    | '/dashboard/product/'
+>>>>>>> origin/core
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+<<<<<<< HEAD
   HealthRoute: typeof HealthRoute
+=======
+  AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  DashboardRoute: typeof DashboardRouteWithChildren
+  HealthRoute: typeof HealthRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  TermsOfServiceRoute: typeof TermsOfServiceRoute
+>>>>>>> origin/core
   ApiMethodMethodPathRoute: typeof ApiMethodMethodPathRoute
 }
 
@@ -68,6 +408,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
+=======
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+>>>>>>> origin/core
     '/health': {
       id: '/health'
       path: '/health'
@@ -75,6 +439,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
+=======
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms-of-service': {
+      id: '/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof TermsOfServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/chat': {
+      id: '/dashboard/chat'
+      path: '/chat'
+      fullPath: '/dashboard/chat'
+      preLoaderRoute: typeof DashboardChatRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/kanban': {
+      id: '/dashboard/kanban'
+      path: '/kanban'
+      fullPath: '/dashboard/kanban'
+      preLoaderRoute: typeof DashboardKanbanRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/notifications': {
+      id: '/dashboard/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof DashboardNotificationsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/overview': {
+      id: '/dashboard/overview'
+      path: '/overview'
+      fullPath: '/dashboard/overview'
+      preLoaderRoute: typeof DashboardOverviewRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/react-query': {
+      id: '/dashboard/react-query'
+      path: '/react-query'
+      fullPath: '/dashboard/react-query'
+      preLoaderRoute: typeof DashboardReactQueryRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/users': {
+      id: '/dashboard/users'
+      path: '/users'
+      fullPath: '/dashboard/users'
+      preLoaderRoute: typeof DashboardUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+>>>>>>> origin/core
     '/api/method/$methodPath': {
       id: '/api/method/$methodPath'
       path: '/api/method/$methodPath'
@@ -82,12 +519,159 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMethodMethodPathRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HealthRoute: HealthRoute,
+=======
+    '/auth/sign-in/': {
+      id: '/auth/sign-in/'
+      path: '/sign-in'
+      fullPath: '/auth/sign-in/'
+      preLoaderRoute: typeof AuthSignInIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/sign-up/': {
+      id: '/auth/sign-up/'
+      path: '/sign-up'
+      fullPath: '/auth/sign-up/'
+      preLoaderRoute: typeof AuthSignUpIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/dashboard/elements/icons': {
+      id: '/dashboard/elements/icons'
+      path: '/elements/icons'
+      fullPath: '/dashboard/elements/icons'
+      preLoaderRoute: typeof DashboardElementsIconsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forms/': {
+      id: '/dashboard/forms/'
+      path: '/forms'
+      fullPath: '/dashboard/forms/'
+      preLoaderRoute: typeof DashboardFormsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forms/advanced': {
+      id: '/dashboard/forms/advanced'
+      path: '/forms/advanced'
+      fullPath: '/dashboard/forms/advanced'
+      preLoaderRoute: typeof DashboardFormsAdvancedRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forms/basic': {
+      id: '/dashboard/forms/basic'
+      path: '/forms/basic'
+      fullPath: '/dashboard/forms/basic'
+      preLoaderRoute: typeof DashboardFormsBasicRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forms/multi-step': {
+      id: '/dashboard/forms/multi-step'
+      path: '/forms/multi-step'
+      fullPath: '/dashboard/forms/multi-step'
+      preLoaderRoute: typeof DashboardFormsMultiStepRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forms/sheet-form': {
+      id: '/dashboard/forms/sheet-form'
+      path: '/forms/sheet-form'
+      fullPath: '/dashboard/forms/sheet-form'
+      preLoaderRoute: typeof DashboardFormsSheetFormRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/nodra/methods': {
+      id: '/dashboard/nodra/methods'
+      path: '/nodra/methods'
+      fullPath: '/dashboard/nodra/methods'
+      preLoaderRoute: typeof DashboardNodraMethodsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/product/': {
+      id: '/dashboard/product/'
+      path: '/product'
+      fullPath: '/dashboard/product/'
+      preLoaderRoute: typeof DashboardProductIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/product/$productId': {
+      id: '/dashboard/product/$productId'
+      path: '/product/$productId'
+      fullPath: '/dashboard/product/$productId'
+      preLoaderRoute: typeof DashboardProductProductIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+  }
+}
+
+interface AuthRouteChildren {
+  AuthIndexRoute: typeof AuthIndexRoute
+  AuthSignInIndexRoute: typeof AuthSignInIndexRoute
+  AuthSignUpIndexRoute: typeof AuthSignUpIndexRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthIndexRoute: AuthIndexRoute,
+  AuthSignInIndexRoute: AuthSignInIndexRoute,
+  AuthSignUpIndexRoute: AuthSignUpIndexRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardChatRoute: typeof DashboardChatRoute
+  DashboardKanbanRoute: typeof DashboardKanbanRoute
+  DashboardNotificationsRoute: typeof DashboardNotificationsRoute
+  DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardReactQueryRoute: typeof DashboardReactQueryRoute
+  DashboardUsersRoute: typeof DashboardUsersRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardElementsIconsRoute: typeof DashboardElementsIconsRoute
+  DashboardFormsAdvancedRoute: typeof DashboardFormsAdvancedRoute
+  DashboardFormsBasicRoute: typeof DashboardFormsBasicRoute
+  DashboardFormsMultiStepRoute: typeof DashboardFormsMultiStepRoute
+  DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
+  DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
+  DashboardProductProductIdRoute: typeof DashboardProductProductIdRoute
+  DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
+  DashboardProductIndexRoute: typeof DashboardProductIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardChatRoute: DashboardChatRoute,
+  DashboardKanbanRoute: DashboardKanbanRoute,
+  DashboardNotificationsRoute: DashboardNotificationsRoute,
+  DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardReactQueryRoute: DashboardReactQueryRoute,
+  DashboardUsersRoute: DashboardUsersRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardElementsIconsRoute: DashboardElementsIconsRoute,
+  DashboardFormsAdvancedRoute: DashboardFormsAdvancedRoute,
+  DashboardFormsBasicRoute: DashboardFormsBasicRoute,
+  DashboardFormsMultiStepRoute: DashboardFormsMultiStepRoute,
+  DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
+  DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
+  DashboardProductProductIdRoute: DashboardProductProductIdRoute,
+  DashboardFormsIndexRoute: DashboardFormsIndexRoute,
+  DashboardProductIndexRoute: DashboardProductIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AuthRoute: AuthRouteWithChildren,
+  DashboardRoute: DashboardRouteWithChildren,
+  HealthRoute: HealthRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
+  TermsOfServiceRoute: TermsOfServiceRoute,
+>>>>>>> origin/core
   ApiMethodMethodPathRoute: ApiMethodMethodPathRoute,
 }
 export const routeTree = rootRouteImport
@@ -95,10 +679,18 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
+<<<<<<< HEAD
 import type { createStart } from '@tanstack/react-start'
+=======
+import type { startInstance } from './start.ts'
+>>>>>>> origin/core
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+<<<<<<< HEAD
+=======
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+>>>>>>> origin/core
   }
 }
