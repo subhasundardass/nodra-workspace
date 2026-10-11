@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 import { defineConfig } from 'vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin';
 import viteReact from '@vitejs/plugin-react';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
+=======
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitroV2Plugin } from "@tanstack/nitro-v2-vite-plugin";
+import viteReact from "@vitejs/plugin-react";
+import viteTsConfigPaths from "vite-tsconfig-paths";
+>>>>>>> origin/core
 
 // Old Fastify server.config.server.{host,port} → Vite/Nitro dev & preview
 // ports below. In production, host/port for `node .output/server/index.mjs`
@@ -12,12 +21,22 @@ import viteTsConfigPaths from 'vite-tsconfig-paths';
 // override needed to get routes read from apps/mfi/src/routes.
 export default defineConfig({
   plugins: [
+<<<<<<< HEAD
     viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
     tanstackStart(),
     // 'node-server' matches what the old Fastify app effectively was: a
     // long-lived Node process you deploy yourself. Swap the preset if you
     // deploy to Vercel/Cloudflare/etc — see README.md.
     nitroV2Plugin({ preset: 'node-server', compatibilityDate: '2026-09-20' }),
+=======
+    viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
+    tanstackStart(),
+    tailwindcss(),
+    // 'node-server' matches what the old Fastify app effectively was: a
+    // long-lived Node process you deploy yourself. Swap the preset if you
+    // deploy to Vercel/Cloudflare/etc — see README.md.
+    nitroV2Plugin({ preset: "node-server", compatibilityDate: "2026-09-20" }),
+>>>>>>> origin/core
     viteReact(),
   ],
   server: {

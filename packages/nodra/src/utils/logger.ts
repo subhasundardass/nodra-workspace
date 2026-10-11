@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * Nodra Framework - Logger
  *
@@ -6,6 +7,11 @@
  */
 
 import pino, { type DestinationStream, type LoggerOptions } from "pino";
+=======
+import pino, { type DestinationStream, type LoggerOptions } from "pino";
+import pretty from "pino-pretty";
+
+>>>>>>> origin/core
 import type { LoggingConfig } from "../core/config";
 
 export type Logger = pino.Logger;
@@ -24,6 +30,20 @@ export function createLogger(
 
   if (destination) {
     return pino(options, destination as DestinationStream);
+<<<<<<< HEAD
+=======
+  }
+
+  if (config.format === "pretty") {
+    return pino(
+      options,
+      pretty({
+        colorize: true,
+        translateTime: "SYS:standard",
+        ignore: "pid,hostname",
+      }),
+    );
+>>>>>>> origin/core
   }
 
   return pino(options);

@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+<<<<<<< HEAD
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "types": ["vite/client"],
@@ -13,3 +14,37 @@
   "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules", "dist", ".output"]
 }
+=======
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "jsx": "react-jsx",
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "nodra": [
+        "../../packages/nodra/src/index.ts"
+      ],
+      "nodra/*": [
+        "../../packages/nodra/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "vite.config.ts",
+    "../../packages/nodra/src/client.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".output"
+  ]
+}
+>>>>>>> origin/core

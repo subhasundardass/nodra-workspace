@@ -1,0 +1,94 @@
+import { Button } from "@/components/ui/button";
+import { FieldGroup } from "@/components/ui/field";
+import { useAppForm } from "@/lib/form";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import * as z from "zod";
+import { callMethod, MethodCallError } from "nodra/client";
+
+const formSchema = z.object({
+  email: z.email({ message: "Enter a valid email address" }),
+  password: z.string({ message: "Enter valid password" }),
+});
+
+export default function UserAuthForm() {
+  const [loading, startTransition] = useTransition();
+
+  const form = useAppForm({
+    defaultValues: {
+      email: "admin@localhost.com",
+      password: "Admin@123",
+    },
+
+    validators: {
+      onSubmit: formSchema,
+    },
+
+    onSubmit: ({ value }) => {
+      startTransition(async () => {
+        try {
+          await callMethod("auth.login", {
+            email: value.email,
+            password: value.password,
+          });
+
+          toast.success("Signed In Successfully!");
+
+          // navigate to dashboard here
+        } catch (error) {
+          if (error instanceof MethodCallError) {
+            toast.error(error.message);
+            return;
+          }
+          toast.error("Something went wrong");
+        }
+      });
+    },
+  });
+
+  return (
+    <>
+      <form
+        className="w-full space-y-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
+        <FieldGroup>
+          <form.AppField
+            name="email"
+            children={(field) => (
+              <field.TextField
+                label="Email"
+                type="email"
+                placeholder="Enter your email..."
+                disabled={loading}
+              />
+            )}
+          />
+        </FieldGroup>
+        <FieldGroup>
+          <form.AppField
+            name="password"
+            children={(field) => (
+              <field.TextField
+                label="Password"
+                type="password"
+                placeholder="Password."
+                disabled={loading}
+              />
+            )}
+          />
+        </FieldGroup>
+        <Button
+          disabled={loading}
+          className="mt-2 ml-auto w-full"
+          type="submit"
+        >
+          Continue With Email
+        </Button>
+      </form>
+    </>
+  );
+}

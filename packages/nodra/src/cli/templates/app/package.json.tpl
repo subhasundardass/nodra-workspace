@@ -14,6 +14,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
+<<<<<<< HEAD
     "nodra": "workspace:*",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-start": "^1.168.56",
@@ -21,6 +22,66 @@
     "commander": "^14.0.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
+=======
+    "@base-ui/react": "^1.6.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@fontsource-variable/dm-sans": "^5.1.3",
+    "@fontsource-variable/fira-code": "^5.1.2",
+    "@fontsource-variable/instrument-sans": "^5.1.1",
+    "@fontsource-variable/inter": "^5.1.2",
+    "@fontsource-variable/jetbrains-mono": "^5.1.3",
+    "@fontsource-variable/mulish": "^5.1.2",
+    "@fontsource-variable/noto-sans-mono": "^5.1.2",
+    "@fontsource-variable/outfit": "^5.1.2",
+    "@fontsource-variable/playfair-display": "^5.1.2",
+    "@fontsource/architects-daughter": "^5.0.17",
+    "@fontsource/geist-mono": "^5.2.7",
+    "@fontsource/geist-sans": "^5.2.5",
+    "@fontsource/merriweather": "^5.1.3",
+    "@fontsource/space-mono": "^5.0.20",
+    "@hookform/resolvers": "^5.7.1",
+    "@shadcn/react": "^0.2.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/react-form": "^1.28.5",
+    "@tanstack/react-hotkeys": "^0.10.0",
+    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-router": "^1.141.1",
+    "@tanstack/react-router-with-query": "^1.130.17",
+    "@tanstack/react-start": "^1.141.1",
+    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/router-plugin": "^1.141.1",
+    "@tanstack/zod-adapter": "^1.141.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^1.28.0",
+    "match-sorter": "^8.2.0",
+    "motion": "^11.18.2",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.6.7",
+    "react": "^19.0.0",
+    "react-day-picker": "^10.0.1",
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^14.4.1",
+    "react-hook-form": "^7.84.0",
+    "react-resizable-panels": "^4",
+    "react-responsive": "^10.0.1",
+    "recharts": "3.8.0",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.2",
+    "uuid": "^11.1.0",
+    "vaul": "^1.1.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+>>>>>>> origin/core
   },
   "devDependencies": {
     "@tanstack/nitro-v2-vite-plugin": "^1.155.2",
@@ -32,6 +93,22 @@
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vite": "^8.3.0",
+<<<<<<< HEAD
     "vite-tsconfig-paths": "^6.1.1"
+=======
+    "vite-tsconfig-paths": "^6.1.1",
+    "@faker-js/faker": "^9.9.0",
+    "@tabler/icons-react": "^3.40.0",
+    "@tanstack/react-query-devtools": "^5.95.2",
+    "@tanstack/react-router-devtools": "^1.141.1",
+    "@types/uuid": "^10.0.0",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
+    "tw-animate-css": "^1.4.0"
+  },
+  "overrides": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+>>>>>>> origin/core
   }
 }
