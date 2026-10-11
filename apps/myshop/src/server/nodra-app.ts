@@ -1,19 +1,11 @@
 /**
  * Nodra application bootstrap for TanStack Start.
  *
-<<<<<<< HEAD
- * This replaces the original Fastify-based `Nodra.boot()`, which did two
- * things: (1) connect the database and build the ORM/registry, and (2) spin
- * up a Fastify HTTP server with routes attached to it. TanStack Start *is*
- * the HTTP server now (Vite + Nitro), and routes live under
- * `src/routes/api/**`, so this file only keeps responsibility (1).
-=======
  * TanStack Start handles the HTTP server and routing through
  * Vite + Nitro, with API routes living under `src/routes/api/**`.
  *
  * This file is responsible for initializing the database connection,
  * ORM, and registry.
->>>>>>> origin/core
  *
  * Import `getNodra()` from any server route to get a lazily-initialized,
  * request-shared singleton (db pool + registry + ORM).
@@ -21,19 +13,6 @@
 
 import { createRequire } from "node:module";
 import path from "node:path";
-<<<<<<< HEAD
-import { Database } from "nodra/database/connection";
-import { DocTypeRegistry } from "nodra/core/doctype/registry";
-import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader";
-import { ORM } from "nodra/orm/crud";
-import { createLogger, type Logger } from "nodra/utils/logger";
-import { loadConfig, type NodraConfig } from "nodra/core/config";
-import { AuthService } from "nodra/auth/auth";
-import { ORMAuthUserRepository } from "nodra/auth/user-repository";
-import { DefaultMethodRegistry, type MethodRegistry } from "nodra/api/method";
-import { registerAppMethods } from "./methods";
-import { RedisSessionStore, SessionManager } from "nodra/auth/session";
-=======
 import { Database } from "nodra/database/connection.js";
 import { DocTypeRegistry } from "nodra/core/doctype/registry.js";
 import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader.js";
@@ -55,7 +34,6 @@ import { AuthService } from "nodra/auth/auth.js";
 import { ORMAuthUserRepository } from "nodra/auth/user-repository.js";
 import { RedisSessionStore, SessionManager } from "nodra/auth/session.js";
 import { ResourceAPI } from "nodra";
->>>>>>> origin/core
 
 const require = createRequire(import.meta.url);
 
@@ -93,11 +71,8 @@ export class NodraApp {
   readonly orm: ORM;
   readonly logger: Logger;
   readonly methods: MethodRegistry;
-<<<<<<< HEAD
-=======
   readonly resource: ResourceAPI;
   readonly ormOptions: ORMOptions;
->>>>>>> origin/core
   readonly sessions: SessionManager;
   readonly auth: AuthService;
 
@@ -105,31 +80,20 @@ export class NodraApp {
     this.config = config;
     this.db = new Database(config.db);
     this.registry = new DocTypeRegistry();
-<<<<<<< HEAD
-    this.orm = new ORM(this.db, this.registry);
-=======
     this.ormOptions = ormOptionsFromEnv();
     this.orm = new ORM(this.db, this.registry, this.ormOptions);
     this.resource = new ResourceAPI(this.orm, this.registry);
->>>>>>> origin/core
     this.logger = createLogger(config.logging);
     this.methods = new DefaultMethodRegistry();
 
     const sessionStore = new RedisSessionStore(
-<<<<<<< HEAD
-      process.env.REDIS_URL ?? "redis://localhost:6380",
-      "myapp",
-=======
       process.env.REDIS_URL ?? "redis://localhost:6379",
       "yourkey:",
->>>>>>> origin/core
     );
     this.sessions = new SessionManager(sessionStore);
 
     const users = new ORMAuthUserRepository(this.orm);
     this.auth = new AuthService(users, this.sessions);
-<<<<<<< HEAD
-=======
   }
 
   /**
@@ -146,7 +110,6 @@ export class NodraApp {
    */
   asSystem<T>(fn: () => T): T {
     return runAsAdministrator(fn);
->>>>>>> origin/core
   }
 
   static async create(): Promise<NodraApp> {
