@@ -55,6 +55,7 @@
     "match-sorter": "^8.2.0",
     "motion": "^11.18.2",
     "next-themes": "^0.4.6",
+    "commander": "^14.0.3",
     "radix-ui": "^1.6.7",
     "react": "^19.0.0",
     "react-day-picker": "^10.0.1",

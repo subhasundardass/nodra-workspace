@@ -106,11 +106,26 @@ export const navGroups: NavGroup[] = [
     label: "Nodra",
     items: [
       {
-        title: "Routes",
-        url: "/dashboard/nodra/methods",
+        title: "Framework",
+        url: "#",
         icon: "palette",
         isActive: false,
-        items: [],
+        items: [
+          {
+            title: "DocTypes",
+            url: "/dashboard/nodra/doctypes",
+            icon: "palette",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Methods",
+            url: "/dashboard/nodra/methods",
+            icon: "palette",
+            isActive: false,
+            items: [],
+          },
+        ],
       },
     ],
   },
