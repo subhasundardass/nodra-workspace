@@ -27,7 +27,12 @@ export class Database {
   /**
    * Create the connection pool and verify connectivity with a health check.
    */
+
   async connect(): Promise<void> {
+    if (this.pool && this.connected) {
+      return;
+    }
+
     const poolConfig: PoolConfig = {
       host: this.config.host,
       port: this.config.port,
@@ -39,15 +44,21 @@ export class Database {
       idleTimeoutMillis: this.config.pool.idleTimeoutMillis,
     };
 
-    this.pool = new pg.Pool(poolConfig);
-    this.connected = true;
+    const pool = new pg.Pool(poolConfig);
 
-    // Verify the pool works
+    this.pool = pool;
+    this.connected = false;
+
     try {
-      await this.pool.query("SELECT 1");
+      await pool.query("SELECT 1");
+      this.connected = true;
     } catch (error) {
       this.pool = null;
       this.connected = false;
+
+      // Release resources belonging to the failed pool.
+      await pool.end().catch(() => {});
+
       throw new DatabaseError("Failed to connect to database", {
         cause: error instanceof Error ? error : new Error(String(error)),
       });
