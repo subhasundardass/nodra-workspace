@@ -21,10 +21,6 @@
       "unique": true,
       "max_length": 140,
       "in_list_view": true
-<<<<<<< HEAD
-    }
-  ],
-=======
     },
     {
       "fieldname": "workflow_state",
@@ -76,7 +72,6 @@
       }
     ]
   },
->>>>>>> origin/feat/workflow
   "permissions": [
     {
       "role": "System Manager",
@@ -86,8 +81,4 @@
       "delete": true
     }
   ]
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/feat/workflow
