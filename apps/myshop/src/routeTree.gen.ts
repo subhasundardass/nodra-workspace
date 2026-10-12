@@ -10,10 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-<<<<<<< HEAD
-import { Route as HealthRouteImport } from './routes/health'
-import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
-=======
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -37,18 +33,16 @@ import { Route as DashboardFormsAdvancedRouteImport } from './routes/dashboard/f
 import { Route as DashboardFormsBasicRouteImport } from './routes/dashboard/forms/basic'
 import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/forms/multi-step'
 import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
+import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
 import { Route as DashboardProductIndexRouteImport } from './routes/dashboard/product/index'
 import { Route as DashboardProductProductIdRouteImport } from './routes/dashboard/product/$productId'
->>>>>>> origin/core
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-=======
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -64,14 +58,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
->>>>>>> origin/core
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-=======
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
@@ -122,24 +113,11 @@ const DashboardUsersRoute = DashboardUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => DashboardRoute,
 } as any)
->>>>>>> origin/core
 const ApiMethodMethodPathRoute = ApiMethodMethodPathRouteImport.update({
   id: '/api/method/$methodPath',
   path: '/api/method/$methodPath',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/health': typeof HealthRoute
-  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/health': typeof HealthRoute
-  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
-=======
 const AuthSignInIndexRoute = AuthSignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
@@ -178,6 +156,11 @@ const DashboardFormsMultiStepRoute = DashboardFormsMultiStepRouteImport.update({
 const DashboardFormsSheetFormRoute = DashboardFormsSheetFormRouteImport.update({
   id: '/forms/sheet-form',
   path: '/forms/sheet-form',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardNodraDoctypesRoute = DashboardNodraDoctypesRouteImport.update({
+  id: '/nodra/doctypes',
+  path: '/nodra/doctypes',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardNodraMethodsRoute = DashboardNodraMethodsRouteImport.update({
@@ -219,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -246,28 +230,17 @@ export interface FileRoutesByTo {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
   '/dashboard/forms': typeof DashboardFormsIndexRoute
   '/dashboard/product': typeof DashboardProductIndexRoute
->>>>>>> origin/core
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/health': typeof HealthRoute
-  '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
-}
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/health' | '/api/method/$methodPath'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/health' | '/api/method/$methodPath'
-  id: '__root__' | '/' | '/health' | '/api/method/$methodPath'
-=======
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
@@ -288,6 +261,7 @@ export interface FileRouteTypes {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -319,6 +293,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/product/$productId'
     | '/auth/sign-in/'
@@ -346,6 +321,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/product/$productId'
     | '/auth/sign-in'
@@ -375,27 +351,23 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/product/$productId'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
     | '/dashboard/product/'
->>>>>>> origin/core
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-<<<<<<< HEAD
-  HealthRoute: typeof HealthRoute
-=======
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   HealthRoute: typeof HealthRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
->>>>>>> origin/core
   ApiMethodMethodPathRoute: typeof ApiMethodMethodPathRoute
 }
 
@@ -408,8 +380,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-=======
     '/about': {
       id: '/about'
       path: '/about'
@@ -431,7 +401,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
->>>>>>> origin/core
     '/health': {
       id: '/health'
       path: '/health'
@@ -439,8 +408,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-=======
     '/privacy-policy': {
       id: '/privacy-policy'
       path: '/privacy-policy'
@@ -511,7 +478,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUsersRouteImport
       parentRoute: typeof DashboardRoute
     }
->>>>>>> origin/core
     '/api/method/$methodPath': {
       id: '/api/method/$methodPath'
       path: '/api/method/$methodPath'
@@ -519,14 +485,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMethodMethodPathRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-  }
-}
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  HealthRoute: HealthRoute,
-=======
     '/auth/sign-in/': {
       id: '/auth/sign-in/'
       path: '/sign-in'
@@ -583,6 +541,13 @@ const rootRouteChildren: RootRouteChildren = {
       preLoaderRoute: typeof DashboardFormsSheetFormRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/nodra/doctypes': {
+      id: '/dashboard/nodra/doctypes'
+      path: '/nodra/doctypes'
+      fullPath: '/dashboard/nodra/doctypes'
+      preLoaderRoute: typeof DashboardNodraDoctypesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/nodra/methods': {
       id: '/dashboard/nodra/methods'
       path: '/nodra/methods'
@@ -634,6 +599,7 @@ interface DashboardRouteChildren {
   DashboardFormsBasicRoute: typeof DashboardFormsBasicRoute
   DashboardFormsMultiStepRoute: typeof DashboardFormsMultiStepRoute
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
+  DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardProductProductIdRoute: typeof DashboardProductProductIdRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
@@ -653,6 +619,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardFormsBasicRoute: DashboardFormsBasicRoute,
   DashboardFormsMultiStepRoute: DashboardFormsMultiStepRoute,
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
+  DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardProductProductIdRoute: DashboardProductProductIdRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,
@@ -671,7 +638,6 @@ const rootRouteChildren: RootRouteChildren = {
   HealthRoute: HealthRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
->>>>>>> origin/core
   ApiMethodMethodPathRoute: ApiMethodMethodPathRoute,
 }
 export const routeTree = rootRouteImport
@@ -679,18 +645,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-<<<<<<< HEAD
-import type { createStart } from '@tanstack/react-start'
-=======
 import type { startInstance } from './start.ts'
->>>>>>> origin/core
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
-<<<<<<< HEAD
-=======
     config: Awaited<ReturnType<typeof startInstance.getOptions>>
->>>>>>> origin/core
   }
 }
