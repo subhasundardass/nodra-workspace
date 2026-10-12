@@ -95,6 +95,28 @@ export const navGroups: NavGroup[] = [
     ],
   },
 
+  // Application
+  {
+    label: "Application",
+    items: [
+      {
+        title: "User Managemnt",
+        url: "#",
+        icon: "palette",
+        isActive: false,
+        items: [
+          {
+            title: "Users",
+            url: "/dashboard/application/users",
+            icon: "palette",
+            isActive: false,
+            items: [],
+          },
+        ],
+      },
+    ],
+  },
+
   // Nodra
   {
     label: "Nodra",

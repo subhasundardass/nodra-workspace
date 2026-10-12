@@ -1,37 +1,55 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
-
 import { extractSessionToken } from "nodra/auth";
 
 import { getNodra } from "@/server/nodra-app";
 
-export const getCurrentUser = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const token = extractSessionToken(getRequestHeaders(), "session_token");
+const SESSION_COOKIE = "session_token";
 
-    if (!token) {
-      return null;
-    }
+export type CurrentUser = {
+  id: string;
+  email: string;
+  fullName: string;
+  userType: string;
+  roles: string[];
+  expiresAt: Date;
+};
+
+export const getCurrentUser = createServerFn({ method: "GET" }).handler(
+  async (): Promise<CurrentUser | null> => {
+    const token = extractSessionToken(getRequestHeaders(), SESSION_COOKIE);
+    if (!token) return null;
 
     const app = await getNodra();
 
-    const session = await app.sessions.resolve(token);
-
-    if (!session || session.subject.type !== "User") {
+    let session;
+    try {
+      session = await app.sessions.resolve(token);
+    } catch {
       return null;
     }
 
-    const user = await app.asSystem(() =>
-      app.orm.getDoc("User", session.subject.id),
-    );
+    if (!session || session.subject.type !== "User") return null;
 
-    if (!user.get("enabled")) {
+    let user;
+    try {
+      user = await app.asSystem(() =>
+        app.orm.getDoc("User", session.subject.id),
+      );
+    } catch {
       return null;
     }
 
-    const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
+    if (user.get("enabled") !== true) return null;
 
-    const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
+    const rawRoles = user.get("roles");
+    const roles = Array.isArray(rawRoles)
+      ? rawRoles
+          .map((r) =>
+            typeof r === "string" ? r : (r as { role?: string })?.role,
+          )
+          .filter((r): r is string => typeof r === "string" && r.length > 0)
+      : [];
 
     return {
       id: session.subject.id,
