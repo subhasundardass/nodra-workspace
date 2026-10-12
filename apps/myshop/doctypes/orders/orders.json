@@ -79,6 +79,20 @@
       "write": true,
       "create": true,
       "delete": true
+    },
+    {
+      "role": "Purchase User",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false
+    },
+    {
+      "role": "Purchase Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false
     }
   ]
 }
