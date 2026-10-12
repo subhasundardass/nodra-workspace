@@ -89,7 +89,7 @@ export function registerAppMethods(registry: MethodRegistry): void {
   );
 
   // ---------------------------------------------------------------------------
-  // Debug
+  // Doctypes
   // ---------------------------------------------------------------------------
 
   registry.register(
@@ -104,6 +104,39 @@ export function registerAppMethods(registry: MethodRegistry): void {
     {
       requireAuth: false,
     },
+  );
+
+  // ---------------------------------------------------------------------------
+  // Methods
+  // ---------------------------------------------------------------------------
+
+  registry.register(
+    "debug.methods",
+    async () => {
+      const app = await getNodra();
+
+      const methods = app.methods.list().map((path) => {
+        const definition = app.methods.get(path);
+
+        if (!definition) return null;
+
+        return {
+          path,
+          requireAuth: definition.requireAuth,
+          requiredRoles: definition.requiredRoles,
+          middlewareCount: definition.middleware.length,
+        };
+      });
+
+      return {
+        methods: methods.filter(Boolean),
+        total: methods.length,
+      };
+    },
+    // {
+    //   requireAuth: true,
+    //   requiredRoles: ["SUPER_ADMIN"],
+    // },
   );
 
   // ---------------------------------------------------------------------------

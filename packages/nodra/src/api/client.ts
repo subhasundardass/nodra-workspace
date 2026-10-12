@@ -64,6 +64,7 @@ export interface CallMethodOptions {
  *     customer: "CUST-001",
  *   });
  */
+
 export async function callMethod<TResult = unknown>(
   method: string,
   args: Record<string, unknown> = {},
@@ -79,33 +80,27 @@ export async function callMethod<TResult = unknown>(
     throw new Error("Fetch is not available in this environment");
   }
 
-  const response = await fetcher(`/api/method/${method}`, {
-    method: "POST",
+  const isServer = typeof process !== "undefined" && !!process.versions?.node;
 
+  const url = isServer
+    ? new URL(
+        `/api/method/${method}`,
+        process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`,
+      ).toString()
+    : `/api/method/${method}`;
+
+  const response = await fetcher(url, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
     },
-
-    /**
-     * Send authentication/session cookies.
-     */
     credentials: "include",
-
-    /**
-     * Send method arguments as JSON.
-     */
     body: JSON.stringify(args),
   });
 
-  /**
-   * Parse the JSON response.
-   */
   const data = await response.json().catch(() => undefined);
 
-  /**
-   * Convert HTTP errors into a Nodra MethodCallError.
-   */
   if (!response.ok) {
     let message = `Method call failed with status ${response.status}`;
 
@@ -121,8 +116,5 @@ export async function callMethod<TResult = unknown>(
     throw new MethodCallError(message, response.status, data);
   }
 
-  /**
-   * Return the method result.
-   */
   return data as TResult;
 }

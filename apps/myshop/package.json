@@ -14,18 +14,6 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "nodra": "workspace:*",
-    "@tanstack/react-router": "^1.170.38",
-    "@tanstack/react-start": "^1.168.56",
-    "@tanstack/store": "^0.11.1",
-    "commander": "^14.0.3",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
-  },
-  "devDependencies": {
-    "@tanstack/nitro-v2-vite-plugin": "^1.155.2",
-=======
     "@base-ui/react": "^1.6.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
@@ -60,6 +48,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "commander": "^14.0.3",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
@@ -91,18 +80,10 @@
     "@tanstack/nitro-v2-vite-plugin": "^1.155.2",
     "@tanstack/react-query-devtools": "^5.95.2",
     "@tanstack/react-router-devtools": "^1.141.1",
->>>>>>> origin/core
     "@tanstack/router-plugin": "^1.168.40",
     "@types/node": "^25.9.7",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-<<<<<<< HEAD
-    "@vitejs/plugin-react": "^6.1.1",
-    "tsx": "^4.23.13",
-    "typescript": "^5.9.3",
-    "vite": "^8.3.0",
-    "vite-tsconfig-paths": "^6.1.1"
-=======
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.1.1",
     "oxfmt": "^0.44.0",
@@ -116,6 +97,5 @@
   "overrides": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0"
->>>>>>> origin/core
   }
 }
