@@ -67,14 +67,14 @@
         "action": "Approve",
         "to": "Confirmed",
         "roles": [
-          "Purchase Manager"
+          "Purchase Use"
         ]
       }
     ]
   },
   "permissions": [
     {
-      "role": "System Manager",
+      "role": "System Use",
       "read": true,
       "write": true,
       "create": true,
@@ -88,7 +88,7 @@
       "delete": false
     },
     {
-      "role": "Purchase Manager",
+      "role": "Purchase Use",
       "read": true,
       "write": true,
       "create": true,
