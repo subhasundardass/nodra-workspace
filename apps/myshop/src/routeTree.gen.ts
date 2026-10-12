@@ -35,8 +35,6 @@ import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/
 import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
-import { Route as DashboardProductIndexRouteImport } from './routes/dashboard/product/index'
-import { Route as DashboardProductProductIdRouteImport } from './routes/dashboard/product/$productId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -168,17 +166,6 @@ const DashboardNodraMethodsRoute = DashboardNodraMethodsRouteImport.update({
   path: '/nodra/methods',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardProductIndexRoute = DashboardProductIndexRouteImport.update({
-  id: '/product/',
-  path: '/product/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardProductProductIdRoute =
-  DashboardProductProductIdRouteImport.update({
-    id: '/product/$productId',
-    path: '/product/$productId',
-    getParentRoute: () => DashboardRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -204,11 +191,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
-  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
-  '/dashboard/product/': typeof DashboardProductIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -232,11 +217,9 @@ export interface FileRoutesByTo {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
-  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
   '/dashboard/forms': typeof DashboardFormsIndexRoute
-  '/dashboard/product': typeof DashboardProductIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -263,11 +246,9 @@ export interface FileRoutesById {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
-  '/dashboard/product/$productId': typeof DashboardProductProductIdRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
-  '/dashboard/product/': typeof DashboardProductIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -295,11 +276,9 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
-    | '/dashboard/product/$productId'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
-    | '/dashboard/product/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -323,11 +302,9 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
-    | '/dashboard/product/$productId'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/dashboard/forms'
-    | '/dashboard/product'
   id:
     | '__root__'
     | '/'
@@ -353,11 +330,9 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
-    | '/dashboard/product/$productId'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
-    | '/dashboard/product/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -555,20 +530,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardNodraMethodsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/product/': {
-      id: '/dashboard/product/'
-      path: '/product'
-      fullPath: '/dashboard/product/'
-      preLoaderRoute: typeof DashboardProductIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/product/$productId': {
-      id: '/dashboard/product/$productId'
-      path: '/product/$productId'
-      fullPath: '/dashboard/product/$productId'
-      preLoaderRoute: typeof DashboardProductProductIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
   }
 }
 
@@ -601,9 +562,7 @@ interface DashboardRouteChildren {
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
-  DashboardProductProductIdRoute: typeof DashboardProductProductIdRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
-  DashboardProductIndexRoute: typeof DashboardProductIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -621,9 +580,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
-  DashboardProductProductIdRoute: DashboardProductProductIdRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,
-  DashboardProductIndexRoute: DashboardProductIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
