@@ -21,8 +21,57 @@
       "unique": true,
       "max_length": 140,
       "in_list_view": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Select",
+      "options": [
+        "Draft",
+        "Pending",
+        "Confirmed"
+      ],
+      "default": "Draft",
+      "read_only": true
     }
   ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Pending",
+        "doc_status": 0
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 1,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Submit",
+        "to": "Pending",
+        "roles": [
+          "Purchase User"
+        ]
+      },
+      {
+        "from": "Pending",
+        "action": "Approve",
+        "to": "Confirmed",
+        "roles": [
+          "Purchase Manager"
+        ]
+      }
+    ]
+  },
   "permissions": [
     {
       "role": "System Manager",
