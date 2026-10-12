@@ -7,6 +7,8 @@ import AppSidebar from "@/components/layout/app-sidebar";
 import Header from "@/components/layout/header";
 import { InfobarProvider } from "@/components/ui/infobar";
 import { InfoSidebar } from "@/components/layout/info-sidebar";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 
 type AuthMeResult = {
   authenticated: boolean;
@@ -17,9 +19,10 @@ export const Route = createFileRoute("/dashboard")({
     let authenticated = false;
 
     try {
-      const result = (await callMethod("auth.me")) as AuthMeResult;
+      const result = await checkDashboardAuth();
       authenticated = result.authenticated === true;
-    } catch {
+    } catch (error) {
+      console.error("Dashboard authentication failed:", error);
       authenticated = false;
     }
 
@@ -36,6 +39,20 @@ export const Route = createFileRoute("/dashboard")({
   },
   component: DashboardLayout,
 });
+
+const checkDashboardAuth = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const cookie = getRequestHeaders().get("cookie");
+
+    return callMethod<{ authenticated: boolean }>(
+      "auth.me",
+      {},
+      {
+        headers: cookie ? { cookie } : {},
+      },
+    );
+  },
+);
 
 function DashboardLayout() {
   return (

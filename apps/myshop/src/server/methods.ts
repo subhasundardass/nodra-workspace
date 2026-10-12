@@ -48,7 +48,7 @@ async function resolveMethodIdentity(
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
 
-  // console.log("SESSION", session);
+  console.log("SESSION", roles);
 
   return {
     user: {
@@ -106,7 +106,7 @@ export function registerAppMethods(registry: MethodRegistry): void {
       };
     },
     {
-      requireAuth: false,
+      requireAuth: true,
     },
   );
 
@@ -137,10 +137,10 @@ export function registerAppMethods(registry: MethodRegistry): void {
         total: methods.length,
       };
     },
-    // {
-    //   requireAuth: true,
-    //   requiredRoles: ["System User"],
-    // },
+    {
+      requireAuth: true,
+      requiredRoles: ["System Manager"],
+    },
   );
 
   // ---------------------------------------------------------------------------
