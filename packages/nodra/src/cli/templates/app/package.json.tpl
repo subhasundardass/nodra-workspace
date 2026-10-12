@@ -14,15 +14,6 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "nodra": "workspace:*",
-    "@tanstack/react-router": "^1.170.38",
-    "@tanstack/react-start": "^1.168.56",
-    "@tanstack/store": "^0.11.1",
-    "commander": "^14.0.3",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
-=======
     "@base-ui/react": "^1.6.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
@@ -82,7 +73,6 @@
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
->>>>>>> origin/core
   },
   "devDependencies": {
     "@tanstack/nitro-v2-vite-plugin": "^1.155.2",
@@ -94,9 +84,6 @@
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vite": "^8.3.0",
-<<<<<<< HEAD
-    "vite-tsconfig-paths": "^6.1.1"
-=======
     "vite-tsconfig-paths": "^6.1.1",
     "@faker-js/faker": "^9.9.0",
     "@tabler/icons-react": "^3.40.0",
@@ -110,6 +97,5 @@
   "overrides": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0"
->>>>>>> origin/core
   }
 }
