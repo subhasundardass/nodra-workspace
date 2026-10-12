@@ -2,7 +2,7 @@
   "name": "nodra-workspace",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@12.11.2",
   "type": "module",
   "scripts": {
     "cli": "pnpm --filter nodra cli",
@@ -11,6 +11,7 @@
     "build": "pnpm --filter myshop build",
     "start": "pnpm --filter myshop start",
     "new:doctype": "pnpm --filter myshop cli new:doctype",
+    "new:method": "pnpm --filter myshop cli new:method",
     "migrate": "pnpm --filter myshop cli migrate",
     "console": "pnpm --filter myshop cli console",
     "typecheck": "pnpm --filter '*' typecheck",
