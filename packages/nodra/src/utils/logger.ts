@@ -1,17 +1,6 @@
-<<<<<<< HEAD
-/**
- * Nodra Framework - Logger
- *
- * Structured logger built on pino.
- * Supports child loggers for request-scoped context.
- */
-
-import pino, { type DestinationStream, type LoggerOptions } from "pino";
-=======
 import pino, { type DestinationStream, type LoggerOptions } from "pino";
 import pretty from "pino-pretty";
 
->>>>>>> origin/core
 import type { LoggingConfig } from "../core/config";
 
 export type Logger = pino.Logger;
@@ -30,8 +19,6 @@ export function createLogger(
 
   if (destination) {
     return pino(options, destination as DestinationStream);
-<<<<<<< HEAD
-=======
   }
 
   if (config.format === "pretty") {
@@ -43,7 +30,6 @@ export function createLogger(
         ignore: "pid,hostname",
       }),
     );
->>>>>>> origin/core
   }
 
   return pino(options);
