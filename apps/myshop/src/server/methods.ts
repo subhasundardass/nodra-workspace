@@ -18,18 +18,20 @@ async function resolveMethodIdentity(
   const token = extractSessionToken(ctx.request.headers, "session_token");
 
   if (!token) {
+    console.log("[auth] No session token", ctx.method);
     return null;
   }
 
   const app = await getNodra();
-
   const session = await app.sessions.resolve(token);
 
   if (!session) {
+    console.log("[auth] Session not found", ctx.method);
     return null;
   }
 
   if (session.subject.type !== "User") {
+    console.log("[auth] Unexpected session subject", session.subject.type);
     return null;
   }
 
@@ -39,12 +41,14 @@ async function resolveMethodIdentity(
   );
 
   if (!user.get("enabled")) {
+    console.log("[auth] User disabled", session.subject.id);
     return null;
   }
 
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
-
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
+
+  // console.log("SESSION", session);
 
   return {
     user: {
@@ -135,7 +139,7 @@ export function registerAppMethods(registry: MethodRegistry): void {
     },
     // {
     //   requireAuth: true,
-    //   requiredRoles: ["SUPER_ADMIN"],
+    //   requiredRoles: ["System User"],
     // },
   );
 
@@ -147,7 +151,6 @@ export function registerAppMethods(registry: MethodRegistry): void {
     "auth.login",
     async (ctx) => {
       const email = String(ctx.args.email ?? "").trim();
-
       const password = String(ctx.args.password ?? "");
 
       if (!email || !password) {
@@ -202,29 +205,19 @@ export function registerAppMethods(registry: MethodRegistry): void {
   registry.register(
     "auth.logout",
     async (ctx) => {
-      if (!ctx.session) {
-        return {
-          success: true,
-        };
-      }
-
-      const app = await getNodra();
-
       const token = extractSessionToken(ctx.request.headers, "session_token");
 
       if (token) {
+        const app = await getNodra();
         await app.auth.logout(token);
       }
 
-      // Tell the HTTP transport to remove the cookie.
       ctx.state.set("clearSessionCookie", true);
 
-      return {
-        success: true,
-      };
+      return { success: true };
     },
     {
-      requireAuth: true,
+      requireAuth: false,
     },
   );
 }
