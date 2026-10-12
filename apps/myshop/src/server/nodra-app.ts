@@ -119,6 +119,12 @@ export class NodraApp {
     await app.db.connect();
     app.logger.info("Database connected");
 
+    const frameworkDir = frameworkDoctypesDir();
+    const appDir = path.join(process.cwd(), "doctypes");
+
+    console.log("Framework DocTypes directory:", frameworkDir);
+    console.log("App DocTypes directory:", appDir);
+
     // Doctype metadata: framework built-ins (User, Role, ...) from the
     // `nodra` package, then this app's own doctypes — in that order, so
     // app doctypes can safely `Link` to framework ones. Both directories
