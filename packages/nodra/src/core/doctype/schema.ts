@@ -139,6 +139,8 @@ export interface DocTypeWorkflowTransition {
  * Workflow configuration embedded in DocType metadata.
  */
 export interface DocTypeWorkflow {
+  /** DocType field that stores the current workflow state. */
+  state_field: string;
   states: DocTypeWorkflowState[];
   transitions: DocTypeWorkflowTransition[];
 }
@@ -295,10 +297,43 @@ function validateField(raw: unknown, index: number): FieldDefinition {
 /**
  * Parse and validate workflow metadata embedded in a DocType.
  */
-function parseWorkflow(raw: unknown, doctypeName: string): DocTypeWorkflow {
+
+function parseWorkflow(
+  raw: unknown,
+  doctypeName: string,
+  fields: FieldDefinition[],
+): DocTypeWorkflow {
   if (!isPlainObject(raw)) {
     throw new ValidationError(
       `DocType "${doctypeName}": "workflow" must be an object`,
+    );
+  }
+
+  // Validate the field used to store the current workflow state.
+  const stateField = raw["state_field"];
+
+  if (typeof stateField !== "string" || stateField.trim() === "") {
+    throw new ValidationError(
+      `DocType "${doctypeName}": workflow.state_field is required`,
+    );
+  }
+
+  const stateFieldDefinition = fields.find(
+    (field) => field.fieldname === stateField,
+  );
+
+  if (!stateFieldDefinition) {
+    throw new ValidationError(
+      `DocType "${doctypeName}": workflow.state_field "${stateField}" does not exist`,
+    );
+  }
+
+  if (
+    stateFieldDefinition.fieldtype !== "Select" &&
+    stateFieldDefinition.fieldtype !== "Data"
+  ) {
+    throw new ValidationError(
+      `DocType "${doctypeName}": workflow.state_field "${stateField}" must use the Select or Data field type`,
     );
   }
 
@@ -444,7 +479,11 @@ function parseWorkflow(raw: unknown, doctypeName: string): DocTypeWorkflow {
     },
   );
 
-  return { states, transitions };
+  return {
+    state_field: stateField,
+    states,
+    transitions,
+  };
 }
 
 // --- DocType Parsing ---
@@ -598,7 +637,7 @@ export function parseDocType(raw: unknown): DocTypeDefinition {
   const workflow =
     raw["workflow"] === undefined
       ? undefined
-      : parseWorkflow(raw["workflow"], name);
+      : parseWorkflow(raw["workflow"], name, fields);
 
   const searchFields = raw["search_fields"];
   if (

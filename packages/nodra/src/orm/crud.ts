@@ -25,6 +25,13 @@ import { NotFoundError } from "../core/errors";
 import { QueryBuilder } from "../database/query-builder";
 import { withTransaction } from "../database/transaction";
 
+import {
+  toWorkflowDefinition,
+  WorkflowExecutor,
+  WorkflowManager,
+  WorkflowExecutionError,
+} from "../workflow";
+
 // ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
@@ -288,6 +295,7 @@ export class ORM {
   private inTx = false;
   /** Shared with transaction-scoped copies so the series table is created once. */
   private seriesState: { ready?: Promise<void> } = {};
+  private readonly workflowTransitionDocs = new Set<string>();
 
   constructor(
     db: Database,
@@ -325,6 +333,89 @@ export class ORM {
     return this.db;
   }
 
+  /**
+   * Execute a configured workflow action and persist it through the normal
+   * update lifecycle. The row lock and update share one transaction.
+   */
+  async transition(doc: Document, action: string): Promise<Document> {
+    return this.transaction(async (tx) => {
+      const meta = tx.registry.get(doc.doctype);
+      const workflow = tx.workflowComponents(meta);
+
+      if (!workflow) {
+        throw new WorkflowExecutionError(
+          `${meta.name} has no configured workflow`,
+        );
+      }
+
+      const session = tx.session();
+
+      // Workflow actions must have an authenticated user and roles.
+      if (!session?.user) {
+        throw new PermissionError(
+          `An authenticated session is required to transition ${meta.name}`,
+        );
+      }
+
+      const tableName = toTableName(meta.name);
+
+      // Lock the latest persisted version before checking the action.
+      const stored = await tx.q.queryOne<Row>(
+        `SELECT * FROM ${tableName} WHERE name = $1 FOR UPDATE`,
+        [doc.name],
+      );
+
+      if (!stored) {
+        throw new NotFoundError(meta.name, doc.name);
+      }
+
+      tx.checkDocAccess(meta, "write", (key) => stored[key]);
+
+      const children = tx.hasChildren(meta)
+        ? await tx.loadChildren(tx.q, meta, doc.name)
+        : {};
+
+      const fresh = tx.rowToDocument(meta, stored, children);
+
+      // The executor works with a plain object. Copy the current persisted
+      // values into it, then copy the resulting state back to the Document.
+      const workflowDoc: Record<string, unknown> = {
+        name: fresh.name,
+        docstatus: fresh.docstatus,
+      };
+
+      for (const field of meta.fields) {
+        workflowDoc[field.fieldname] = fresh.get(field.fieldname);
+      }
+
+      await workflow.executor.applyTransition(
+        meta.name,
+        workflowDoc,
+        action,
+        session.user,
+        session.roles,
+      );
+
+      fresh.set(workflow.stateField, workflowDoc[workflow.stateField]);
+
+      if (workflowDoc.docstatus !== undefined) {
+        fresh.docstatus = Number(workflowDoc.docstatus);
+      }
+
+      const key = tx.workflowTransitionKey(meta.name, fresh.name);
+
+      tx.workflowTransitionDocs.add(key);
+
+      try {
+        // Uses beforeValidate, validate, beforeSave, DB update,
+        // afterSave and onChange through the existing lifecycle.
+        return await tx.update(fresh);
+      } finally {
+        tx.workflowTransitionDocs.delete(key);
+      }
+    });
+  }
+
   // ===========================================================================
   // insert
   // ===========================================================================
@@ -332,30 +423,67 @@ export class ORM {
   /**
    * Lifecycle: beforeValidate → validate → beforeInsert → beforeSave → DB INSERT → afterSave → afterInsert
    */
+
   async insert(doc: Document): Promise<Document> {
     const meta = this.registry.get(doc.doctype);
     const now = new Date();
     const user = this.user();
-
     const a = this.access(meta, "create");
 
-    // Naming: legacy (hash) happens now; doctypes with `autoname` are named after validation.
+    // Naming: legacy (hash) happens now; doctypes with `autoname`
+    // are named after validation.
     const autoname = this.autoname(meta);
+
     if (!doc.name && !autoname) {
       doc.name = this.generateName(meta);
     }
+
     if (!doc.owner) {
       doc.owner = user ?? DEFAULT_USER;
     }
-    if (!a.bypass && user) doc.owner = user; // enforced: cannot create on behalf of others
+
+    if (!a.bypass && user) {
+      doc.owner = user;
+    }
+
     doc.creation = now;
     doc.modified = now;
+
     if (user) {
       doc.modified_by = user;
     } else if (!doc.modified_by) {
       doc.modified_by = doc.owner;
     }
-    if (this.isSubmittable(meta)) doc.docstatus = 0;
+
+    if (this.isSubmittable(meta)) {
+      doc.docstatus = 0;
+    }
+
+    // Initialize workflow state before validation and lifecycle hooks.
+    const workflow = this.workflowComponents(meta);
+
+    if (workflow) {
+      const workflowDoc: Record<string, unknown> = {
+        name: doc.name,
+        docstatus: doc.docstatus,
+      };
+
+      for (const field of meta.fields) {
+        workflowDoc[field.fieldname] = doc.get(field.fieldname);
+      }
+
+      workflow.executor.initializeDocument(
+        meta.name,
+        workflowDoc,
+        user ?? DEFAULT_USER,
+      );
+
+      doc.set(workflow.stateField, workflowDoc[workflow.stateField]);
+
+      if (workflowDoc.docstatus !== undefined) {
+        doc.docstatus = Number(workflowDoc.docstatus);
+      }
+    }
 
     // Lifecycle: pre-validation
     await doc.beforeValidate();
@@ -363,7 +491,11 @@ export class ORM {
 
     // Framework validation
     validateDocument(doc, meta);
-    if (this.options.validateLinks) await this.validateLinks(doc, meta);
+
+    if (this.options.validateLinks) {
+      await this.validateLinks(doc, meta);
+    }
+
     this.checkUserPerms(meta, a.s, this.docGetter(doc));
 
     if (!doc.name && autoname) {
@@ -375,6 +507,7 @@ export class ORM {
     await doc.beforeSave();
 
     const withChildren = this.hasChildren(meta);
+
     await this.run(withChildren, async (db) => {
       const data = this.buildInsertData(doc, meta);
       const tableName = toTableName(doc.doctype);
@@ -384,11 +517,13 @@ export class ORM {
       const rows = await db.query<Row>(sql, params);
       const row = rows[0];
 
-      // Apply returned data to document
       if (row) {
         this.applyRowToDocument(doc, row);
       }
-      if (withChildren) await this.saveChildren(db, doc, meta, now);
+
+      if (withChildren) {
+        await this.saveChildren(db, doc, meta, now);
+      }
     });
 
     // Mark as persisted
@@ -522,10 +657,12 @@ export class ORM {
     const user = this.user();
     const submittable = this.isSubmittable(meta);
     const loadedModified: unknown = doc.modified;
+    const workflow = this.workflowComponents(meta);
 
     if (mode !== "update" && !submittable) {
       throw new DocStatusError(`${meta.name} is not submittable`);
     }
+
     const ptype: PType = mode === "update" ? "write" : mode;
     const a = this.access(meta, ptype);
 
@@ -533,24 +670,37 @@ export class ORM {
     doc.modified_by = user ?? (doc.modified_by || DEFAULT_USER);
 
     if (mode !== "cancel") {
-      // Lifecycle: pre-validation
       await doc.beforeValidate();
       await doc.validate();
 
-      // Framework validation
       validateDocument(doc, meta);
-      if (this.options.validateLinks) await this.validateLinks(doc, meta);
+
+      if (this.options.validateLinks) {
+        await this.validateLinks(doc, meta);
+      }
+
       this.checkUserPerms(meta, a.s, this.docGetter(doc));
     }
-    if (mode === "update") await doc.beforeSave();
-    if (mode === "submit") await this.hook(doc, "beforeSubmit");
-    if (mode === "cancel") await this.hook(doc, "beforeCancel");
+
+    if (mode === "update") {
+      await doc.beforeSave();
+    }
+
+    if (mode === "submit") {
+      await this.hook(doc, "beforeSubmit");
+    }
+
+    if (mode === "cancel") {
+      await this.hook(doc, "beforeCancel");
+    }
 
     const withChildren = this.hasChildren(meta);
+
     const needsStored =
       !!this.options.staleCheck ||
       submittable ||
-      !!this.options.enforcePermissions;
+      !!this.options.enforcePermissions ||
+      !!workflow;
 
     await this.run(withChildren || needsStored, async (db) => {
       let storedStatus = 0;
@@ -560,9 +710,30 @@ export class ORM {
           `SELECT * FROM ${tableName} WHERE name = $1 FOR UPDATE`,
           [doc.name],
         );
-        if (!stored) return; // same as before: updating a missing row is a no-op
 
-        this.checkDocAccess(meta, ptype, (k) => stored[k]);
+        if (!stored) {
+          return;
+        }
+
+        this.checkDocAccess(meta, ptype, (key) => stored[key]);
+
+        // Prevent direct workflow-state changes.
+        // Only transition() may change the configured state field.
+        if (mode === "update" && workflow) {
+          const key = this.workflowTransitionKey(meta.name, doc.name);
+          const isWorkflowTransition = this.workflowTransitionDocs.has(key);
+
+          if (
+            !isWorkflowTransition &&
+            String(doc.get(workflow.stateField) ?? "") !==
+              String(stored[workflow.stateField] ?? "")
+          ) {
+            throw new WorkflowExecutionError(
+              `Cannot change "${workflow.stateField}" directly. ` +
+                `Use orm.transition(doc, action).`,
+            );
+          }
+        }
 
         if (
           this.options.staleCheck &&
@@ -571,28 +742,36 @@ export class ORM {
           toMs(stored["modified"]) !== toMs(loadedModified)
         ) {
           throw new StaleDocumentError(
-            `${meta.name} ${doc.name} was modified by ${String(stored["modified_by"])} after you loaded it. Reload and try again.`,
+            `${meta.name} ${doc.name} was modified by ` +
+              `${String(stored["modified_by"])} after you loaded it. ` +
+              `Reload and try again.`,
           );
         }
 
         storedStatus = Number(stored["docstatus"] ?? 0);
+
         if (submittable) {
-          if (mode === "submit" && storedStatus !== 0)
+          if (mode === "submit" && storedStatus !== 0) {
             throw new DocStatusError(`${meta.name} ${doc.name} is not a draft`);
-          if (mode === "cancel" && storedStatus !== 1)
+          }
+
+          if (mode === "cancel" && storedStatus !== 1) {
             throw new DocStatusError(
               `${meta.name} ${doc.name} is not submitted`,
             );
-          if (mode === "update" && storedStatus === 2)
+          }
+
+          if (mode === "update" && storedStatus === 2) {
             throw new DocStatusError(
               `${meta.name} ${doc.name} is cancelled and cannot be edited`,
             );
+          }
         }
       }
 
-      // Build UPDATE data
       let data: Row;
       let onlyTables: Set<string> | undefined;
+
       if (mode === "cancel") {
         data = {
           modified: doc.modified,
@@ -601,16 +780,22 @@ export class ORM {
         };
       } else {
         data = this.buildUpdateData(doc, meta);
-        if (mode === "submit") data["docstatus"] = 1;
+
+        if (mode === "submit") {
+          data["docstatus"] = 1;
+        }
+
         if (mode === "update" && submittable && storedStatus === 1) {
-          // Submitted: only fields flagged allow_on_submit may change
           const ok = new Set(
-            meta.fields.filter(allowOnSubmit).map((f) => f.fieldname),
+            meta.fields.filter(allowOnSubmit).map((field) => field.fieldname),
           );
-          for (const k of Object.keys(data)) {
-            if (k !== "modified" && k !== "modified_by" && !ok.has(k))
-              delete data[k];
+
+          for (const key of Object.keys(data)) {
+            if (key !== "modified" && key !== "modified_by" && !ok.has(key)) {
+              delete data[key];
+            }
           }
+
           onlyTables = ok;
         }
       }
@@ -618,23 +803,30 @@ export class ORM {
       const qb = new QueryBuilder(tableName)
         .update(data)
         .where("name", "=", doc.name);
-      const { sql, params } = qb.build();
 
+      const { sql, params } = qb.build();
       const rows = await db.query<Row>(sql + " RETURNING *", params);
       const row = rows[0];
 
       if (row) {
         this.applyRowToDocument(doc, row);
-        if (withChildren && mode !== "cancel")
+
+        if (withChildren && mode !== "cancel") {
           await this.saveChildren(db, doc, meta, now, onlyTables);
+        }
       }
     });
 
-    if (mode === "submit") doc.docstatus = 1;
-    if (mode === "cancel") doc.docstatus = 2;
+    if (mode === "submit") {
+      doc.docstatus = 1;
+    }
+
+    if (mode === "cancel") {
+      doc.docstatus = 2;
+    }
+
     doc.markAsClean();
 
-    // Lifecycle: post-save + onChange
     if (mode === "update") {
       await doc.afterSave();
     } else if (mode === "submit") {
@@ -643,6 +835,7 @@ export class ORM {
     } else {
       await this.hook(doc, "onCancel");
     }
+
     await doc.onChange();
 
     return doc;
@@ -791,13 +984,14 @@ export class ORM {
    * Set a single field (as before) or several via a dict. Updates `modified`
    * (and `modified_by` when a session exists). No hooks or validation.
    */
+
   async setValue(
     doctype: string,
     name: string,
     fieldname: string | Row,
     value?: unknown,
   ): Promise<void> {
-    const meta = this.registry.get(doctype); // validate doctype exists
+    const meta = this.registry.get(doctype);
     const tableName = toTableName(doctype);
     const now = new Date();
     const user = this.user();
@@ -806,8 +1000,22 @@ export class ORM {
 
     const updates: Row =
       typeof fieldname === "string" ? { [fieldname]: value } : fieldname;
+
     const cols = Object.keys(updates);
-    if (cols.length === 0) return;
+
+    if (cols.length === 0) {
+      return;
+    }
+
+    // Workflow states must be changed using transition().
+    const workflow = this.workflowComponents(meta);
+
+    if (workflow && cols.includes(workflow.stateField)) {
+      throw new WorkflowExecutionError(
+        `Cannot change "${workflow.stateField}" through setValue(). ` +
+          `Use orm.transition(doc, action).`,
+      );
+    }
 
     if (typeof fieldname === "string" && !user) {
       await this.q.execute(
@@ -817,16 +1025,21 @@ export class ORM {
       return;
     }
 
-    const sets = cols.map((c, i) => `${ident(c)} = $${i + 1}`);
-    const params: unknown[] = cols.map((c) => updates[c]);
+    const sets = cols.map((col, index) => `${ident(col)} = $${index + 1}`);
+    const params: unknown[] = cols.map((col) => updates[col]);
+
     let n = cols.length;
+
     sets.push(`modified = $${++n}`);
     params.push(now);
+
     if (user) {
       sets.push(`modified_by = $${++n}`);
       params.push(user);
     }
+
     params.push(name);
+
     await this.q.execute(
       `UPDATE ${tableName} SET ${sets.join(", ")} WHERE name = $${n + 1}`,
       params,
@@ -1470,5 +1683,30 @@ export class ORM {
   ): Promise<T> {
     if (this.inTx || !transactional) return fn(this.q); // already in (or no need for) a transaction
     return withTransaction(this.db, fn);
+  }
+
+  /**
+   * Workflow Components
+   */
+
+  private workflowComponents(meta: DocTypeDefinition) {
+    const definition = toWorkflowDefinition(meta);
+
+    if (!definition) {
+      return undefined;
+    }
+
+    const manager = new WorkflowManager();
+    manager.registerWorkflow(definition);
+
+    return {
+      manager,
+      executor: new WorkflowExecutor(manager),
+      stateField: definition.workflow_state_field || "workflow_state",
+    };
+  }
+
+  private workflowTransitionKey(doctype: string, name: string): string {
+    return `${doctype}:${name}`;
   }
 }
