@@ -43,6 +43,39 @@ export function UserNav({ user, onSignOut }: UserNavProps) {
   const email = user?.email ?? "";
   const initials = getInitials(user?.fullName ?? "", email);
 
+  // async function handleSignOut() {
+  //   if (signingOut) return;
+
+  //   setSigningOut(true);
+
+  //   try {
+  //     if (onSignOut) {
+  //       await onSignOut();
+  //     } else {
+  //       await callMethod({
+  //         data: {
+  //           method: "auth.logout",
+  //         },
+  //       });
+  //     }
+
+  //     toast.success("Signed out successfully.");
+
+  //     await navigate({
+  //       to: "/auth/sign-in",
+  //       replace: true,
+  //     });
+  //   } catch (error) {
+  //     toast.error(
+  //       error instanceof MethodCallError
+  //         ? error.message
+  //         : "Unable to sign out. Please try again.",
+  //     );
+  //   } finally {
+  //     setSigningOut(false);
+  //   }
+  // }
+
   async function handleSignOut() {
     if (signingOut) return;
 
@@ -52,26 +85,20 @@ export function UserNav({ user, onSignOut }: UserNavProps) {
       if (onSignOut) {
         await onSignOut();
       } else {
-        await callMethod({
-          data: {
-            method: "auth.logout",
-          },
-        });
+        await callMethod("auth.logout");
       }
 
       toast.success("Signed out successfully.");
 
-      await navigate({
-        to: "/auth/sign-in",
-        replace: true,
-      });
+      // Hard redirect: clears router context, query cache and any
+      // cached getCurrentUser result in one go.
+      window.location.href = "/auth/sign-in";
     } catch (error) {
       toast.error(
         error instanceof MethodCallError
           ? error.message
           : "Unable to sign out. Please try again.",
       );
-    } finally {
       setSigningOut(false);
     }
   }
