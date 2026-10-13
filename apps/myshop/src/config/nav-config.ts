@@ -84,19 +84,35 @@ export const navGroups: NavGroup[] = [
           },
         ],
       },
-      {
-        title: "React Query",
-        url: "/dashboard/react-query",
-        icon: "code",
-        isActive: false,
-        items: [],
-      },
+
       {
         title: "Icons",
         url: "/dashboard/elements/icons",
         icon: "palette",
         isActive: false,
         items: [],
+      },
+    ],
+  },
+
+  // Application
+  {
+    label: "Application",
+    items: [
+      {
+        title: "User Managemnt",
+        url: "#",
+        icon: "palette",
+        isActive: false,
+        items: [
+          {
+            title: "Users",
+            url: "/dashboard/application/users",
+            icon: "palette",
+            isActive: false,
+            items: [],
+          },
+        ],
       },
     ],
   },
