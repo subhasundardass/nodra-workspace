@@ -11,6 +11,7 @@ import {
 import { AuthenticationError, extractSessionToken } from "nodra/auth";
 
 import { getNodra } from "./nodra-app";
+import { runWithSession } from "nodra/orm/crud";
 
 async function resolveMethodIdentity(
   ctx: MethodContext,
@@ -48,8 +49,6 @@ async function resolveMethodIdentity(
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
 
-  console.log("SESSION", roles);
-
   return {
     user: {
       email: String(user.get("email") ?? ""),
@@ -76,6 +75,13 @@ export function registerAppMethods(registry: MethodRegistry): void {
    * method handler
    */
   registry.use(authenticate(resolveMethodIdentity));
+  registry.use((ctx, next) =>
+    ctx.user
+      ? runWithSession({ user: ctx.user.email, roles: ctx.user.roles }, () =>
+          next(),
+        )
+      : next(),
+  );
 
   // ---------------------------------------------------------------------------
   // Ping
