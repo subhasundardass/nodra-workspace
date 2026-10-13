@@ -663,6 +663,14 @@ export class ORM {
       throw new DocStatusError(`${meta.name} is not submittable`);
     }
 
+    // With a workflow, docstatus is owned by the workflow states.
+    if (mode !== "update" && workflow) {
+      throw new WorkflowExecutionError(
+        `${meta.name} uses a workflow. Use orm.transition(doc, action) ` +
+          `instead of ${mode}().`,
+      );
+    }
+
     const ptype: PType = mode === "update" ? "write" : mode;
     const a = this.access(meta, ptype);
 
@@ -702,6 +710,14 @@ export class ORM {
       !!this.options.enforcePermissions ||
       !!workflow;
 
+    // True only while orm.transition() is saving this document.
+    const isWorkflowTransition =
+      mode === "update" &&
+      !!workflow &&
+      this.workflowTransitionDocs.has(
+        this.workflowTransitionKey(meta.name, doc.name),
+      );
+
     await this.run(withChildren || needsStored, async (db) => {
       let storedStatus = 0;
 
@@ -712,7 +728,7 @@ export class ORM {
         );
 
         if (!stored) {
-          return;
+          throw new NotFoundError(meta.name, doc.name);
         }
 
         this.checkDocAccess(meta, ptype, (key) => stored[key]);
@@ -720,9 +736,6 @@ export class ORM {
         // Prevent direct workflow-state changes.
         // Only transition() may change the configured state field.
         if (mode === "update" && workflow) {
-          const key = this.workflowTransitionKey(meta.name, doc.name);
-          const isWorkflowTransition = this.workflowTransitionDocs.has(key);
-
           if (
             !isWorkflowTransition &&
             String(doc.get(workflow.stateField) ?? "") !==
@@ -785,13 +798,34 @@ export class ORM {
           data["docstatus"] = 1;
         }
 
+        if (isWorkflowTransition && submittable && workflow) {
+          const next = Number(data["docstatus"] ?? storedStatus);
+
+          // A workflow may submit (0->1) or cancel (1->2), never go back
+          // or skip the submitted step.
+          if (next < storedStatus || (storedStatus === 0 && next === 2)) {
+            throw new DocStatusError(
+              `${meta.name} ${doc.name}: workflow cannot change docstatus ` +
+                `from ${storedStatus} to ${next}`,
+            );
+          }
+        }
+
         if (mode === "update" && submittable && storedStatus === 1) {
           const ok = new Set(
             meta.fields.filter(allowOnSubmit).map((field) => field.fieldname),
           );
 
+          // A workflow transition may still move the state field and docstatus
+          // of a submitted document; everything else stays locked.
+          const keep = new Set(ok);
+          if (isWorkflowTransition && workflow) {
+            keep.add(workflow.stateField);
+            keep.add("docstatus");
+          }
+
           for (const key of Object.keys(data)) {
-            if (key !== "modified" && key !== "modified_by" && !ok.has(key)) {
+            if (key !== "modified" && key !== "modified_by" && !keep.has(key)) {
               delete data[key];
             }
           }
@@ -808,12 +842,14 @@ export class ORM {
       const rows = await db.query<Row>(sql + " RETURNING *", params);
       const row = rows[0];
 
-      if (row) {
-        this.applyRowToDocument(doc, row);
+      if (!row) {
+        throw new NotFoundError(meta.name, doc.name);
+      }
 
-        if (withChildren && mode !== "cancel") {
-          await this.saveChildren(db, doc, meta, now, onlyTables);
-        }
+      this.applyRowToDocument(doc, row);
+
+      if (withChildren && mode !== "cancel") {
+        await this.saveChildren(db, doc, meta, now, onlyTables);
       }
     });
 
@@ -1005,6 +1041,13 @@ export class ORM {
 
     if (cols.length === 0) {
       return;
+    }
+
+    if (cols.includes("docstatus")) {
+      throw new DocStatusError(
+        `Cannot change docstatus through setValue(). ` +
+          `Use submit(), cancel() or a workflow transition.`,
+      );
     }
 
     // Workflow states must be changed using transition().
