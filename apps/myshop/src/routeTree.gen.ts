@@ -34,6 +34,7 @@ import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/
 import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
+import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const DashboardNodraMethodsRoute = DashboardNodraMethodsRouteImport.update({
   path: '/nodra/methods',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardOrdersIndexRoute = DashboardOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/orders/': typeof DashboardOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
   '/dashboard/forms': typeof DashboardFormsIndexRoute
+  '/dashboard/orders': typeof DashboardOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/orders/': typeof DashboardOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
+    | '/dashboard/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/dashboard/forms'
+    | '/dashboard/orders'
   id:
     | '__root__'
     | '/'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
+    | '/dashboard/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -513,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardNodraMethodsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/orders/': {
+      id: '/dashboard/orders/'
+      path: '/orders'
+      fullPath: '/dashboard/orders/'
+      preLoaderRoute: typeof DashboardOrdersIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
@@ -531,6 +550,7 @@ interface DashboardRouteRouteChildren {
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
+  DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -548,6 +568,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,
+  DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

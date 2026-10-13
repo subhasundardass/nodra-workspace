@@ -34,6 +34,7 @@ import { AuthService } from "nodra/auth/auth.js";
 import { ORMAuthUserRepository } from "nodra/auth/user-repository.js";
 import { RedisSessionStore, SessionManager } from "nodra/auth/session.js";
 import { ResourceAPI } from "nodra";
+import { registerOrdersMethods } from "./methods/orders.js";
 
 const require = createRequire(import.meta.url);
 
