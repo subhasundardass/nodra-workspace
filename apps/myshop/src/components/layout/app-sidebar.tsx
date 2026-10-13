@@ -1,19 +1,23 @@
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { navGroups } from '@/config/nav-config';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { useFilteredNavGroups } from '@/hooks/use-nav';
-import { Link } from '@tanstack/react-router';
-import { useLocation, useRouter } from '@tanstack/react-router';
-import * as React from 'react';
-import { Icons } from '../icons';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { navGroups } from "@/config/nav-config";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useFilteredNavGroups } from "@/hooks/use-nav";
+import { Link } from "@tanstack/react-router";
+import { useLocation, useRouter } from "@tanstack/react-router";
+import * as React from "react";
+import { Icons } from "../icons";
 import {
   Sidebar,
   SidebarContent,
@@ -27,8 +31,9 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail
-} from '@/components/ui/sidebar';
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { callMethod } from "@/lib/call-method";
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
@@ -41,51 +46,65 @@ export default function AppSidebar() {
   }, [isOpen]);
 
   return (
-    <Sidebar variant='inset' collapsible='icon'>
+    <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size='lg' asChild>
-              <Link to='/dashboard/overview' aria-label='Dashboard'>
-                <div className='bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-md'>
-                  <Icons.logo className='size-4' />
+            <SidebarMenuButton size="lg" asChild>
+              <Link to="/dashboard/overview" aria-label="Dashboard">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-md">
+                  <Icons.logo className="size-4" />
                 </div>
-                <div className='grid flex-1 text-left text-sm leading-tight'>
-                  <span className='truncate font-semibold'>TanStack Start</span>
-                  <span className='text-muted-foreground truncate text-xs'>Dashboard</span>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">TanStack Start</span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    Dashboard
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className='overflow-x-hidden'>
+      <SidebarContent className="overflow-x-hidden">
         {filteredGroups.map((group) => (
-          <SidebarGroup key={group.label || 'ungrouped'} className='py-0'>
-            {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+          <SidebarGroup key={group.label || "ungrouped"} className="py-0">
+            {group.label && (
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            )}
             <SidebarMenu>
               {group.items.map((item) => {
                 const Icon = item.icon ? Icons[item.icon] : Icons.logo;
                 return item?.items && item?.items?.length > 0 ? (
-                  <Collapsible key={item.title} defaultOpen={item.isActive} asChild>
+                  <Collapsible
+                    key={item.title}
+                    defaultOpen={item.isActive}
+                    asChild
+                  >
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           tooltip={item.title}
                           isActive={pathname === item.url}
-                          className='group/collapsible'
+                          className="group/collapsible"
                         >
                           {item.icon && <Icon />}
                           <span>{item.title}</span>
-                          <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+                          <Icons.chevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <SidebarMenuSub>
                           {item.items?.map((subItem) => (
                             <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                                <Link to={subItem.url} aria-label={subItem.title}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={pathname === subItem.url}
+                              >
+                                <Link
+                                  to={subItem.url}
+                                  aria-label={subItem.title}
+                                >
                                   <span>{subItem.title}</span>
                                 </Link>
                               </SidebarMenuSubButton>
@@ -120,36 +139,54 @@ export default function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
-                  size='lg'
-                  className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <div className='bg-muted flex aspect-square size-8 shrink-0 items-center justify-center rounded-full'>
-                    <Icons.account className='size-4' />
+                  <div className="bg-muted flex aspect-square size-8 shrink-0 items-center justify-center rounded-full">
+                    <Icons.account className="size-4" />
                   </div>
-                  <div className='grid flex-1 text-left text-sm leading-tight'>
-                    <span className='truncate font-medium'>User</span>
-                    <span className='text-muted-foreground truncate text-xs'>user@example.com</span>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">User</span>
+                    <span className="text-muted-foreground truncate text-xs">
+                      user@example.com
+                    </span>
                   </div>
-                  <Icons.chevronsDown className='ml-auto size-4' />
+                  <Icons.chevronsDown className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
-                side='bottom'
-                align='end'
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                side="bottom"
+                align="end"
                 sideOffset={4}
               >
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => router.navigate({ to: '/dashboard/notifications' })}
+                    onClick={() =>
+                      router.navigate({ to: "/dashboard/notifications" })
+                    }
                   >
-                    <Icons.notification className='mr-2 h-4 w-4' />
+                    <Icons.notification className="mr-2 h-4 w-4" />
                     Notifications
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Icons.logout className='mr-2 h-4 w-4' />
+                <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      // await callMethod("auth.logout");
+                      await callMethod({
+                        data: {
+                          method: "auth.logout",
+                        },
+                      });
+                      window.location.href = "/auth/sign-in";
+                    } catch (error) {
+                      console.error("Logout failed:", error);
+                    }
+                  }}
+                >
+                  <Icons.logout className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
