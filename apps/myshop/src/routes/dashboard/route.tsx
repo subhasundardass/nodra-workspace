@@ -7,6 +7,8 @@ import { InfobarProvider } from "@/components/ui/infobar";
 import { InfoSidebar } from "@/components/layout/info-sidebar";
 import { createServerFn } from "@tanstack/react-start";
 import { callMethod } from "@/lib/call-method";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { nodraCallMethod } from "nodra/client";
 
 type AuthMeResult = {
   authenticated: boolean;
@@ -38,23 +40,23 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
 });
 
-const checkDashboardAuth = createServerFn({ method: "GET" }).handler(async () =>
-  callMethod({
-    data: { method: "auth.me", args: {} },
-  }),
-);
-
-// const checkDashboardAuth = createServerFn({ method: "GET" }).handler(
-//   async () => {
-//     const cookie = getRequestHeaders().get("cookie");
-
-//     return nodraCallMethod<{ authenticated: boolean }>(
-//       "auth.me",
-//       {},
-//       { headers: cookie ? { cookie } : {} },
-//     );
-//   },
+// const checkDashboardAuth = createServerFn({ method: "GET" }).handler(async () =>
+//   callMethod({
+//     data: { method: "auth.me", args: {} },
+//   }),
 // );
+
+const checkDashboardAuth = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const cookie = getRequestHeaders().get("cookie");
+
+    return nodraCallMethod<{ authenticated: boolean }>(
+      "auth.me",
+      {},
+      { headers: cookie ? { cookie } : {} },
+    );
+  },
+);
 
 function DashboardLayout() {
   return (
