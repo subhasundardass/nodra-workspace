@@ -34,6 +34,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { callMethod } from "@/lib/call-method";
+import { getQueryClient } from "@/lib/query-client";
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
@@ -174,15 +175,12 @@ export default function AppSidebar() {
                 <DropdownMenuItem
                   onClick={async () => {
                     try {
-                      // await callMethod("auth.logout");
-                      await callMethod({
-                        data: {
-                          method: "auth.logout",
-                        },
-                      });
-                      window.location.href = "/auth/sign-in";
+                      await callMethod("auth.logout");
                     } catch (error) {
                       console.error("Logout failed:", error);
+                    } finally {
+                      getQueryClient().clear();
+                      window.location.href = "/auth/sign-in";
                     }
                   }}
                 >
