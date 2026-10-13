@@ -3,7 +3,7 @@
   "module": "App",
   "naming_rule": "field",
   "naming_field": "title",
-  "is_submittable": false,
+  "is_submittable": true,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
@@ -59,7 +59,7 @@
         "action": "Submit",
         "to": "Pending",
         "roles": [
-          "Purchase User"
+          "System Manager"
         ]
       },
       {
@@ -67,32 +67,18 @@
         "action": "Approve",
         "to": "Confirmed",
         "roles": [
-          "Purchase Use"
+          "System Manager"
         ]
       }
     ]
   },
   "permissions": [
     {
-      "role": "System Use",
+      "role": "System Manager",
       "read": true,
       "write": true,
       "create": true,
       "delete": true
-    },
-    {
-      "role": "Purchase User",
-      "read": true,
-      "write": true,
-      "create": true,
-      "delete": false
-    },
-    {
-      "role": "Purchase Use",
-      "read": true,
-      "write": true,
-      "create": true,
-      "delete": false
     }
   ]
 }

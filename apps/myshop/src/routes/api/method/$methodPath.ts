@@ -29,6 +29,17 @@ export const Route = createFileRoute("/api/method/$methodPath")({
             state,
           });
 
+          // console.log("[request cookie trace]", {
+          //   method: params.methodPath,
+          //   hasCookieHeader: request.headers.has("cookie"),
+          //   hasSessionCookie: Boolean(
+          //     request.headers
+          //       .get("cookie")
+          //       ?.split(";")
+          //       .some((part) => part.trim().startsWith("session_token=")),
+          //   ),
+          // });
+
           const response = Response.json(result);
 
           // auth.login stores the new session token in method state.

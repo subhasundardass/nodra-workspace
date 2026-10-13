@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { callMethod, MethodCallError } from "nodra/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { CurrentUser } from "@/lib/auth-current-user";
+import { callMethod, MethodCallError } from "@/lib/call-method";
 
 function getInitials(fullName: string, email: string) {
   const source = fullName.trim() || email.trim();
@@ -52,7 +52,11 @@ export function UserNav({ user, onSignOut }: UserNavProps) {
       if (onSignOut) {
         await onSignOut();
       } else {
-        await callMethod("auth.logout");
+        await callMethod({
+          data: {
+            method: "auth.logout",
+          },
+        });
       }
 
       toast.success("Signed out successfully.");

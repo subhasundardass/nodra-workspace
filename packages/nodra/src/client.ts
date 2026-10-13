@@ -1,2 +1,2 @@
-export { callMethod, MethodCallError } from "./api/client";
+export { nodraCallMethod, MethodCallError } from "./api/client";
 export type { CallMethodOptions } from "./api/client";

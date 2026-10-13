@@ -5,11 +5,11 @@
  *
  * Example:
  *
- *   const result = await callMethod("ping");
+ *   const result = await nodraCallMethod("ping");
  *
  * Example with arguments:
  *
- *   const result = await callMethod("customer.get_balance", {
+ *   const result = await nodraCallMethod("customer.get_balance", {
  *     customer: "CUST-001",
  *   });
  */
@@ -34,16 +34,7 @@ export class MethodCallError extends Error {
  * Options for calling a server method.
  */
 export interface CallMethodOptions {
-  /**
-   * Custom fetch implementation.
-   *
-   * Useful for testing or custom environments.
-   */
   fetch?: typeof globalThis.fetch;
-
-  /**
-   * Additional request headers.
-   */
   headers?: Record<string, string>;
 }
 
@@ -56,16 +47,16 @@ export interface CallMethodOptions {
  *
  * Example:
  *
- *   const result = await callMethod("ping");
+ *   const result = await nodraCallMethod("ping");
  *
  * Example with arguments:
  *
- *   const result = await callMethod("customer.get_balance", {
+ *   const result = await nodraCallMethod("customer.get_balance", {
  *     customer: "CUST-001",
  *   });
  */
 
-export async function callMethod<TResult = unknown>(
+export async function nodraCallMethod<TResult = unknown>(
   method: string,
   args: Record<string, unknown> = {},
   options: CallMethodOptions = {},
@@ -95,7 +86,7 @@ export async function callMethod<TResult = unknown>(
       "Content-Type": "application/json",
       ...options.headers,
     },
-    credentials: "include",
+    ...(isServer ? {} : { credentials: "include" as const }),
     body: JSON.stringify(args),
   });
 

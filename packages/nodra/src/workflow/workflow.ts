@@ -8,7 +8,7 @@ import type {
   WorkflowExecutionContext,
   WorkflowExecutionResult,
   WorkflowRegistry,
-} from './types';
+} from "./types";
 
 /**
  * Workflow validation error
@@ -16,7 +16,7 @@ import type {
 export class WorkflowValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'WorkflowValidationError';
+    this.name = "WorkflowValidationError";
   }
 }
 
@@ -82,6 +82,13 @@ export class WorkflowManager {
       };
     }
 
+    if (this.isFinalState(doctype, context.current_state)) {
+      return {
+        allowed: false,
+        reason: `State "${context.current_state}" is final; no transitions are allowed`,
+      };
+    }
+
     // Find matching transition
     const transition = workflow.transitions.find(
       (t) =>
@@ -103,7 +110,7 @@ export class WorkflowManager {
     if (!hasRole) {
       return {
         allowed: false,
-        reason: `User with roles [${context.user_roles.join(', ')}] is not allowed to perform action "${context.action}"`,
+        reason: `User with roles [${context.user_roles.join(", ")}] is not allowed to perform action "${context.action}"`,
       };
     }
 
@@ -188,6 +195,8 @@ export class WorkflowManager {
 
     // Validate all transitions reference existing states
     const stateNames = new Set(workflow.states.map((s) => s.state));
+    const stateByName = new Map(workflow.states.map((s) => [s.state, s]));
+    const seen = new Set<string>();
 
     for (const transition of workflow.transitions) {
       if (!stateNames.has(transition.from_state)) {
@@ -198,6 +207,41 @@ export class WorkflowManager {
       if (!stateNames.has(transition.to_state)) {
         throw new WorkflowValidationError(
           `Transition references non-existent state: ${transition.to_state}`,
+        );
+      }
+
+      //==Added on 13-10-2026
+      if (transition.allowed_roles.length === 0) {
+        throw new WorkflowValidationError(
+          `Transition "${transition.action}" from "${transition.from_state}" has no allowed roles`,
+        );
+      }
+
+      const from = stateByName.get(transition.from_state)!;
+      const to = stateByName.get(transition.to_state)!;
+
+      if (from.is_final) {
+        throw new WorkflowValidationError(
+          `Transition "${transition.action}" starts from final state "${from.state}"`,
+        );
+      }
+
+      const key = `${transition.from_state}::${transition.action}`;
+      if (seen.has(key)) {
+        throw new WorkflowValidationError(
+          `Duplicate transition "${transition.action}" from state "${transition.from_state}"`,
+        );
+      }
+      seen.add(key);
+
+      if (
+        from.doc_status !== undefined &&
+        to.doc_status !== undefined &&
+        (to.doc_status < from.doc_status ||
+          (from.doc_status === 0 && to.doc_status === 2))
+      ) {
+        throw new WorkflowValidationError(
+          `Transition "${transition.action}" changes doc_status from ${from.doc_status} to ${to.doc_status}`,
         );
       }
     }

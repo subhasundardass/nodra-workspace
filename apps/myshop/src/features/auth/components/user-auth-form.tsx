@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
-import { callMethod, MethodCallError } from "nodra/client";
+import { nodraCallMethod, MethodCallError } from "nodra/client";
 
 const formSchema = z.object({
   email: z.email({ message: "Enter a valid email address" }),
@@ -29,7 +29,7 @@ export default function UserAuthForm() {
     onSubmit: ({ value }) => {
       startTransition(async () => {
         try {
-          await callMethod("auth.login", {
+          await nodraCallMethod("auth.login", {
             email: value.email,
             password: value.password,
           });
