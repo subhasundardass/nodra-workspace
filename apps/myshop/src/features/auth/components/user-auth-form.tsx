@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
 import { nodraCallMethod, MethodCallError } from "nodra/client";
+import { callMethod } from "@/lib/call-method";
 
 const formSchema = z.object({
   email: z.email({ message: "Enter a valid email address" }),
@@ -29,7 +30,11 @@ export default function UserAuthForm() {
     onSubmit: ({ value }) => {
       startTransition(async () => {
         try {
-          await nodraCallMethod("auth.login", {
+          // await nodraCallMethod("auth.login", {
+          //   email: value.email,
+          //   password: value.password,
+          // });
+          await callMethod("auth.login", {
             email: value.email,
             password: value.password,
           });
