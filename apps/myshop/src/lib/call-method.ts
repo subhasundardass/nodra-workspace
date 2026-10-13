@@ -1,5 +1,11 @@
+import { getNodra } from "@/server/nodra-app";
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
+import {
+  deleteCookie,
+  getRequestHeaders,
+  setCookie,
+} from "@tanstack/react-start/server";
+import { methodErrorStatus } from "nodra/api/method";
 import { MethodCallError, nodraCallMethod } from "nodra/client";
 
 type CallInput = {
@@ -44,14 +50,39 @@ function toJsonValue(value: unknown): JsonValue {
 
 const invokeMethod = createServerFn({ method: "POST" })
   .validator((input: CallInput) => input)
-  .handler(async ({ data }): Promise<JsonValue> => {
-    const cookie = getRequestHeaders().get("cookie");
-
-    const result = await nodraCallMethod<unknown>(data.method, data.args, {
-      headers: cookie ? { cookie } : {},
-    });
-
-    return toJsonValue(result);
+  .handler(async ({ data }) => {
+    const app = await getNodra();
+    const headers = getRequestHeaders();
+    const state = new Map<string, unknown>();
+    try {
+      const result = await app.methods.execute(data.method, {
+        args: data.args,
+        request: {
+          httpMethod: "POST",
+          headers: { get: (n: string) => headers.get(n) },
+        },
+        state,
+      });
+      const token = state.get("sessionToken");
+      if (typeof token === "string") {
+        setCookie("session_token", token, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+      }
+      if (state.get("clearSessionCookie") === true)
+        deleteCookie("session_token", { path: "/" });
+      return { ok: true as const, data: toJsonValue(result) };
+    } catch (e) {
+      return {
+        ok: false as const,
+        error: e instanceof Error ? e.message : String(e),
+        status: methodErrorStatus(e),
+      };
+    }
   });
 
 export { MethodCallError };
@@ -61,5 +92,10 @@ export async function callMethod<TResult = unknown>(
   args: Record<string, unknown> = {},
 ): Promise<TResult> {
   const result = await invokeMethod({ data: { method, args } });
-  return result as TResult;
+
+  if (!result.ok) {
+    throw new MethodCallError(result.error, result.status);
+  }
+
+  return result.data as TResult;
 }
