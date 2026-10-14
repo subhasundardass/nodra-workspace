@@ -19,7 +19,7 @@ export default function UserAuthForm() {
 
   const form = useAppForm({
     defaultValues: {
-      email: "admin@localhost.com",
+      email: "admin@example.com",
       password: "Admin@123",
     },
 
@@ -30,10 +30,6 @@ export default function UserAuthForm() {
     onSubmit: ({ value }) => {
       startTransition(async () => {
         try {
-          // await nodraCallMethod("auth.login", {
-          //   email: value.email,
-          //   password: value.password,
-          // });
           await callMethod("auth.login", {
             email: value.email,
             password: value.password,

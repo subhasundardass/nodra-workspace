@@ -4,16 +4,28 @@ import type { AuthUser, AuthUserRepository } from "./types";
 export class ORMAuthUserRepository implements AuthUserRepository {
   constructor(private readonly orm: ORM) {}
 
-  async findByUsername(email: string): Promise<AuthUser | null> {
-    const users = await this.orm.getList("User", {
-      filters: { email },
+  async findByUsername(username: string): Promise<AuthUser | null> {
+    const identifier = username.trim();
+
+    if (!identifier) {
+      return null;
+    }
+
+    // First, try an exact email match.
+    const emailUsers = await this.orm.getList("User", {
+      filters: { email: identifier },
       limit: 1,
     });
 
-    const user = users[0];
+    let user = emailUsers[0];
 
+    // If no email matches, try the document name.
     if (!user) {
-      return null;
+      try {
+        user = await this.orm.getDoc("User", identifier);
+      } catch {
+        return null;
+      }
     }
 
     return this.toAuthUser(user);
