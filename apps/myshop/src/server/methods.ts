@@ -163,7 +163,8 @@ export function registerAppMethods(registry: MethodRegistry): void {
       };
     },
     {
-      requireAuth: false,
+      requireAuth: true,
+      requiredRoles: ["System Manager"],
     },
   );
 
@@ -194,10 +195,10 @@ export function registerAppMethods(registry: MethodRegistry): void {
         total: methods.length,
       };
     },
-    // {
-    //   requireAuth: true,
-    //   requiredRoles: ["SUPER_ADMIN"],
-    // },
+    {
+      requireAuth: true,
+      requiredRoles: ["System Manager"],
+    },
   );
 
   // ---------------------------------------------------------------------------
