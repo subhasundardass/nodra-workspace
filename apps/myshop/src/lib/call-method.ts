@@ -6,7 +6,7 @@ import {
   setCookie,
 } from "@tanstack/react-start/server";
 import { methodErrorStatus } from "nodra/api/method";
-import { MethodCallError, nodraCallMethod } from "nodra/client";
+import { MethodCallError } from "nodra/client";
 
 type CallInput = {
   method: string;
@@ -15,6 +15,8 @@ type CallInput = {
 
 type JsonValue =
   string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
+export { MethodCallError };
 
 function toJsonValue(value: unknown): JsonValue {
   if (
@@ -84,8 +86,6 @@ const invokeMethod = createServerFn({ method: "POST" })
       };
     }
   });
-
-export { MethodCallError };
 
 export async function callMethod<TResult = unknown>(
   method: string,
