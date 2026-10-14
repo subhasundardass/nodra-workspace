@@ -209,7 +209,6 @@ export function registerAppMethods(registry: MethodRegistry): void {
     "auth.login",
     async (ctx) => {
       const email = String(ctx.args.email ?? "").trim();
-
       const password = String(ctx.args.password ?? "");
 
       if (!email || !password) {
@@ -224,6 +223,7 @@ export function registerAppMethods(registry: MethodRegistry): void {
           password,
         }),
       );
+      console.log(email);
 
       // The HTTP transport reads this value and
       // converts it into an HttpOnly cookie.
