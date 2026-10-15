@@ -10,16 +10,31 @@
   "is_virtual": false,
   "title_field": "title",
   "search_fields": [
-    "title"
+    "title",
+    "grade_code"
   ],
   "fields": [
     {
-      "fieldname": "title",
+      "fieldname": "grade_code",
       "fieldtype": "Data",
-      "label": "Title",
+      "label": "Grade Code",
       "reqd": true,
       "unique": true,
-      "max_length": 140,
+      "max_length": 50,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "SmallText",
+      "label": "Description",
+      "reqd": false
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "reqd": true,
       "in_list_view": true
     }
   ],

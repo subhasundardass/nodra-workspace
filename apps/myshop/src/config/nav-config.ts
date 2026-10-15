@@ -69,27 +69,27 @@ export const navGroups: NavGroup[] = [
         items: [
           {
             title: "Tea Grades",
-            url: "/dashboard/masters/tea-grades",
+            url: "/dashboard/master/tea-grades",
             icon: "product",
           },
           {
             title: "Buyers",
-            url: "/dashboard/masters/buyers",
+            url: "/dashboard/master/buyers",
             icon: "teams",
           },
           {
             title: "Brokers",
-            url: "/dashboard/masters/brokers",
+            url: "/dashboard/master/brokers",
             icon: "teams",
           },
           {
             title: "Warehouses",
-            url: "/dashboard/masters/warehouses",
+            url: "/dashboard/master/warehouses",
             icon: "product",
           },
           {
             title: "Bag Types",
-            url: "/dashboard/masters/bag-types",
+            url: "/dashboard/master/bag-types",
             icon: "product",
           },
         ],

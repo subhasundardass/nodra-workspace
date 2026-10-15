@@ -64,7 +64,7 @@ pnpm --filter <app-name> install/add <package-name>
 
 # App-scoped — default to <app-name> via the root shortcuts below
 pnpm run new:doctype -- <DocType>         # doctypes/loan/{loan.json,loan.ts}
-pnpm run new:server-fn -- <DocType>       # src/server/functions/loan.ts (needs the doctype first)
+pnpm run new:method -- <DocType> --verbose
 pnpm run migrate
 pnpm run console
 

@@ -32,6 +32,7 @@ import { Route as DashboardFormsAdvancedRouteImport } from './routes/dashboard/f
 import { Route as DashboardFormsBasicRouteImport } from './routes/dashboard/forms/basic'
 import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/forms/multi-step'
 import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
+import { Route as DashboardMasterTeaGradesRouteImport } from './routes/dashboard/master/tea-grades'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
@@ -151,6 +152,12 @@ const DashboardFormsSheetFormRoute = DashboardFormsSheetFormRouteImport.update({
   path: '/forms/sheet-form',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardMasterTeaGradesRoute =
+  DashboardMasterTeaGradesRouteImport.update({
+    id: '/master/tea-grades',
+    path: '/master/tea-grades',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardNodraDoctypesRoute = DashboardNodraDoctypesRouteImport.update({
   id: '/nodra/doctypes',
   path: '/nodra/doctypes',
@@ -188,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
@@ -244,6 +253,7 @@ export interface FileRoutesById {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in'
@@ -329,6 +341,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardFormsSheetFormRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/master/tea-grades': {
+      id: '/dashboard/master/tea-grades'
+      path: '/master/tea-grades'
+      fullPath: '/dashboard/master/tea-grades'
+      preLoaderRoute: typeof DashboardMasterTeaGradesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/nodra/doctypes': {
       id: '/dashboard/nodra/doctypes'
       path: '/nodra/doctypes'
@@ -547,6 +567,7 @@ interface DashboardRouteRouteChildren {
   DashboardFormsBasicRoute: typeof DashboardFormsBasicRoute
   DashboardFormsMultiStepRoute: typeof DashboardFormsMultiStepRoute
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
+  DashboardMasterTeaGradesRoute: typeof DashboardMasterTeaGradesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
@@ -565,6 +586,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardFormsBasicRoute: DashboardFormsBasicRoute,
   DashboardFormsMultiStepRoute: DashboardFormsMultiStepRoute,
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
+  DashboardMasterTeaGradesRoute: DashboardMasterTeaGradesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,
