@@ -1,0 +1,151 @@
+{
+  "name": "Lots",
+  "module": "App",
+  "naming_rule": "hash",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "lot_no",
+  "search_fields": [
+    "factory_id",
+    "lot_no",
+    "entry_date",
+    "original_brand"
+  ],
+  "fields": [
+    {
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "entry_date",
+      "fieldtype": "Date",
+      "label": "Entry Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot_no",
+      "fieldtype": "Data",
+      "label": "Lot No",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "grade",
+      "fieldtype": "Link",
+      "label": "Grade",
+      "options": "Tea Grade",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "original_brand",
+      "fieldtype": "Link",
+      "label": "Original Brand",
+      "options": "Brand",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "fieldtype": "Int",
+      "label": "Bags",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "net_kg_per_bag",
+      "fieldtype": "Float",
+      "label": "Net KG Per Bag",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Data",
+      "label": "Status",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Registered",
+        "doc_status": 0
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 1,
+        "is_final": true
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 2,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Register",
+        "from": "Draft",
+        "to": "Registered",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Confirm",
+        "from": "Registered",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Registered",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "submit": true,
+      "cancel": true
+    }
+  ]
+}
