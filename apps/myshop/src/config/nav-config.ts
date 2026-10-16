@@ -20,8 +20,8 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Production",
-        url: "/dashboard/production",
+        title: "Lot Management",
+        url: "/dashboard/lot",
         icon: "product",
         isActive: false,
         items: [],
