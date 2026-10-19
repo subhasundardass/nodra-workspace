@@ -16,11 +16,11 @@ type EditLotData = {
 export const Route = createFileRoute("/dashboard/lot/$name")({
   loader: async ({ params }): Promise<EditLotData> => {
     const [doctypeResult, lot] = await Promise.all([
-      callMethod<{ doctypes: DocTypeDefinition[] }>("debug.doctypes"),
+      callMethod<{ doctypes: DocTypeDefinition[] }>("nodra.doctypes"),
       callMethod<LotRecord>("lots.get", { name: params.name }),
     ]);
 
-    const doctype = doctypeResult.doctypes.find((item) => item.name === "Lot");
+    const doctype = doctypeResult.doctypes.find((item) => item.name === "Lots");
 
     if (!doctype) {
       throw new Error('DocType "Lot" is not registered');
@@ -29,10 +29,17 @@ export const Route = createFileRoute("/dashboard/lot/$name")({
     return { doctype, lot };
   },
 
-  component: EditLotRoute,
+  component: LotRoute,
+
+  errorComponent: ({ error }) => (
+    <div className="space-y-2 p-4">
+      <h2 className="font-semibold">Unable to load Lot form</h2>
+      <pre className="whitespace-pre-wrap text-sm text-destructive">sdfsd</pre>
+    </div>
+  ),
 });
 
-function EditLotRoute() {
+function LotRoute() {
   const { doctype, lot } = Route.useLoaderData();
   const { name } = Route.useParams();
   const navigate = useNavigate();
@@ -69,8 +76,8 @@ function EditLotRoute() {
       </div>
 
       <LotForm
-        mode="edit"
         doctype={doctype}
+        mode="edit"
         initialValues={lot}
         onSubmit={handleSubmit}
       />

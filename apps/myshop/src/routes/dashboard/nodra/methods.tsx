@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard/nodra/methods")({
   loader: async () => {
-    const result = await callMethod("debug.methods");
+    const result = await callMethod("nodra.methods");
     return (result as any).methods;
   },
   component: RouteComponent,

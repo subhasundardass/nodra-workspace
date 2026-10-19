@@ -4,6 +4,7 @@ import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { GlobalToolbar } from "@/components/global-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageContainer from "@/components/layout/page-container";
 
 type DocumentRow = Record<string, unknown>;
 
@@ -90,9 +91,7 @@ export function DocTypeListTemplate({
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
-
   const currentPage = Math.min(page, totalPages - 1);
-
   const pageRecords = filteredRecords.slice(
     currentPage * pageSize,
     (currentPage + 1) * pageSize,
@@ -106,7 +105,7 @@ export function DocTypeListTemplate({
   const canCreate = !doctype.is_single && !doctype.is_child;
 
   return (
-    <section className="w-full min-w-0 space-y-4 p-4">
+    <PageContainer>
       {/* Page header */}
 
       <GlobalToolbar
@@ -114,10 +113,7 @@ export function DocTypeListTemplate({
         description={`${filteredRecords.length} ${
           filteredRecords.length === 1 ? "record" : "records"
         }`}
-        breadcrumbs={[
-          { label: "Masters", href: "/dashboard/master" },
-          { label: doctype.name },
-        ]}
+
         view="list"
         views={["list"]}
         actions={
@@ -136,7 +132,7 @@ export function DocTypeListTemplate({
       />
 
       {/* Table Toolbar */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 mb-1 sm:flex-row sm:items-center">
         <div className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -313,6 +309,6 @@ export function DocTypeListTemplate({
           </Button>
         </div>
       </div>
-    </section>
+    </PageContainer>
   );
 }

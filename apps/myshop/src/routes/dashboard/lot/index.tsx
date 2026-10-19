@@ -8,6 +8,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
+import PageContainer from "@/components/layout/page-container";
 
 type LotRecord = Record<string, unknown>;
 
@@ -17,13 +18,9 @@ type LotListData = {
 };
 
 export const Route = createFileRoute("/dashboard/lot/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    mode: search.mode === "create" ? ("create" as const) : undefined,
-  }),
-
   loader: async (): Promise<LotListData> => {
     const [doctypeResult, result] = await Promise.all([
-      callMethod<{ doctypes: DocTypeDefinition[] }>("debug.doctypes"),
+      callMethod<{ doctypes: DocTypeDefinition[] }>("nodra.doctypes"),
       callMethod<{ data: LotRecord[] }>("lots.list", {}),
     ]);
 
@@ -44,7 +41,6 @@ export const Route = createFileRoute("/dashboard/lot/")({
 
 function RouteComponent() {
   const { doctype, records } = Route.useLoaderData();
-  const { mode } = Route.useSearch();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +54,7 @@ function RouteComponent() {
       await callMethod("lots.create", { data: values });
 
       await navigate({
-        to: "/dashboard/lot",
+        to: "/dashboard/lot/new",
         search: { mode: undefined },
       });
 
@@ -70,32 +66,13 @@ function RouteComponent() {
     }
   }
 
-  if (mode === "create") {
-    return (
-      <DocTypeFormTemplate
-        doctype={doctype}
-        mode="create"
-        saving={saving}
-        error={error}
-        onSubmit={handleCreate}
-        onCancel={() =>
-          void navigate({
-            to: "/dashboard/lot",
-            search: { mode: undefined },
-          })
-        }
-      />
-    );
-  }
-
   return (
     <DocTypeListTemplate
       doctype={doctype}
       records={records}
       onCreate={() =>
         void navigate({
-          to: "/dashboard/lot",
-          search: { mode: "create" },
+          to: "/dashboard/lot/new",
         })
       }
       onOpen={(name) =>
