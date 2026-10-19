@@ -103,7 +103,7 @@ pnpm --filter <appname> cli admin-reset --email admin@example.com --password 'Ad
 
 1.
 
-curl -X POST http://localhost:3000/api/method/debug.doctypes -H "Content-Type: application/json" -d '{}'
+curl -X POST http://localhost:3000/api/method/nodra.doctypes -H "Content-Type: application/json" -d '{}'
 
 2.
 

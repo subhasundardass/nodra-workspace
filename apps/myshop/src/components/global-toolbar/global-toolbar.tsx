@@ -73,15 +73,15 @@ export default function GlobalToolbar({
   }
 
   return (
-    <header className="relative mb-4 overflow-hidden rounded-sm border bg-card shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
+    <header className="relative mb-1 overflow-hidden rounded-sm border bg-card ">
       {/* Background layers (decorative) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         {/* Soft wash from the left accent */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/6 via-transparent to-transparent" />
 
         {/* Rounded tile pattern, fading toward the center */}
         <svg
-          className="absolute inset-y-0 right-0 h-full w-1/2 text-primary [mask-image:linear-gradient(to_left,black_30%,transparent)]"
+          className="absolute inset-y-0 right-0 h-full w-1/2 text-primary mask-[linear-gradient(to_left,black_30%,transparent)]"
           fill="none"
         >
           <defs>
@@ -110,7 +110,7 @@ export default function GlobalToolbar({
       </div>
       {/* Main bar: record identity on the left, controls on the right */}
 
-      <div className="flex flex-col gap-3 border-l-[3px] border-l-primary px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 px-4 py-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="truncate text-lg font-semibold leading-tight tracking-tight">

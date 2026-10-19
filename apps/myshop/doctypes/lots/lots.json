@@ -43,7 +43,7 @@
       "fieldname": "grade",
       "fieldtype": "Link",
       "label": "Grade",
-      "options": "Tea Grade",
+      "options": "Grades",
       "reqd": false,
       "in_list_view": true
     },

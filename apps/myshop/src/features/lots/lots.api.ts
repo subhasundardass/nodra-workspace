@@ -28,7 +28,7 @@ export const lotDocTypeQueryOptions = () =>
   queryOptions({
     queryKey: ["nodra", "doctype", "Lot"],
     queryFn: async () => {
-      const result = (await callMethod("debug.doctypes")) as {
+      const result = (await callMethod("nodra.doctypes")) as {
         doctypes: DocTypeDefinition[];
       };
 
