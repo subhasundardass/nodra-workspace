@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { DocTypeDefinition } from "nodra";
 import { DataTable } from "@/components/ui/table/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
-import { GlobalToolbar } from "@/components/global-toolbar";
+import { GlobalToolbar } from "@/components/toolbar";
 import { getQueryClient } from "@/lib/query-client";
 
 import {

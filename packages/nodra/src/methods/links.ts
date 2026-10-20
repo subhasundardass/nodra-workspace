@@ -87,12 +87,16 @@ export function registerLinkMethods(
           // Missing or inaccessible selected documents return no result.
           docs = [];
         }
-      } else if (query) {
+      } else {
         docs = await app.orm.getList(doctype, {
-          orFilters: searchFields.map(
-            (field) =>
-              [field, "like", `%${query}%`] as [string, "like", unknown],
-          ),
+          ...(query
+            ? {
+                orFilters: searchFields.map(
+                  (field) =>
+                    [field, "like", `%${query}%`] as [string, "like", unknown],
+                ),
+              }
+            : {}),
           orderBy: titleField === "name" ? "name asc" : `${titleField} asc`,
           limit,
         });

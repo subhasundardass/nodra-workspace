@@ -1,31 +1,31 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { TeaGrade } from "./columns";
 import { callMethod } from "@/lib/call-method";
-import { TeaGradeFormValues } from "./form";
+import type { TeaGrade } from "./columns";
+import type { TeaGradeFormValues } from "./form";
 
 interface GradesListResponse {
-  data: TeaGrade[];
-  meta: {
-    total_count: number;
-    limit: number;
-    offset: number;
-  };
+  documents: TeaGrade[];
+  limit: number;
+  offset: number;
 }
 
-// Queries
 export const gradesQueryOptions = () =>
   queryOptions({
     queryKey: ["grades"],
     queryFn: async (): Promise<TeaGrade[]> => {
-      const response = await callMethod<GradesListResponse>("grades.list", {});
+      const response = await callMethod<GradesListResponse>("document.list", {
+        doctype: "Grades",
+        limit: 20,
+        offset: 0,
+      });
 
-      return response.data;
+      return response.documents;
     },
   });
 
-// Mutations
 export const createGrade = (values: TeaGradeFormValues) =>
-  callMethod("grades.create", {
-    data: values,
+  callMethod("document.create", {
+    doctype: "Grades",
+    doc: values,
   });

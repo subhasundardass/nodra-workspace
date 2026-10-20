@@ -35,6 +35,7 @@ import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
 import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
+import { Route as DashboardMasterFactoriesRouteImport } from './routes/dashboard/master/factories'
 import { Route as DashboardMasterTeaGradesRouteImport } from './routes/dashboard/master/tea-grades'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
@@ -170,6 +171,12 @@ const DashboardLotNewRoute = DashboardLotNewRouteImport.update({
   path: '/lot/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardMasterFactoriesRoute =
+  DashboardMasterFactoriesRouteImport.update({
+    id: '/master/factories',
+    path: '/master/factories',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardMasterTeaGradesRoute =
   DashboardMasterTeaGradesRouteImport.update({
     id: '/master/tea-grades',
@@ -215,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
@@ -279,6 +288,7 @@ export interface FileRoutesById {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
@@ -581,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLotNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/master/factories': {
+      id: '/dashboard/master/factories'
+      path: '/master/factories'
+      fullPath: '/dashboard/master/factories'
+      preLoaderRoute: typeof DashboardMasterFactoriesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/master/tea-grades': {
       id: '/dashboard/master/tea-grades'
       path: '/master/tea-grades'
@@ -626,6 +646,7 @@ interface DashboardRouteRouteChildren {
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
+  DashboardMasterFactoriesRoute: typeof DashboardMasterFactoriesRoute
   DashboardMasterTeaGradesRoute: typeof DashboardMasterTeaGradesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
@@ -648,6 +669,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
+  DashboardMasterFactoriesRoute: DashboardMasterFactoriesRoute,
   DashboardMasterTeaGradesRoute: DashboardMasterTeaGradesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
