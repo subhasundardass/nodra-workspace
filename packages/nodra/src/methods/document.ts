@@ -1,19 +1,28 @@
 import type { MethodRegistry } from "../api/method";
 import type { DocTypeDefinition } from "../core/doctype/schema";
 import { hasPermission } from "../permissions/permission";
+import type { PermissionAction } from "../permissions/permission";
 import { PermissionError, ValidationError } from "../core/errors";
+
+type MethodUser = {
+  email: string;
+  roles: string[];
+} | null;
+
+type DocumentData = Record<string, unknown>;
+
+type DocumentLike = {
+  getData(): DocumentData;
+};
 
 export interface DocumentMethodApp {
   registry: {
     get(name: string): DocTypeDefinition;
   };
+
   orm: {
-    getDoc(
-      doctype: string,
-      name: string,
-    ): Promise<{
-      getData(): Record<string, unknown>;
-    }>;
+    getDoc(doctype: string, name: string): Promise<DocumentLike>;
+
     getList(
       doctype: string,
       options?: {
@@ -21,62 +30,95 @@ export interface DocumentMethodApp {
         offset?: number;
         orderBy?: string;
       },
-    ): Promise<Array<{ getData(): Record<string, unknown> }>>;
+    ): Promise<DocumentLike[]>;
+  };
+
+  resource: {
+    create(doctype: string, data: DocumentData): Promise<DocumentLike>;
+
+    update(
+      doctype: string,
+      name: string,
+      data: DocumentData,
+    ): Promise<DocumentLike>;
+
+    delete(doctype: string, name: string): Promise<void>;
   };
 }
 
-function assertReadPermission(
+function assertPermission(
   meta: DocTypeDefinition,
-  user: { email: string; roles: string[] } | null,
+  action: PermissionAction,
+  user: MethodUser,
+  owner?: string,
 ): void {
-  if (!user || !hasPermission(meta, "read", user)) {
+  if (!user || !hasPermission(meta, action, user, owner)) {
     throw new PermissionError(
       meta.name,
-      "read",
-      `You do not have permission to read ${meta.name}`,
+      action,
+      `You do not have permission to ${action} ${meta.name}`,
     );
   }
+}
+
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new ValidationError(`"${field}" is required`);
+  }
+
+  return value.trim();
+}
+
+function getDocumentData(value: unknown): DocumentData {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError('"doc" must be an object');
+  }
+
+  return value as DocumentData;
+}
+
+function getOwner(doc: DocumentLike): string | undefined {
+  const owner = doc.getData().owner;
+
+  return typeof owner === "string" ? owner : undefined;
 }
 
 export function registerDocumentMethods(
   registry: MethodRegistry,
   getApp: () => Promise<DocumentMethodApp>,
 ): void {
+  // --------------------------------------------------
+  // Get one document
+  // --------------------------------------------------
   registry.register(
     "document.get",
     async (ctx) => {
-      const doctype = String(ctx.args.doctype ?? "").trim();
-      const name = String(ctx.args.name ?? "").trim();
-
-      if (!doctype || !name) {
-        throw new ValidationError('"doctype" and "name" are required');
-      }
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const name = requiredString(ctx.args.name, "name");
 
       const app = await getApp();
       const meta = app.registry.get(doctype);
-
-      assertReadPermission(meta, ctx.user);
-
       const doc = await app.orm.getDoc(doctype, name);
+
+      assertPermission(meta, "read", ctx.user, getOwner(doc));
 
       return { document: doc.getData() };
     },
     { requireAuth: true },
   );
 
+  // --------------------------------------------------
+  // List documents
+  // --------------------------------------------------
   registry.register(
     "document.list",
     async (ctx) => {
-      const doctype = String(ctx.args.doctype ?? "").trim();
-
-      if (!doctype) {
-        throw new ValidationError('"doctype" is required');
-      }
+      const doctype = requiredString(ctx.args.doctype, "doctype");
 
       const app = await getApp();
       const meta = app.registry.get(doctype);
 
-      assertReadPermission(meta, ctx.user);
+      assertPermission(meta, "read", ctx.user);
 
       const requestedLimit = Number(ctx.args.limit ?? 20);
       const requestedOffset = Number(ctx.args.offset ?? 0);
@@ -103,6 +145,95 @@ export function registerDocumentMethods(
         documents: docs.map((doc) => doc.getData()),
         limit,
         offset,
+      };
+    },
+    { requireAuth: true },
+  );
+
+  // --------------------------------------------------
+  // Create document
+  // --------------------------------------------------
+  /**
+  await callMethod("document.create", {
+    doctype: "Factory",
+    doc: values,
+  });
+   */
+  registry.register(
+    "document.create",
+    async (ctx) => {
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const docData = getDocumentData(ctx.args.doc);
+
+      const app = await getApp();
+      const meta = app.registry.get(doctype);
+
+      assertPermission(meta, "create", ctx.user);
+
+      const doc = await app.resource.create(doctype, docData);
+
+      return { document: doc.getData() };
+    },
+    { requireAuth: true },
+  );
+
+  // --------------------------------------------------
+  // Update document
+  // --------------------------------------------------
+  /**
+   await callMethod("document.update", {
+    doctype: "Factory",
+    name: factoryName,
+    doc: values,
+  });
+   */
+  registry.register(
+    "document.update",
+    async (ctx) => {
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const name = requiredString(ctx.args.name, "name");
+      const docData = getDocumentData(ctx.args.doc);
+
+      const app = await getApp();
+      const meta = app.registry.get(doctype);
+      const existing = await app.orm.getDoc(doctype, name);
+
+      assertPermission(meta, "write", ctx.user, getOwner(existing));
+
+      const doc = await app.resource.update(doctype, name, docData);
+
+      return { document: doc.getData() };
+    },
+    { requireAuth: true },
+  );
+
+  // --------------------------------------------------
+  // Delete document
+  // --------------------------------------------------
+  /**
+   await callMethod("document.delete", {
+    doctype: "Factory",
+    name: factoryName,
+  });
+   */
+  registry.register(
+    "document.delete",
+    async (ctx) => {
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const name = requiredString(ctx.args.name, "name");
+
+      const app = await getApp();
+      const meta = app.registry.get(doctype);
+      const existing = await app.orm.getDoc(doctype, name);
+
+      assertPermission(meta, "delete", ctx.user, getOwner(existing));
+
+      await app.resource.delete(doctype, name);
+
+      return {
+        deleted: true,
+        doctype,
+        name,
       };
     },
     { requireAuth: true },

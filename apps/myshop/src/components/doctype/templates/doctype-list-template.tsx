@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { DocTypeDefinition, FieldDefinition } from "nodra";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { GlobalToolbar } from "@/components/global-toolbar";
+import { GlobalToolbar } from "@/components/toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageContainer from "@/components/layout/page-container";

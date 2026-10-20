@@ -1,0 +1,118 @@
+{
+  "name": "Warehouse",
+  "module": "App",
+  "naming_rule": "field",
+  "naming_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "title",
+  "search_fields": [
+    "title",
+    "city",
+    "phone_no",
+    "manager"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Warehouse Name",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "Small Text",
+      "label": "Address",
+      "reqd": false
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": false,
+      "in_list_view": true,
+      "max_length": 100
+    },
+    {
+      "fieldname": "state",
+      "fieldtype": "Data",
+      "label": "State",
+      "reqd": false,
+      "max_length": 100
+    },
+    {
+      "fieldname": "postal_code",
+      "fieldtype": "Data",
+      "label": "PIN Code",
+      "reqd": false,
+      "max_length": 12
+    },
+    {
+      "fieldname": "country",
+      "fieldtype": "Data",
+      "label": "Country",
+      "reqd": false,
+      "default": "India",
+      "max_length": 100
+    },
+    {
+      "fieldname": "phone_no",
+      "fieldtype": "Data",
+      "label": "Phone Number",
+      "reqd": false,
+      "max_length": 20
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "reqd": false,
+      "max_length": 254
+    },
+    {
+      "fieldname": "manager",
+      "fieldtype": "Link",
+      "label": "Warehouse Manager",
+      "options": "User",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "capacity",
+      "fieldtype": "Float",
+      "label": "Storage Capacity (Kg)",
+      "reqd": false
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "reqd": true,
+      "in_list_view": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

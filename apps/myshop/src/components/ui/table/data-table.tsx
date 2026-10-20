@@ -64,7 +64,7 @@ export function DataTable<TData>({
                           ? "bg-muted"
                           : index % 2 === 0
                             ? "bg-background"
-                            : "bg-muted/40"
+                            : "bg-muted/70"
                       }
                     >
                       {row.getVisibleCells().map((cell) => (

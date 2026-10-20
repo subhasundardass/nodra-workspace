@@ -55,7 +55,7 @@ export function LinkField({
   required = false,
   disabled = false,
   readOnly = false,
-  clearable = true,
+  clearable = false,
   filters,
   pageSize = 20,
   className,
@@ -73,37 +73,50 @@ export function LinkField({
   useEffect(() => {
     let cancelled = false;
 
-    if (!value) {
-      setSelected(null);
+    if (!open) {
+      setLoading(false);
       return;
     }
 
-    if (selected?.name === value) {
-      return;
-    }
+    setLoading(true);
+    setError(null);
 
-    callMethod<LinkSearchResponse>("links.search", {
-      doctype,
-      selectedName: value,
-      titleField,
-      filters: JSON.parse(filtersKey) as Record<string, unknown>,
-      limit: 1,
-    })
-      .then((result) => {
-        if (cancelled) return;
-
-        setSelected(result.items[0] ?? { name: value, label: value });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSelected({ name: value, label: value });
-        }
-      });
+    const timer = window.setTimeout(
+      () => {
+        callMethod<LinkSearchResponse>("links.search", {
+          doctype,
+          query: query.trim(),
+          titleField,
+          filters: JSON.parse(filtersKey) as Record<string, unknown>,
+          limit: pageSize, // 20 by default
+        })
+          .then((result) => {
+            if (!cancelled) {
+              setItems(result.items);
+            }
+          })
+          .catch((cause: unknown) => {
+            if (!cancelled) {
+              setItems([]);
+              setError(
+                cause instanceof Error
+                  ? cause.message
+                  : "Unable to search records",
+              );
+            }
+          })
+          .finally(() => {
+            if (!cancelled) setLoading(false);
+          });
+      },
+      query.trim() ? 250 : 0,
+    );
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
-  }, [value, doctype, titleField, filtersKey, selected?.name]);
+  }, [open, query, doctype, titleField, filtersKey, pageSize]);
 
   // Search existing records as the user types.
   useEffect(() => {
@@ -246,12 +259,6 @@ export function LinkField({
                       <span className="truncate">{item.label}</span>
                     </CommandItem>
                   ))}
-
-                {!query.trim() && (
-                  <div className="py-6 text-center text-sm text-muted-foreground">
-                    Type to search records.
-                  </div>
-                )}
               </CommandList>
             </Command>
           </PopoverContent>
