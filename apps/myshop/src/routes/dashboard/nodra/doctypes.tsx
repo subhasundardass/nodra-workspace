@@ -1,11 +1,11 @@
 import PageContainer from "@/components/layout/page-container";
 import { callMethod } from "@/lib/call-method";
-import NodraDocTypes from "@/pages/nodra/docktypes";
+import NodraDocTypes from "@/features/nodra/docktypes";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard/nodra/doctypes")({
   loader: async () => {
-    const result = await callMethod("debug.doctypes");
+    const result = await callMethod("nodra.doctypes");
 
     return (result as any).doctypes;
   },

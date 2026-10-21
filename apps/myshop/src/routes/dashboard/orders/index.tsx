@@ -1,19 +1,22 @@
-import PageContainer from "@/components/layout/page-container";
-import OrderList from "@/pages/orders/list";
+import { Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { callMethod } from "@/lib/call-method";
+
+import PageContainer from "@/components/layout/page-container";
+import GradeList from "@/features/master/tea-grade";
 
 export const Route = createFileRoute("/dashboard/orders/")({
-  loader: () => callMethod("orders.list", {}),
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const orders = Route.useLoaderData();
-
   return (
-    <PageContainer pageTitle="Orders" pageDescription="List of orders">
-      <OrderList />
+    <PageContainer
+      pageTitle="Tea Grades"
+      pageDescription="Manage grades used in tea testing and valuation."
+    >
+      <Suspense fallback={<p>Loading tea grades...</p>}>
+        <GradeList />
+      </Suspense>
     </PageContainer>
   );
 }

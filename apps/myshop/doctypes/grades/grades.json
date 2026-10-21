@@ -1,0 +1,49 @@
+{
+  "name": "Grades",
+  "module": "App",
+  "naming_rule": "field",
+  "naming_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "title",
+  "search_fields": [
+    "grade_code"
+  ],
+  "fields": [
+    {
+      "fieldname": "grade_code",
+      "fieldtype": "Data",
+      "label": "Grade Code",
+      "reqd": true,
+      "unique": true,
+      "max_length": 50,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "SmallText",
+      "label": "Description",
+      "reqd": false
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "reqd": true,
+      "in_list_view": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

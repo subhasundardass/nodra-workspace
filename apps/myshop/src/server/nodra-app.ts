@@ -16,6 +16,7 @@ import path from "node:path";
 import { Database } from "nodra/database/connection.js";
 import { DocTypeRegistry } from "nodra/core/doctype/registry.js";
 import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader.js";
+import { registerFrameworkMethods } from "nodra/methods";
 import {
   ORM,
   runWithSession,
@@ -143,6 +144,7 @@ export class NodraApp {
     );
     app.logger.info(`ORM options: ${JSON.stringify(app.ormOptions)}`);
 
+    registerFrameworkMethods(app.methods, { getApp: getNodra });
     registerAppMethods(app.methods);
 
     return app;

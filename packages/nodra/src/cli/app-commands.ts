@@ -10,12 +10,13 @@ import type { Command } from "commander";
 import { registerMigrateCommand } from "./commands/migrate";
 import { registerConsoleCommand } from "./commands/console";
 import { registerNewDoctypeCommand } from "./commands/new-doctype";
-// import { registerNewServerFnCommand } from './commands/new-server-fn';
 import { registerNewMethodCommand } from "./commands/new-method";
+import { registerAdminResetCommand } from "./commands/admin-reset";
 
 export function registerAppCommands(program: Command): void {
   registerMigrateCommand(program);
   registerConsoleCommand(program);
   registerNewDoctypeCommand(program);
   registerNewMethodCommand(program);
+  registerAdminResetCommand(program);
 }

@@ -3,12 +3,13 @@ import { NavGroup } from "@/types";
 /**
  * Navigation configuration
  *
- * This configuration is used for both the sidebar navigation and Cmd+K bar.
- * Items are organized into groups, each rendered with a SidebarGroupLabel.
+ * Used for sidebar navigation and Cmd+K bar.
+ * Application contains Tea Factory Workflow modules.
+ * Framework contains Nodra development tools.
  */
 export const navGroups: NavGroup[] = [
   {
-    label: "Overview",
+    label: "Application",
     items: [
       {
         title: "Dashboard",
@@ -19,149 +20,118 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Product",
-        url: "/dashboard/product",
+        title: "Lot Management",
+        url: "/dashboard/lot",
         icon: "product",
-        shortcut: ["p", "p"],
         isActive: false,
         items: [],
       },
       {
-        title: "Users",
-        url: "/dashboard/users",
-        icon: "teams",
-        shortcut: ["u", "u"],
-        isActive: false,
-        items: [],
-      },
-      {
-        title: "Kanban",
-        url: "/dashboard/kanban",
-        icon: "kanban",
-        shortcut: ["k", "k"],
-        isActive: false,
-        items: [],
-      },
-      {
-        title: "Chat",
-        url: "/dashboard/chat",
-        icon: "chat",
-        shortcut: ["c", "c"],
-        isActive: false,
-        items: [],
-      },
-    ],
-  },
-  {
-    label: "Elements",
-    items: [
-      {
-        title: "Forms",
-        url: "#",
+        title: "Tea Testing",
+        url: "/dashboard/tea-testing",
         icon: "forms",
         isActive: false,
+        items: [],
+      },
+      {
+        title: "Valuation",
+        url: "/dashboard/valuation",
+        icon: "kanban",
+        isActive: false,
+        items: [],
+      },
+      {
+        title: "Warehouse",
+        url: "/dashboard/warehouse",
+        icon: "product",
+        isActive: false,
+        items: [],
+      },
+      {
+        title: "Sales",
+        url: "/dashboard/sales",
+        icon: "product",
+        isActive: false,
+        items: [],
+      },
+      {
+        title: "Invoicing",
+        url: "/dashboard/invoicing",
+        icon: "forms",
+        isActive: false,
+        items: [],
+      },
+      {
+        title: "Masters",
+        url: "#",
+        icon: "palette",
+        isActive: false,
         items: [
           {
-            title: "Basic Form",
-            url: "/dashboard/forms/basic",
-            icon: "forms",
-            shortcut: ["f", "f"],
+            title: "Factories",
+            url: "/dashboard/master/factories",
+            icon: "product",
           },
           {
-            title: "Multi-Step Form",
-            url: "/dashboard/forms/multi-step",
-            icon: "forms",
+            title: "Tea Grades",
+            url: "/dashboard/master/tea-grades",
+            icon: "product",
           },
           {
-            title: "Sheet & Dialog",
-            url: "/dashboard/forms/sheet-form",
-            icon: "forms",
+            title: "Warehouses",
+            url: "/dashboard/master/warehouses",
+            icon: "product",
           },
           {
-            title: "Advanced Patterns",
-            url: "/dashboard/forms/advanced",
-            icon: "forms",
+            title: "Brands",
+            url: "/dashboard/master/brands",
+            icon: "product",
+          },
+
+          {
+            title: "Buyers",
+            url: "/dashboard/master/buyers",
+            icon: "teams",
+          },
+          {
+            title: "Brokers",
+            url: "/dashboard/master/brokers",
+            icon: "teams",
           },
         ],
       },
-
       {
-        title: "Icons",
-        url: "/dashboard/elements/icons",
+        title: "Reports",
+        url: "/dashboard/reports",
+        icon: "kanban",
+        isActive: false,
+        items: [],
+      },
+      {
+        title: "Settings",
+        url: "/dashboard/settings",
         icon: "palette",
         isActive: false,
         items: [],
       },
     ],
   },
-
-  // Application
   {
-    label: "Application",
+    label: "Framework",
     items: [
       {
-        title: "User Managemnt",
-        url: "#",
-        icon: "palette",
+        title: "DocTypes",
+        url: "/dashboard/nodra/doctypes",
+        icon: "forms",
         isActive: false,
-        items: [
-          {
-            title: "Users",
-            url: "/dashboard/application/users",
-            icon: "palette",
-            isActive: false,
-            items: [],
-          },
-        ],
+        items: [],
       },
-    ],
-  },
-
-  // Nodra
-  {
-    label: "Nodra",
-    items: [
       {
-        title: "Framework",
-        url: "#",
-        icon: "palette",
+        title: "Methods",
+        url: "/dashboard/nodra/methods",
+        icon: "kanban",
         isActive: false,
-        items: [
-          {
-            title: "DocTypes",
-            url: "/dashboard/nodra/doctypes",
-            icon: "palette",
-            isActive: false,
-            items: [],
-          },
-          {
-            title: "Methods",
-            url: "/dashboard/nodra/methods",
-            icon: "palette",
-            isActive: false,
-            items: [],
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    label: "",
-    items: [
-      {
-        title: "Account",
-        url: "#",
-        icon: "account",
-        isActive: true,
-        items: [
-          {
-            title: "Notifications",
-            url: "/dashboard/notifications",
-            icon: "notification",
-            shortcut: ["n", "n"],
-          },
-        ],
+        items: [],
       },
     ],
   },

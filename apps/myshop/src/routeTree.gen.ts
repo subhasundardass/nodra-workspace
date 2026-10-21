@@ -32,6 +32,13 @@ import { Route as DashboardFormsAdvancedRouteImport } from './routes/dashboard/f
 import { Route as DashboardFormsBasicRouteImport } from './routes/dashboard/forms/basic'
 import { Route as DashboardFormsMultiStepRouteImport } from './routes/dashboard/forms/multi-step'
 import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/forms/sheet-form'
+import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
+import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
+import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
+import { Route as DashboardMasterBrandsRouteImport } from './routes/dashboard/master/brands'
+import { Route as DashboardMasterFactoriesRouteImport } from './routes/dashboard/master/factories'
+import { Route as DashboardMasterTeaGradesRouteImport } from './routes/dashboard/master/tea-grades'
+import { Route as DashboardMasterWarehousesRouteImport } from './routes/dashboard/master/warehouses'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
@@ -151,6 +158,44 @@ const DashboardFormsSheetFormRoute = DashboardFormsSheetFormRouteImport.update({
   path: '/forms/sheet-form',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardLotIndexRoute = DashboardLotIndexRouteImport.update({
+  id: '/lot/',
+  path: '/lot/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardLotNameRoute = DashboardLotNameRouteImport.update({
+  id: '/lot/$name',
+  path: '/lot/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardLotNewRoute = DashboardLotNewRouteImport.update({
+  id: '/lot/new',
+  path: '/lot/new',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardMasterBrandsRoute = DashboardMasterBrandsRouteImport.update({
+  id: '/master/brands',
+  path: '/master/brands',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardMasterFactoriesRoute =
+  DashboardMasterFactoriesRouteImport.update({
+    id: '/master/factories',
+    path: '/master/factories',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardMasterTeaGradesRoute =
+  DashboardMasterTeaGradesRouteImport.update({
+    id: '/master/tea-grades',
+    path: '/master/tea-grades',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardMasterWarehousesRoute =
+  DashboardMasterWarehousesRouteImport.update({
+    id: '/master/warehouses',
+    path: '/master/warehouses',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardNodraDoctypesRoute = DashboardNodraDoctypesRouteImport.update({
   id: '/nodra/doctypes',
   path: '/nodra/doctypes',
@@ -188,11 +233,18 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/lot/$name': typeof DashboardLotNameRoute
+  '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -215,11 +267,18 @@ export interface FileRoutesByTo {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/lot/$name': typeof DashboardLotNameRoute
+  '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
   '/dashboard/forms': typeof DashboardFormsIndexRoute
+  '/dashboard/lot': typeof DashboardLotIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
 }
 export interface FileRoutesById {
@@ -244,11 +303,18 @@ export interface FileRoutesById {
   '/dashboard/forms/basic': typeof DashboardFormsBasicRoute
   '/dashboard/forms/multi-step': typeof DashboardFormsMultiStepRoute
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
+  '/dashboard/lot/$name': typeof DashboardLotNameRoute
+  '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
+  '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
+  '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
+  '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
 }
 export interface FileRouteTypes {
@@ -274,11 +340,18 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/lot/$name'
+    | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
+    | '/dashboard/master/factories'
+    | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
+    | '/dashboard/lot/'
     | '/dashboard/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -301,11 +374,18 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/lot/$name'
+    | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
+    | '/dashboard/master/factories'
+    | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/dashboard/forms'
+    | '/dashboard/lot'
     | '/dashboard/orders'
   id:
     | '__root__'
@@ -329,11 +409,18 @@ export interface FileRouteTypes {
     | '/dashboard/forms/basic'
     | '/dashboard/forms/multi-step'
     | '/dashboard/forms/sheet-form'
+    | '/dashboard/lot/$name'
+    | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
+    | '/dashboard/master/factories'
+    | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
     | '/dashboard/forms/'
+    | '/dashboard/lot/'
     | '/dashboard/orders/'
   fileRoutesById: FileRoutesById
 }
@@ -511,6 +598,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardFormsSheetFormRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/lot/': {
+      id: '/dashboard/lot/'
+      path: '/lot'
+      fullPath: '/dashboard/lot/'
+      preLoaderRoute: typeof DashboardLotIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/lot/$name': {
+      id: '/dashboard/lot/$name'
+      path: '/lot/$name'
+      fullPath: '/dashboard/lot/$name'
+      preLoaderRoute: typeof DashboardLotNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/lot/new': {
+      id: '/dashboard/lot/new'
+      path: '/lot/new'
+      fullPath: '/dashboard/lot/new'
+      preLoaderRoute: typeof DashboardLotNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/brands': {
+      id: '/dashboard/master/brands'
+      path: '/master/brands'
+      fullPath: '/dashboard/master/brands'
+      preLoaderRoute: typeof DashboardMasterBrandsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/factories': {
+      id: '/dashboard/master/factories'
+      path: '/master/factories'
+      fullPath: '/dashboard/master/factories'
+      preLoaderRoute: typeof DashboardMasterFactoriesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/tea-grades': {
+      id: '/dashboard/master/tea-grades'
+      path: '/master/tea-grades'
+      fullPath: '/dashboard/master/tea-grades'
+      preLoaderRoute: typeof DashboardMasterTeaGradesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/warehouses': {
+      id: '/dashboard/master/warehouses'
+      path: '/master/warehouses'
+      fullPath: '/dashboard/master/warehouses'
+      preLoaderRoute: typeof DashboardMasterWarehousesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/nodra/doctypes': {
       id: '/dashboard/nodra/doctypes'
       path: '/nodra/doctypes'
@@ -547,9 +683,16 @@ interface DashboardRouteRouteChildren {
   DashboardFormsBasicRoute: typeof DashboardFormsBasicRoute
   DashboardFormsMultiStepRoute: typeof DashboardFormsMultiStepRoute
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
+  DashboardLotNameRoute: typeof DashboardLotNameRoute
+  DashboardLotNewRoute: typeof DashboardLotNewRoute
+  DashboardMasterBrandsRoute: typeof DashboardMasterBrandsRoute
+  DashboardMasterFactoriesRoute: typeof DashboardMasterFactoriesRoute
+  DashboardMasterTeaGradesRoute: typeof DashboardMasterTeaGradesRoute
+  DashboardMasterWarehousesRoute: typeof DashboardMasterWarehousesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
+  DashboardLotIndexRoute: typeof DashboardLotIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
 }
 
@@ -565,9 +708,16 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardFormsBasicRoute: DashboardFormsBasicRoute,
   DashboardFormsMultiStepRoute: DashboardFormsMultiStepRoute,
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
+  DashboardLotNameRoute: DashboardLotNameRoute,
+  DashboardLotNewRoute: DashboardLotNewRoute,
+  DashboardMasterBrandsRoute: DashboardMasterBrandsRoute,
+  DashboardMasterFactoriesRoute: DashboardMasterFactoriesRoute,
+  DashboardMasterTeaGradesRoute: DashboardMasterTeaGradesRoute,
+  DashboardMasterWarehousesRoute: DashboardMasterWarehousesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,
+  DashboardLotIndexRoute: DashboardLotIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
 }
 
