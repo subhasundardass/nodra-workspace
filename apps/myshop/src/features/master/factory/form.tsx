@@ -61,7 +61,7 @@ export default function FactoryFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="w-full overflow-y-auto p-6 sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Create Factory</SheetTitle>
           <SheetDescription>

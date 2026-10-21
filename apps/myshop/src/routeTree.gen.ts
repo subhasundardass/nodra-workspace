@@ -35,8 +35,10 @@ import { Route as DashboardFormsSheetFormRouteImport } from './routes/dashboard/
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
 import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
+import { Route as DashboardMasterBrandsRouteImport } from './routes/dashboard/master/brands'
 import { Route as DashboardMasterFactoriesRouteImport } from './routes/dashboard/master/factories'
 import { Route as DashboardMasterTeaGradesRouteImport } from './routes/dashboard/master/tea-grades'
+import { Route as DashboardMasterWarehousesRouteImport } from './routes/dashboard/master/warehouses'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
@@ -171,6 +173,11 @@ const DashboardLotNewRoute = DashboardLotNewRouteImport.update({
   path: '/lot/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardMasterBrandsRoute = DashboardMasterBrandsRouteImport.update({
+  id: '/master/brands',
+  path: '/master/brands',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardMasterFactoriesRoute =
   DashboardMasterFactoriesRouteImport.update({
     id: '/master/factories',
@@ -181,6 +188,12 @@ const DashboardMasterTeaGradesRoute =
   DashboardMasterTeaGradesRouteImport.update({
     id: '/master/tea-grades',
     path: '/master/tea-grades',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardMasterWarehousesRoute =
+  DashboardMasterWarehousesRouteImport.update({
+    id: '/master/warehouses',
+    path: '/master/warehouses',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 const DashboardNodraDoctypesRoute = DashboardNodraDoctypesRouteImport.update({
@@ -222,8 +235,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
   '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -254,8 +269,10 @@ export interface FileRoutesByTo {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
   '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
@@ -288,8 +305,10 @@ export interface FileRoutesById {
   '/dashboard/forms/sheet-form': typeof DashboardFormsSheetFormRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
+  '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
   '/dashboard/master/factories': typeof DashboardMasterFactoriesRoute
   '/dashboard/master/tea-grades': typeof DashboardMasterTeaGradesRoute
+  '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -323,8 +342,10 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
     | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
@@ -355,8 +376,10 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
     | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in'
@@ -388,8 +411,10 @@ export interface FileRouteTypes {
     | '/dashboard/forms/sheet-form'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
+    | '/dashboard/master/brands'
     | '/dashboard/master/factories'
     | '/dashboard/master/tea-grades'
+    | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/auth/sign-in/'
@@ -594,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLotNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/master/brands': {
+      id: '/dashboard/master/brands'
+      path: '/master/brands'
+      fullPath: '/dashboard/master/brands'
+      preLoaderRoute: typeof DashboardMasterBrandsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/master/factories': {
       id: '/dashboard/master/factories'
       path: '/master/factories'
@@ -606,6 +638,13 @@ declare module '@tanstack/react-router' {
       path: '/master/tea-grades'
       fullPath: '/dashboard/master/tea-grades'
       preLoaderRoute: typeof DashboardMasterTeaGradesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/warehouses': {
+      id: '/dashboard/master/warehouses'
+      path: '/master/warehouses'
+      fullPath: '/dashboard/master/warehouses'
+      preLoaderRoute: typeof DashboardMasterWarehousesRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/nodra/doctypes': {
@@ -646,8 +685,10 @@ interface DashboardRouteRouteChildren {
   DashboardFormsSheetFormRoute: typeof DashboardFormsSheetFormRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
+  DashboardMasterBrandsRoute: typeof DashboardMasterBrandsRoute
   DashboardMasterFactoriesRoute: typeof DashboardMasterFactoriesRoute
   DashboardMasterTeaGradesRoute: typeof DashboardMasterTeaGradesRoute
+  DashboardMasterWarehousesRoute: typeof DashboardMasterWarehousesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
@@ -669,8 +710,10 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardFormsSheetFormRoute: DashboardFormsSheetFormRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
+  DashboardMasterBrandsRoute: DashboardMasterBrandsRoute,
   DashboardMasterFactoriesRoute: DashboardMasterFactoriesRoute,
   DashboardMasterTeaGradesRoute: DashboardMasterTeaGradesRoute,
+  DashboardMasterWarehousesRoute: DashboardMasterWarehousesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardFormsIndexRoute: DashboardFormsIndexRoute,

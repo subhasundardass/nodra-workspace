@@ -35,7 +35,7 @@
     },
     {
       "fieldname": "address",
-      "fieldtype": "Small Text",
+      "fieldtype": "SmallText",
       "label": "Address",
       "reqd": false
     },
