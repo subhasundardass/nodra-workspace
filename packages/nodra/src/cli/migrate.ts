@@ -4,29 +4,41 @@
 
 import type { Pool } from "pg";
 import type { Command, MigrateOptions } from "./types";
-import { NodraError } from "../core/errors";
 import { loadDocTypesFromDirectory } from "../core/doctype/loader";
+import type { DocTypeDefinition } from "../core/doctype/schema";
 import { MetadataSync } from "../database/metadata-sync";
 import { SchemaSync } from "../database/schema-sync";
 import type { ColumnInfo } from "../database/schema-sync";
 import { toTableName } from "../core/doctype/naming";
 import path from "node:path";
+import { access } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import {
   hashDocTypeDefinition,
   MigrationHistory,
 } from "../database/migration-history";
 
-/** * MigrateCommand synchronizes DocType definitions into: * *
- * 1. Nodra metadata tables * - tab_doc_type * - tab_doc_field * - tab_doc_perm * *
- * 2. Physical database tables * - tab_<doctype>
- * */
+/**
+ * MigrateCommand synchronizes DocType definitions into:
+ *
+ * 1. Nodra metadata tables
+ *    - tab_doc_type
+ *    - tab_doc_field
+ *    - tab_doc_perm
+ *
+ * 2. Physical database tables
+ *    - tab_<doctype>
+ *
+ * Core (system) DocTypes such as User and Role are synced first,
+ * followed by the app's own DocTypes.
+ */
 export class MigrateCommand implements Command {
   name = "migrate";
   description = "Sync DocType definitions to database schema";
 
   private readonly schemaSync: SchemaSync;
   private readonly metadataSync: MetadataSync;
-  private history: MigrationHistory;
+  private readonly history: MigrationHistory;
 
   constructor(private readonly pool: Pool) {
     this.schemaSync = new SchemaSync();
@@ -36,14 +48,12 @@ export class MigrateCommand implements Command {
 
   /**
    * Parse migrate-specific command arguments.
-   *
    */
-  private parseArgs(args: string[]): Pick<MigrateOptions, "verbose"> & {
+  private parseArgs(args: string[]): {
+    verbose: boolean;
     doctypeDir?: string;
   } {
-    const options: Pick<MigrateOptions, "verbose"> & {
-      doctypeDir?: string;
-    } = {
+    const options: { verbose: boolean; doctypeDir?: string } = {
       verbose: false,
     };
 
@@ -64,16 +74,16 @@ export class MigrateCommand implements Command {
   private async getExistingColumns(tableName: string): Promise<ColumnInfo[]> {
     const result = await this.pool.query<ColumnInfo>(
       `
-			SELECT
-				column_name,
-				data_type,
-				is_nullable,
-				column_default
-			FROM information_schema.columns
-			WHERE table_schema = current_schema()
-			  AND table_name = $1
-			ORDER BY ordinal_position
-			`,
+      SELECT
+        column_name,
+        data_type,
+        is_nullable,
+        column_default
+      FROM information_schema.columns
+      WHERE table_schema = current_schema()
+        AND table_name = $1
+      ORDER BY ordinal_position
+      `,
       [tableName],
     );
 
@@ -86,42 +96,127 @@ export class MigrateCommand implements Command {
   private async tableExists(tableName: string): Promise<boolean> {
     const result = await this.pool.query<{ exists: boolean }>(
       `
-			SELECT EXISTS (
-				SELECT 1
-				FROM information_schema.tables
-				WHERE table_schema = current_schema()
-				  AND table_name = $1
-			) AS exists
-			`,
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = current_schema()
+          AND table_name = $1
+      ) AS exists
+      `,
       [tableName],
     );
 
     return result.rows[0]?.exists === true;
   }
 
-  /** * Execute the migrate command. * * Migration flow: * * 1. Find the DocType directory * 2. Load all DocTypes * 3. Ensure migration history table exists * 4. For each DocType: * a. Calculate definition hash * b. Skip unchanged DocTypes when force=false * c. Sync DocType metadata * d. Create or alter the physical database table * e. Ensure indexes exist * f. Record the applied definition hash * 5. Print migration summary */
+  /**
+   * Check whether a directory exists.
+   */
+  private async dirExists(dir: string): Promise<boolean> {
+    try {
+      await access(dir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Load core (system) DocTypes shipped with the framework.
+   * Returns an empty list if the directory does not exist yet.
+   */
+  private async loadCoreDocTypes(
+    verbose: boolean,
+  ): Promise<DocTypeDefinition[]> {
+    // ESM-safe replacement for __dirname.
+    const coreDir = fileURLToPath(
+      new URL("../../doctypes/core", import.meta.url),
+    );
+
+    if (!(await this.dirExists(coreDir))) {
+      console.warn(`Core DocType directory not found, skipping: ${coreDir}`);
+      return [];
+    }
+
+    if (verbose) {
+      console.log(`Loading core DocTypes from: ${coreDir}`);
+    }
+
+    return loadDocTypesFromDirectory(coreDir);
+  }
+
+  /**
+   * Merge core and app DocTypes (core first) and reject duplicate names.
+   */
+  private mergeDocTypes(
+    core: DocTypeDefinition[],
+    app: DocTypeDefinition[],
+  ): DocTypeDefinition[] {
+    const seen = new Set<string>();
+
+    for (const doctype of [...core, ...app]) {
+      if (seen.has(doctype.name)) {
+        throw new Error(
+          `Duplicate DocType name "${doctype.name}". ` +
+            `App DocTypes cannot reuse the name of a core DocType.`,
+        );
+      }
+      seen.add(doctype.name);
+    }
+
+    return [...core, ...app];
+  }
+
+  /**
+   * Execute the migrate command.
+   *
+   * Migration flow:
+   *
+   * 1. Parse options
+   * 2. Bootstrap tables the migrator itself needs
+   *    (metadata tables + migration history)
+   * 3. Load core DocTypes, then app DocTypes
+   * 4. For each DocType:
+   *    a. Calculate definition hash
+   *    b. Skip unchanged DocTypes when force=false
+   *    c. Sync DocType metadata
+   *    d. Create or alter the physical database table
+   *    e. Ensure indexes exist
+   *    f. Record the applied definition hash
+   * 5. Print migration summary
+   */
   async execute(args: string[]): Promise<void> {
     // ------------------------------------------------------------
     // Step 1: Parse command options
     // ------------------------------------------------------------
     const options = this.parseArgs(args);
 
-    // ------------------------------------------------------------
-    // Step 2: Determine the DocType directory
-    // ------------------------------------------------------------
     const doctypeDir =
       options.doctypeDir ?? path.join(process.cwd(), "doctypes");
 
+    // ------------------------------------------------------------
+    // Step 2: Bootstrap tables required by the migrator itself
+    // ------------------------------------------------------------
+    // These cannot be DocTypes: the migrator needs them before it
+    // can sync any DocType.
+    await this.metadataSync.ensureTables();
+    await this.history.ensureTable();
+
+    // ------------------------------------------------------------
+    // Step 3: Load DocTypes (core first, then app)
+    // ------------------------------------------------------------
     if (options.verbose) {
-      console.log(`Loading DocTypes from: ${doctypeDir}`);
+      console.log(`Loading app DocTypes from: ${doctypeDir}`);
     }
 
-    // ------------------------------------------------------------
-    // Step 3: Load all DocTypes from source files
-    // ------------------------------------------------------------
-    const doctypes = await loadDocTypesFromDirectory(doctypeDir);
+    const coreDoctypes = await this.loadCoreDocTypes(options.verbose);
+    const appDoctypes = await loadDocTypesFromDirectory(doctypeDir);
+    const doctypes = this.mergeDocTypes(coreDoctypes, appDoctypes);
 
-    console.log(`Found ${doctypes.length} DocTypes`);
+    console.log(
+      `Found ${doctypes.length} DocTypes ` +
+        `(${coreDoctypes.length} core, ${appDoctypes.length} app)`,
+    );
 
     if (doctypes.length === 0) {
       console.log("No DocTypes found. Nothing to migrate.");
@@ -139,10 +234,6 @@ export class MigrateCommand implements Command {
     //   const force = hasFlag(args, "force");
     //
     const force = true;
-
-    // Migration history stores the hash of the last
-    // successfully synchronized DocType definition.
-    await this.history.ensureTable();
 
     // ------------------------------------------------------------
     // Step 5: Migration counters
@@ -164,16 +255,14 @@ export class MigrateCommand implements Command {
         console.log(`\nSyncing DocType: ${doctype.name}`);
       }
 
-      // ----------------------------------------------------------
       // Step 6.1: Check migration history
-      // ----------------------------------------------------------
       if (!force) {
         const appliedHash = await this.history.getAppliedHash(doctype.name);
 
         if (appliedHash === definitionHash) {
           if (options.verbose) {
             console.log(
-              `Skipping ${tableName} ` + `(unchanged since last migration)`,
+              `Skipping ${tableName} (unchanged since last migration)`,
             );
           }
 
@@ -182,20 +271,7 @@ export class MigrateCommand implements Command {
         }
       }
 
-      // ----------------------------------------------------------
       // Step 6.2: Sync DocType metadata
-      // ----------------------------------------------------------
-      //
-      // This synchronizes the definition into Nodra's
-      // metadata tables:
-      //
-      //   tab_doc_type
-      //   tab_doc_field
-      //   tab_doc_perm
-      //
-      // The metadata is the framework's representation
-      // of the DocType definition.
-      // ----------------------------------------------------------
       if (options.verbose) {
         console.log(`Syncing metadata: ${doctype.name}`);
       }
@@ -203,76 +279,49 @@ export class MigrateCommand implements Command {
       await this.metadataSync.sync(doctype);
       metadataCount++;
 
-      // ----------------------------------------------------------
       // Step 6.3: Check whether the physical table exists
-      // ----------------------------------------------------------
       const exists = await this.tableExists(tableName);
 
-      // ----------------------------------------------------------
-      // Step 6.4: Create a new physical table
-      // ----------------------------------------------------------
       if (!exists) {
+        // Step 6.4: Create a new physical table
         if (options.verbose) {
           console.log(`Creating table: ${tableName}`);
         }
 
-        const createTableSql = this.schemaSync.generateCreateTable(doctype);
-
-        await this.pool.query(createTableSql);
+        await this.pool.query(this.schemaSync.generateCreateTable(doctype));
         createCount++;
-      }
-
-      // ----------------------------------------------------------
-      // Step 6.5: Alter an existing physical table
-      // ----------------------------------------------------------
-      else {
+      } else {
+        // Step 6.5: Alter an existing physical table
         if (options.verbose) {
           console.log(`Checking table: ${tableName}`);
         }
 
         const existingColumns = await this.getExistingColumns(tableName);
-
         const alterStatements = this.schemaSync.generateAlterTable(
           doctype,
           existingColumns,
         );
 
-        if (alterStatements.length > 0) {
-          if (options.verbose) {
-            console.log(
-              `Altering table: ${tableName} ` +
-                `(${alterStatements.length} columns)`,
-            );
-          }
+        if (alterStatements.length > 0 && options.verbose) {
+          console.log(
+            `Altering table: ${tableName} (${alterStatements.length} columns)`,
+          );
+        }
 
-          for (const alterSql of alterStatements) {
-            await this.pool.query(alterSql);
-            alterCount++;
-          }
+        for (const alterSql of alterStatements) {
+          await this.pool.query(alterSql);
+          alterCount++;
         }
       }
 
-      // ----------------------------------------------------------
       // Step 6.6: Ensure indexes exist
-      // ----------------------------------------------------------
-      const indexSqls = this.schemaSync.generateIndexes(doctype);
-
-      for (const indexSql of indexSqls) {
+      for (const indexSql of this.schemaSync.generateIndexes(doctype)) {
         await this.pool.query(indexSql);
         indexCount++;
       }
 
-      // ----------------------------------------------------------
-      // Step 6.7: Record successful migration
-      // ----------------------------------------------------------
-      //
-      // This must happen AFTER metadata, table, and indexes
-      // have been synchronized successfully.
-      //
-      // If any previous operation throws an error, this line
-      // is never reached and the DocType is not marked as
-      // successfully migrated.
-      // ----------------------------------------------------------
+      // Step 6.7: Record successful migration.
+      // Only reached if metadata, table, and indexes all succeeded.
       await this.history.record(doctype.name, definitionHash);
     }
 

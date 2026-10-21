@@ -38,7 +38,7 @@ export default function PageContainer({
 }) {
   if (!access) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4 md:px-6">
+      <div className="flex flex-1 items-center justify-center p-1 md:px-1">
         {accessFallback ?? (
           <div className="text-muted-foreground text-center text-lg">
             You do not have access to this page.
@@ -52,21 +52,5 @@ export default function PageContainer({
 
   const hasHeader = pageTitle || pageHeaderAction;
 
-  return (
-    <div className="flex flex-1 flex-col p-4 md:px-4">
-      {hasHeader && (
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <Heading
-            title={pageTitle ?? ""}
-            description={pageDescription ?? ""}
-            infoContent={infoContent}
-          />
-          {pageHeaderAction && (
-            <div className="shrink-0">{pageHeaderAction}</div>
-          )}
-        </div>
-      )}
-      {content}
-    </div>
-  );
+  return <div className="flex flex-1 flex-col p-4 md:px-4">{content}</div>;
 }
