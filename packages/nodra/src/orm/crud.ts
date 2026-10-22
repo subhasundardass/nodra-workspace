@@ -677,15 +677,17 @@ export class ORM {
    *   document has been modified since it was loaded.
    * @throws {PermissionError} If the current user lacks the required access.
    */
+
   private async persist(doc: Document, mode: Mode): Promise<Document> {
     const meta = this.registry.get(doc.doctype);
     const now = new Date();
-    const tableName = toTableName(doc.doctype);
+    const tableName = toTableName(meta.name);
     const user = this.user();
     const submittable = this.isSubmittable(meta);
     const loadedModified: unknown = doc.modified;
     const workflow = this.workflowComponents(meta);
 
+    // Traditional submit/cancel operations require a submittable DocType.
     if (mode !== "update" && !submittable) {
       throw new DocStatusError(`${meta.name} is not submittable`);
     }
@@ -699,7 +701,7 @@ export class ORM {
     }
 
     const ptype: PType = mode === "update" ? "write" : mode;
-    const a = this.access(meta, ptype);
+    const access = this.access(meta, ptype);
 
     doc.modified = now;
     doc.modified_by = user ?? (doc.modified_by || DEFAULT_USER);
@@ -716,7 +718,7 @@ export class ORM {
         await this.validateLinks(doc, meta);
       }
 
-      this.checkUserPerms(meta, a.s, this.docGetter(doc));
+      this.checkUserPerms(meta, access.s, this.docGetter(doc));
     }
 
     if (mode === "update") {
@@ -749,9 +751,10 @@ export class ORM {
 
     await this.run(withChildren || needsStored, async (db) => {
       let storedStatus = 0;
+      let stored: Row | null = null;
 
       if (needsStored) {
-        const stored = await db.queryOne<Row>(
+        stored = await db.queryOne<Row>(
           `SELECT * FROM ${tableName} WHERE name = $1 FOR UPDATE`,
           [doc.name],
         );
@@ -760,25 +763,87 @@ export class ORM {
           throw new NotFoundError(meta.name, doc.name);
         }
 
-        this.checkDocAccess(meta, ptype, (key) => stored[key]);
+        this.checkDocAccess(meta, ptype, (key) => stored![key]);
 
-        // Prevent direct workflow-state changes.
-        // Only orm.transition() may change the configured state field.
+        // ---------------------------------------------------------------
+        // WORKFLOW SECURITY GUARDS
+        // ---------------------------------------------------------------
         if (mode === "update" && workflow) {
+          const definition = workflow.manager.getWorkflow(meta.name);
+
+          if (!definition || !definition.is_active) {
+            throw new WorkflowExecutionError(
+              `${meta.name} has no active workflow.`,
+            );
+          }
+
+          const storedState = String(stored[workflow.stateField] ?? "");
+
+          const state = definition.states.find(
+            (item) => item.state === storedState,
+          );
+
+          // Reject missing or unknown persisted states.
+          if (!state) {
+            throw new WorkflowExecutionError(
+              `${meta.name} ${doc.name} has an invalid workflow state ` +
+                `"${storedState}". Check the workflow configuration.`,
+            );
+          }
+
+          // The workflow engine must be the only way to change state
+          // or docstatus. A direct document.update cannot impersonate
+          // a workflow transition.
+          if (!isWorkflowTransition) {
+            // Only the initial, non-final state is editable.
+            if (!state.is_initial || state.is_final) {
+              throw new WorkflowExecutionError(
+                `${meta.name} ${doc.name} is read-only in workflow state ` +
+                  `"${storedState}". Reopen the document before editing.`,
+              );
+            }
+
+            // Do not allow a caller to change workflow_state directly.
+            const requestedState = String(doc.get(workflow.stateField) ?? "");
+
+            if (requestedState !== storedState) {
+              throw new WorkflowExecutionError(
+                `Cannot change "${workflow.stateField}" directly. ` +
+                  `Use orm.transition(doc, action).`,
+              );
+            }
+
+            // Do not allow a caller to change docstatus directly.
+            const requestedStatus = Number(doc.docstatus ?? 0);
+            const persistedStatus = Number(stored.docstatus ?? 0);
+
+            if (requestedStatus !== persistedStatus) {
+              throw new WorkflowExecutionError(
+                `Cannot change docstatus directly for ${meta.name} ` +
+                  `${doc.name}. Use orm.transition(doc, action).`,
+              );
+            }
+          }
+
+          // Detect inconsistent persisted state/status configuration.
+          // Skip this check during a transition because the executor
+          // has already selected the target state's status.
           if (
             !isWorkflowTransition &&
-            String(doc.get(workflow.stateField) ?? "") !==
-              String(stored[workflow.stateField] ?? "")
+            state.doc_status !== undefined &&
+            Number(stored.docstatus ?? 0) !== state.doc_status
           ) {
             throw new WorkflowExecutionError(
-              `Cannot change "${workflow.stateField}" directly. ` +
-                `Use orm.transition(doc, action).`,
+              `${meta.name} ${doc.name} has docstatus ` +
+                `${String(stored.docstatus)} but workflow state ` +
+                `"${storedState}" requires docstatus ${state.doc_status}.`,
             );
           }
         }
 
-        // Detect updates made by another request after this document
-        // was loaded, when stale checking is enabled.
+        // ---------------------------------------------------------------
+        // STALE DOCUMENT GUARD
+        // ---------------------------------------------------------------
         if (
           this.options.staleCheck &&
           (loadedModified instanceof Date ||
@@ -794,7 +859,12 @@ export class ORM {
 
         storedStatus = Number(stored["docstatus"] ?? 0);
 
-        if (submittable) {
+        // ---------------------------------------------------------------
+        // TRADITIONAL SUBMITTABLE DOCUMENT GUARDS
+        // Workflow DocTypes use their configured workflow statuses
+        // instead of the traditional 0 / 1 / 2 status lifecycle.
+        // ---------------------------------------------------------------
+        if (submittable && !workflow) {
           if (mode === "submit" && storedStatus !== 0) {
             throw new DocStatusError(`${meta.name} ${doc.name} is not a draft`);
           }
@@ -825,7 +895,8 @@ export class ORM {
       } else {
         data = this.buildUpdateData(doc, meta);
 
-        //This ensures the custom status is included for workflow transitions
+        // Workflow transitions may change docstatus in either direction,
+        // e.g. Confirmed (51) -> Draft (0).
         if (isWorkflowTransition && workflow) {
           data["docstatus"] = doc.docstatus;
         }
@@ -834,43 +905,40 @@ export class ORM {
           data["docstatus"] = 1;
         }
 
-        // Do not impose an increasing-docstatus rule on workflow
-        // transitions. The workflow executor has already validated
-        // the action, target state, and user roles. This allows valid
-        // transitions such as Confirmed (51) -> Draft (0).
-
-        // Keep submitted-document fields protected during ordinary
-        // updates. A workflow transition may also update its state
-        // field and docstatus while retaining this field protection.
-        if (mode === "update" && submittable && storedStatus === 1) {
-          const ok = new Set(
+        // Preserve allow_on_submit behavior for traditional submitted
+        // documents. Do not apply traditional status rules to workflows.
+        if (
+          mode === "update" &&
+          submittable &&
+          !workflow &&
+          storedStatus === 1
+        ) {
+          const allowedFields = new Set(
             meta.fields.filter(allowOnSubmit).map((field) => field.fieldname),
           );
 
-          const keep = new Set(ok);
-
-          if (isWorkflowTransition && workflow) {
-            keep.add(workflow.stateField);
-            keep.add("docstatus");
-          }
-
           for (const key of Object.keys(data)) {
-            if (key !== "modified" && key !== "modified_by" && !keep.has(key)) {
+            if (
+              key !== "modified" &&
+              key !== "modified_by" &&
+              !allowedFields.has(key)
+            ) {
               delete data[key];
             }
           }
 
-          onlyTables = ok;
+          onlyTables = allowedFields;
         }
       }
 
-      // Persist the document and retrieve the database's final values.
+      // Persist and retrieve the database's final values.
       const qb = new QueryBuilder(tableName)
         .update(data)
         .where("name", "=", doc.name);
 
       const { sql, params } = qb.build();
       const rows = await db.query<Row>(sql + " RETURNING *", params);
+
       const row = rows[0];
 
       if (!row) {
@@ -879,13 +947,13 @@ export class ORM {
 
       this.applyRowToDocument(doc, row);
 
-      // Save child tables in the same transaction, except for cancellation.
+      // Save child tables in the same transaction, except on cancellation.
       if (withChildren && mode !== "cancel") {
         await this.saveChildren(db, doc, meta, now, onlyTables);
       }
     });
 
-    // Keep the in-memory status synchronized for traditional operations.
+    // Keep in-memory status synchronized for traditional operations.
     if (mode === "submit") {
       doc.docstatus = 1;
     }
