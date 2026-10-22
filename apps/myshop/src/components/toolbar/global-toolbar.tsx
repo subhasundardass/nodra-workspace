@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
+import WorkflowActions from "./workflow-actions";
+import type { WorkflowTransition } from "./toolbar-types";
 
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +24,7 @@ export type GlobalToolbarProps = {
   description?: string;
   documentStatus?: string;
   actions?: GlobalToolbarAction[];
+  transitions?: WorkflowTransition[];
   onBack?: () => void;
 };
 
@@ -30,6 +33,7 @@ export function GlobalToolbar({
   description,
   documentStatus,
   actions = [],
+  transitions = [],
   onBack,
 }: GlobalToolbarProps) {
   const visibleActions = actions.filter((action) => !action.hidden);
@@ -69,7 +73,7 @@ export function GlobalToolbar({
         </div>
       </div>
 
-      {visibleActions.length > 0 && (
+      {visibleActions.length > 0 || transitions.length > 0 ? (
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {visibleActions.map((action) => {
             const Icon = action.icon;
@@ -87,8 +91,10 @@ export function GlobalToolbar({
               </Button>
             );
           })}
+
+          <WorkflowActions transitions={transitions} />
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

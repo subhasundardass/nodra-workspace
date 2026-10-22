@@ -40,14 +40,14 @@ export default function LotList() {
     mutationFn: async ({ name, values }: SaveLotVariables) => {
       if (name) {
         return callMethod("document.update", {
-          doctype: "Lot",
+          doctype: "Lots",
           name,
           doc: values,
         });
       }
 
       return callMethod("document.create", {
-        doctype: "Lot",
+        doctype: "Lots",
         doc: values,
       });
     },
