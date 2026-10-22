@@ -3,6 +3,7 @@ import type { DocTypeDefinition } from "../core/doctype/schema";
 import { hasPermission } from "../permissions/permission";
 import type { PermissionAction } from "../permissions/permission";
 import { PermissionError, ValidationError } from "../core/errors";
+import type { Filters } from "../orm/crud";
 
 type MethodUser = {
   email: string;
@@ -14,6 +15,21 @@ type DocumentData = Record<string, unknown>;
 type DocumentLike = {
   getData(): DocumentData;
 };
+
+const FILTER_OPERATORS = new Set([
+  "=",
+  "!=",
+  ">",
+  ">=",
+  "<",
+  "<=",
+  "like",
+  "not like",
+  "in",
+  "not in",
+  "between",
+  "is",
+]);
 
 export interface DocumentMethodApp {
   registry: {
@@ -30,6 +46,8 @@ export interface DocumentMethodApp {
         offset?: number;
         orderBy?: string;
         fields?: string[];
+        filters?: Filters;
+        orFilters?: Filters;
       },
     ): Promise<DocumentLike[]>;
 
@@ -70,6 +88,58 @@ function requiredString(value: unknown, field: string): string {
   }
 
   return value.trim();
+}
+
+//--Filter
+
+function getFilters(value: unknown, field: string): Filters | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  // Supports tuple filters:
+  // ["bags", ">=", 100]
+  // ["Lots", "bags", ">=", 100]
+  if (Array.isArray(value)) {
+    const valid = value.every((filter: unknown) => {
+      if (!Array.isArray(filter)) return false;
+
+      const isShortTuple = filter.length === 3;
+      const isLongTuple = filter.length === 4;
+
+      if (!isShortTuple && !isLongTuple) return false;
+
+      const fieldIndex = isShortTuple ? 0 : 1;
+      const operatorIndex = isShortTuple ? 1 : 2;
+
+      const filterField = filter[fieldIndex];
+      const operator = filter[operatorIndex];
+
+      return (
+        typeof filterField === "string" &&
+        typeof operator === "string" &&
+        FILTER_OPERATORS.has(operator.toLowerCase()) &&
+        (isShortTuple || typeof filter[0] === "string")
+      );
+    });
+
+    if (!valid) {
+      throw new ValidationError(`"${field}" contains an invalid filter tuple`);
+    }
+
+    return value as Filters;
+  }
+
+  // Supports simple object filters:
+  // { factory: "FACTORY-0001" }
+  // { bags: [">=", 100] }
+  if (typeof value === "object") {
+    return value as Record<string, unknown>;
+  }
+
+  throw new ValidationError(
+    `"${field}" must be an object or an array of filter tuples`,
+  );
 }
 
 function getDocumentData(value: unknown): DocumentData {
@@ -189,11 +259,16 @@ export function registerDocumentMethods(
           )
         : undefined;
 
+      const filters = getFilters(ctx.args.filters, "filters");
+      const orFilters = getFilters(ctx.args.orFilters, "orFilters");
+
       const docs = await app.orm.getList(doctype, {
         limit,
         offset,
         orderBy,
         fields,
+        filters,
+        orFilters,
       });
 
       return {
