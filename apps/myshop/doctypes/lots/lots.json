@@ -9,7 +9,7 @@
   "is_virtual": false,
   "title_field": "lot_no",
   "search_fields": [
-    "factory_id",
+    "factory",
     "lot_no",
     "entry_date",
     "original_brand"
@@ -88,33 +88,28 @@
         "is_initial": true
       },
       {
-        "state": "Registered",
-        "doc_status": 0
-      },
-      {
         "state": "Confirmed",
-        "doc_status": 1,
-        "is_final": true
+        "doc_status": 51
       },
       {
         "state": "Cancelled",
-        "doc_status": 2,
+        "doc_status": 98,
         "is_final": true
       }
     ],
     "transitions": [
       {
-        "action": "Register",
+        "action": "Confirm",
         "from": "Draft",
-        "to": "Registered",
+        "to": "Confirmed",
         "roles": [
           "System Manager"
         ]
       },
       {
-        "action": "Confirm",
-        "from": "Registered",
-        "to": "Confirmed",
+        "action": "Reopen",
+        "from": "Confirmed",
+        "to": "Draft",
         "roles": [
           "System Manager"
         ]
@@ -129,7 +124,7 @@
       },
       {
         "action": "Cancel",
-        "from": "Registered",
+        "from": "Confirmed",
         "to": "Cancelled",
         "roles": [
           "System Manager"

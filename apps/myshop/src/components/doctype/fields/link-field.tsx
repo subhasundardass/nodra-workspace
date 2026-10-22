@@ -70,13 +70,19 @@ export function LinkField({
   const filtersKey = JSON.stringify(filters ?? {});
 
   // Load the selected record's display label when editing an existing form.
+
+  // Load initial options and search as the user types.
   useEffect(() => {
     let cancelled = false;
 
     if (!open) {
       setLoading(false);
+      setItems([]);
+      setError(null);
       return;
     }
+
+    const searchQuery = query.trim();
 
     setLoading(true);
     setError(null);
@@ -85,10 +91,10 @@ export function LinkField({
       () => {
         callMethod<LinkSearchResponse>("links.search", {
           doctype,
-          query: query.trim(),
+          query: searchQuery,
           titleField,
           filters: JSON.parse(filtersKey) as Record<string, unknown>,
-          limit: pageSize, // 20 by default
+          limit: pageSize,
         })
           .then((result) => {
             if (!cancelled) {
@@ -106,59 +112,13 @@ export function LinkField({
             }
           })
           .finally(() => {
-            if (!cancelled) setLoading(false);
+            if (!cancelled) {
+              setLoading(false);
+            }
           });
       },
-      query.trim() ? 250 : 0,
+      searchQuery ? 250 : 0,
     );
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [open, query, doctype, titleField, filtersKey, pageSize]);
-
-  // Search existing records as the user types.
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!open || !query.trim()) {
-      setItems([]);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const timer = window.setTimeout(() => {
-      callMethod<LinkSearchResponse>("links.search", {
-        doctype,
-        query: query.trim(),
-        titleField,
-        filters: JSON.parse(filtersKey) as Record<string, unknown>,
-        limit: pageSize,
-      })
-        .then((result) => {
-          if (!cancelled) {
-            setItems(result.items);
-          }
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setItems([]);
-            setError(
-              cause instanceof Error
-                ? cause.message
-                : "Unable to search records",
-            );
-          }
-        })
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
-    }, 250);
 
     return () => {
       cancelled = true;

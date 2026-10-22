@@ -2,7 +2,11 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 export interface TeaLot {
   name: string;
-  title: string;
+  lot_no: string;
+  factory: string;
+  entry_date: string;
+  bags: number;
+  net_kg_per_bag: number;
 }
 
 export function createColumns(
@@ -10,12 +14,24 @@ export function createColumns(
 ): ColumnDef<TeaLot>[] {
   return [
     {
-      accessorKey: "title",
-      header: "Lot",
+      accessorKey: "lot_no",
+      header: "Lot No.",
       enableSorting: true,
       cell: ({ row }) => (
-        <span className="font-medium">{row.original.title}</span>
+        <span className="font-medium">{row.original.lot_no}</span>
       ),
+    },
+    {
+      accessorKey: "factory",
+      header: "Factory",
+    },
+    {
+      accessorKey: "entry_date",
+      header: "Entry Date",
+    },
+    {
+      accessorKey: "bags",
+      header: "Bags",
     },
     {
       id: "actions",

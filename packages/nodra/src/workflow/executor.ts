@@ -2,11 +2,8 @@
  * Workflow Executor - applies workflow transitions to documents
  */
 
-import type {
-  WorkflowExecutionContext,
-  WorkflowTransition,
-} from './types';
-import { WorkflowManager } from './workflow';
+import type { WorkflowExecutionContext, WorkflowTransition } from "./types";
+import { WorkflowManager } from "./workflow";
 
 /**
  * Workflow execution error
@@ -14,7 +11,7 @@ import { WorkflowManager } from './workflow';
 export class WorkflowExecutionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'WorkflowExecutionError';
+    this.name = "WorkflowExecutionError";
   }
 }
 
@@ -37,7 +34,7 @@ export class WorkflowExecutor {
       return;
     }
 
-    const stateField = workflow.workflow_state_field || 'workflow_state';
+    const stateField = workflow.workflow_state_field || "workflow_state";
 
     // Only set initial state if not already set
     if (!doc[stateField]) {
@@ -48,7 +45,7 @@ export class WorkflowExecutor {
         // Set doc_status based on initial state
         const state = workflow.states.find((s) => s.state === initialState);
         if (state && state.doc_status !== undefined) {
-          doc['docstatus'] = state.doc_status;
+          doc["docstatus"] = state.doc_status ?? 0;
         }
       }
     }
@@ -71,12 +68,12 @@ export class WorkflowExecutor {
       );
     }
 
-    const stateField = workflow.workflow_state_field || 'workflow_state';
+    const stateField = workflow.workflow_state_field || "workflow_state";
     const currentState = doc[stateField] as string;
 
     if (!currentState) {
       throw new WorkflowExecutionError(
-        `Document ${doc['name']} does not have workflow state`,
+        `Document ${doc["name"]} does not have workflow state`,
       );
     }
 
@@ -93,40 +90,53 @@ export class WorkflowExecutor {
 
     if (!result.allowed) {
       throw new WorkflowExecutionError(
-        result.reason || 'Transition not allowed',
+        result.reason || "Transition not allowed",
       );
     }
 
     // Apply state change
-    if (result.new_state) {
-      doc[stateField] = result.new_state;
+    // if (result.new_state) {
+    //   doc[stateField] = result.new_state;
 
-      // Update doc_status based on new state
-      const newState = workflow.states.find((s) => s.state === result.new_state);
-      if (newState && newState.doc_status !== undefined) {
-        doc['docstatus'] = newState.doc_status;
+    //   // Update doc_status based on new state
+    //   const newState = workflow.states.find(
+    //     (s) => s.state === result.new_state,
+    //   );
+    //   if (newState && newState.doc_status !== undefined) {
+    //     doc["docstatus"] = newState.doc_status;
+    //   }
+    // }
+    if (result.new_state) {
+      const newState = workflow.states.find(
+        (s) => s.state === result.new_state,
+      );
+
+      if (!newState) {
+        throw new WorkflowExecutionError(
+          `Unknown target workflow state "${result.new_state}"`,
+        );
       }
+
+      doc[stateField] = result.new_state;
+      doc["docstatus"] = newState.doc_status ?? 0;
     }
   }
 
   /**
    * Validate that document's workflow state is valid
    */
-  validateWorkflowState(
-    doctype: string,
-    doc: Record<string, unknown>,
-  ): void {
+  validateWorkflowState(doctype: string, doc: Record<string, unknown>): void {
     const workflow = this.workflowManager.getWorkflow(doctype);
     if (!workflow || !workflow.is_active) {
       return;
     }
 
-    const stateField = workflow.workflow_state_field || 'workflow_state';
+    const stateField = workflow.workflow_state_field || "workflow_state";
     const currentState = doc[stateField] as string;
 
     if (!currentState) {
       throw new WorkflowExecutionError(
-        `Document ${doc['name']} does not have workflow state field "${stateField}"`,
+        `Document ${doc["name"]} does not have workflow state field "${stateField}"`,
       );
     }
 
@@ -150,7 +160,7 @@ export class WorkflowExecutor {
       return [];
     }
 
-    const stateField = workflow.workflow_state_field || 'workflow_state';
+    const stateField = workflow.workflow_state_field || "workflow_state";
     const currentState = doc[stateField] as string;
 
     if (!currentState) {

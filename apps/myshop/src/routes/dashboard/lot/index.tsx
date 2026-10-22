@@ -16,23 +16,24 @@ type LotListData = {
   doctype: DocTypeDefinition;
   records: LotRecord[];
 };
-
 export const Route = createFileRoute("/dashboard/lot/")({
   loader: async (): Promise<LotListData> => {
     const [doctypeResult, result] = await Promise.all([
-      callMethod<{ doctypes: DocTypeDefinition[] }>("nodra.doctypes"),
-      callMethod<{ data: LotRecord[] }>("lots.list", {}),
+      callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
+        name: "Lots",
+      }),
+      callMethod<{ documents: LotRecord[] }>("document.list", {
+        doctype: "Lots",
+      }),
     ]);
 
-    const doctype = doctypeResult.doctypes.find((item) => item.name === "Lots");
-
-    if (!doctype) {
+    if (!doctypeResult.doctype) {
       throw new Error('DocType "Lots" is not registered');
     }
 
     return {
-      doctype,
-      records: Array.isArray(result.data) ? result.data : [],
+      doctype: doctypeResult.doctype,
+      records: Array.isArray(result.documents) ? result.documents : [],
     };
   },
 
