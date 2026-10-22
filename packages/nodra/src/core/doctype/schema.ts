@@ -371,16 +371,16 @@ function parseWorkflow(
       );
     }
 
-    // if (
-    //   docStatus !== undefined &&
-    //   (typeof docStatus !== "number" ||
-    //     !Number.isInteger(docStatus) ||
-    //     ![0, 1, 2].includes(docStatus))
-    // ) {
-    //   throw new ValidationError(
-    //     `DocType "${doctypeName}": invalid doc_status for workflow state "${state}"`,
-    //   );
-    // }
+    if (
+      typeof docStatus !== "number" ||
+      !Number.isSafeInteger(docStatus) ||
+      docStatus < 0
+    ) {
+      throw new ValidationError(
+        `DocType "${doctypeName}": workflow state "${state}" must define doc_status as a non-negative safe integer`,
+      );
+    }
+
     if (
       docStatus !== undefined &&
       (typeof docStatus !== "number" ||

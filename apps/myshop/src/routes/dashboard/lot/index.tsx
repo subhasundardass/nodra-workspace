@@ -47,10 +47,7 @@ export const Route = createFileRoute("/dashboard/lot/")({
     if (!doctypeResult.doctype) {
       throw new Error('DocType "Lots" is not registered.');
     }
-    console.log(
-      "Lots API response:",
-      JSON.stringify(listResult.documents, null, 2),
-    );
+
     return {
       doctype: doctypeResult.doctype,
       records: Array.isArray(listResult.documents) ? listResult.documents : [],
