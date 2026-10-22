@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { DocTypeDefinition } from "nodra";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,13 +15,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { GlobalToolbar } from "@/components/toolbar";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import { getCurrentUser } from "@/lib/auth-current-user";
 import { callMethod } from "@/lib/call-method";
 
 type FormValues = Record<string, unknown>;
 
 type WorkflowState = {
   state: string;
-  doc_status: number;
+  doc_status?: number;
   is_initial?: boolean;
   is_final?: boolean;
 };
@@ -45,20 +47,6 @@ type WorkflowDocType = DocTypeDefinition & {
   workflow?: WorkflowMetadata;
 };
 
-function useNodraForm(
-  defaultValues: FormValues,
-  submitValues: (values: FormValues) => Promise<void>,
-) {
-  return useForm({
-    defaultValues,
-    onSubmit: async ({ value }) => {
-      await submitValues(value);
-    },
-  });
-}
-
-export type NodraForm = ReturnType<typeof useNodraForm>;
-
 type DocTypeFormTemplateProps = {
   doctype: DocTypeDefinition;
   mode: "create" | "edit" | "view";
@@ -73,6 +61,20 @@ type DocTypeFormTemplateProps = {
   onCancel: () => void;
 };
 
+function useNodraForm(
+  defaultValues: FormValues,
+  submitValues: (values: FormValues) => Promise<void>,
+) {
+  return useForm({
+    defaultValues,
+    onSubmit: async ({ value }) => {
+      await submitValues(value);
+    },
+  });
+}
+
+export type NodraForm = ReturnType<typeof useNodraForm>;
+
 function getInitialValues(
   doctype: DocTypeDefinition,
   initialValues: FormValues = {},
@@ -86,15 +88,12 @@ function getInitialValues(
 
     if (Object.hasOwn(initialValues, fieldname)) {
       values[fieldname] = initialValues[fieldname];
-    } else if (field.default !== undefined) {
-      values[fieldname] = field.default;
     } else {
-      values[fieldname] = "";
+      values[fieldname] = field.default ?? "";
     }
   }
 
-  // Preserve metadata-independent values such as name, docstatus,
-  // workflow_state, owner, and modified.
+  // Preserve system fields and values not declared in the metadata.
   return { ...values, ...initialValues };
 }
 
@@ -106,33 +105,43 @@ function getErrorMessage(error: unknown): string {
   if (
     "data" in error &&
     typeof error.data === "object" &&
-    error.data !== null
+    error.data !== null &&
+    "details" in error.data &&
+    Array.isArray(error.data.details)
   ) {
-    const data = error.data;
+    const messages = error.data.details
+      .map((detail: unknown) => {
+        if (
+          typeof detail === "object" &&
+          detail !== null &&
+          "message" in detail &&
+          typeof detail.message === "string"
+        ) {
+          return detail.message;
+        }
 
-    if ("details" in data && Array.isArray(data.details)) {
-      const messages = data.details
-        .map((detail: unknown) => {
-          if (
-            typeof detail === "object" &&
-            detail !== null &&
-            "message" in detail &&
-            typeof detail.message === "string"
-          ) {
-            return detail.message;
-          }
+        return undefined;
+      })
+      .filter((message): message is string => Boolean(message));
 
-          return undefined;
-        })
-        .filter((message): message is string => Boolean(message));
-
-      if (messages.length > 0) {
-        return messages.join("\n");
-      }
+    if (messages.length > 0) {
+      return messages.join("\n");
     }
   }
 
   return error.message;
+}
+
+function getTransitionSource(
+  transition: WorkflowTransitionDefinition,
+): string | undefined {
+  return transition.from ?? transition.from_state;
+}
+
+function getTransitionRoles(
+  transition: WorkflowTransitionDefinition,
+): string[] {
+  return transition.roles ?? transition.allowed_roles ?? [];
 }
 
 export function DocTypeFormTemplate({
@@ -148,8 +157,7 @@ export function DocTypeFormTemplate({
   onSubmit,
   onCancel,
 }: DocTypeFormTemplateProps) {
-  const workflowDoctype = doctype as WorkflowDocType;
-  const workflow = workflowDoctype.workflow;
+  const workflow = (doctype as WorkflowDocType).workflow;
 
   const defaults = useMemo(
     () => getInitialValues(doctype, initialValues),
@@ -160,6 +168,34 @@ export function DocTypeFormTemplate({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [transitionError, setTransitionError] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
+  const [pendingWorkflowAction, setPendingWorkflowAction] = useState<
+    string | null
+  >(null);
+
+  // null means roles are still loading.
+  const [currentUserRoles, setCurrentUserRoles] = useState<string[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    void getCurrentUser()
+      .then((user) => {
+        if (active) {
+          setCurrentUserRoles(user?.roles ?? []);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setCurrentUserRoles([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const submitValues = useCallback(
     async (values: FormValues) => {
@@ -183,8 +219,6 @@ export function DocTypeFormTemplate({
     setTransitionError(null);
   }, [defaults, form]);
 
-  // Read the workflow state from the actual loaded document.
-  // Fall back to documentStatus/docstatus for older callers or documents.
   const currentWorkflowStateName = useMemo(() => {
     if (!workflow) return documentStatus;
 
@@ -194,6 +228,7 @@ export function DocTypeFormTemplate({
       return stateValue;
     }
 
+    // Support callers that provide the workflow state or document status.
     if (documentStatus) {
       const namedState = workflow.states.find(
         (state) => state.state === documentStatus,
@@ -202,6 +237,7 @@ export function DocTypeFormTemplate({
       if (namedState) return namedState.state;
 
       const statusNumber = Number(documentStatus);
+
       if (Number.isFinite(statusNumber)) {
         const statusState = workflow.states.find(
           (state) => state.doc_status === statusNumber,
@@ -211,18 +247,17 @@ export function DocTypeFormTemplate({
       }
     }
 
-    const rawDocStatus = documentValues.docstatus;
-    const numericDocStatus =
-      typeof rawDocStatus === "number"
-        ? rawDocStatus
-        : typeof rawDocStatus === "string" && rawDocStatus.trim()
-          ? Number(rawDocStatus)
+    const rawStatus = documentValues.docstatus;
+    const numericStatus =
+      typeof rawStatus === "number"
+        ? rawStatus
+        : typeof rawStatus === "string" && rawStatus.trim()
+          ? Number(rawStatus)
           : undefined;
 
-    if (numericDocStatus !== undefined && Number.isFinite(numericDocStatus)) {
-      return workflow.states.find(
-        (state) => state.doc_status === numericDocStatus,
-      )?.state;
+    if (numericStatus !== undefined && Number.isFinite(numericStatus)) {
+      return workflow.states.find((state) => state.doc_status === numericStatus)
+        ?.state;
     }
 
     return undefined;
@@ -236,38 +271,24 @@ export function DocTypeFormTemplate({
     [workflow, currentWorkflowStateName],
   );
 
-  const isInitialState =
-    currentWorkflowState?.is_initial === true ||
-    currentWorkflowState?.doc_status === 0;
-
-  // Save fields only in the initial workflow state.
-  // Workflow actions remain available independently of field editing.
+  // Only the initial workflow state permits field editing.
   const workflowAllowsEditing =
-    mode === "create" ||
-    !workflow ||
-    (currentWorkflowState !== undefined &&
-      isInitialState &&
-      currentWorkflowState.is_final !== true);
+    mode === "create" || !workflow || currentWorkflowState?.is_initial === true;
 
   const showSaveCancel = mode !== "view" && workflowAllowsEditing;
+
   const canSave = showSaveCancel && !loading && !saving && !transitioning;
-  const [pendingWorkflowAction, setPendingWorkflowAction] = useState<
-    string | null
-  >(null);
 
   const handleSubmit = useCallback(() => {
     if (!canSave) return;
     void form.handleSubmit();
   }, [canSave, form]);
 
-  const handleCancel = useCallback(() => {
-    if (!saving && !transitioning && showSaveCancel) {
+  const handleBack = useCallback(() => {
+    if (!saving && !loading && !transitioning) {
       onCancel();
     }
-  }, [saving, transitioning, showSaveCancel, onCancel]);
-
-  // Execute a transition through Nodra's registered server method.
-  // Never update workflow_state or docstatus directly in the browser.
+  }, [saving, loading, transitioning, onCancel]);
 
   const handleWorkflowTransition = useCallback(
     async (action: string) => {
@@ -308,14 +329,9 @@ export function DocTypeFormTemplate({
 
         const nextValues = getInitialValues(doctype, result.document);
 
-        // Update the document state and reset the form.
         setDocumentValues(nextValues);
         form.reset(nextValues);
-
-        // Revalidate fields after resetting the form.
         await form.validateAllFields("change");
-
-        setTransitionError(null);
       } catch (err) {
         setTransitionError(getErrorMessage(err));
       } finally {
@@ -325,54 +341,58 @@ export function DocTypeFormTemplate({
     [documentValues.name, doctype, form, loading, saving, transitioning],
   );
 
-  // Normalize both metadata naming styles:
-  // app DocType: from/to/roles
-  // workflow engine: from_state/to_state/allowed_roles
-
+  // Filter actions by both current state and the logged-in user's roles.
+  // The server remains responsible for enforcing transition permissions.
   const workflowActions = useMemo<GlobalToolbarAction[]>(() => {
     if (
       mode === "create" ||
       !workflow ||
       !currentWorkflowStateName ||
-      currentWorkflowState?.is_final
+      currentWorkflowState?.is_final === true ||
+      currentUserRoles === null
     ) {
       return [];
     }
 
     return workflow.transitions
       .filter((transition) => {
-        return transition.from === currentWorkflowStateName;
-      })
-      .map((transition) => ({
-        id: `workflow-${transition.action}-${transition.from}`,
-        label: transition.action,
-        variant: "outline" as const,
-        disabled: loading || saving || transitioning,
-        onClick: () => {
-          if (transition.action === "Cancel") {
-            setPendingWorkflowAction(transition.action);
-            return;
-          }
+        const fromState = getTransitionSource(transition);
+        const allowedRoles = getTransitionRoles(transition);
 
-          void handleWorkflowTransition(transition.action);
-        },
-      }));
+        return (
+          fromState === currentWorkflowStateName &&
+          allowedRoles.some((role) => currentUserRoles.includes(role))
+        );
+      })
+      .map((transition) => {
+        const fromState = getTransitionSource(transition);
+
+        return {
+          id: `workflow-${transition.action}-${fromState}`,
+          label: transition.action,
+          variant: "outline" as const,
+          disabled: loading || saving || transitioning,
+          onClick: () => {
+            if (transition.action === "Cancel") {
+              setPendingWorkflowAction(transition.action);
+              return;
+            }
+
+            void handleWorkflowTransition(transition.action);
+          },
+        };
+      });
   }, [
     mode,
     workflow,
     currentWorkflowStateName,
     currentWorkflowState,
+    currentUserRoles,
     loading,
     saving,
     transitioning,
     handleWorkflowTransition,
   ]);
-
-  const handleBack = useCallback(() => {
-    if (!saving && !loading && !transitioning) {
-      onCancel();
-    }
-  }, [saving, loading, transitioning, onCancel]);
 
   const defaultActions = useMemo<GlobalToolbarAction[]>(
     () => [
@@ -396,15 +416,13 @@ export function DocTypeFormTemplate({
       saving,
       loading,
       transitioning,
-      showSaveCancel,
-      handleCancel,
       canSave,
+      showSaveCancel,
+      handleBack,
       handleSubmit,
     ],
   );
 
-  // GlobalToolbar renders actions, not its separate WorkflowActions component.
-  // Convert transitions into its existing action format.
   const actions = [...(toolbarActions ?? defaultActions), ...workflowActions];
 
   const description =
@@ -414,14 +432,12 @@ export function DocTypeFormTemplate({
         ? `View ${String(documentValues.name ?? doctype.name)}`
         : `Edit ${String(documentValues.name ?? doctype.name)}`;
 
-  const currentDocumentStatusValue = workflow
+  const stateValue = workflow
     ? documentValues[workflow.state_field]
     : undefined;
 
   const currentDocumentStatus =
-    typeof currentDocumentStatusValue === "string"
-      ? currentDocumentStatusValue
-      : documentStatus;
+    typeof stateValue === "string" ? stateValue : documentStatus;
 
   return (
     <section className="w-full min-w-0 space-y-4 p-4">
@@ -436,9 +452,9 @@ export function DocTypeFormTemplate({
             <AlertDialogTitle>Cancel this document?</AlertDialogTitle>
 
             <AlertDialogDescription>
-              This document will be permanently cancelled. You will not be able
-              to reopen it or perform further workflow actions. Are you sure you
-              want to continue?
+              This document will be cancelled. If cancellation is irreversible
+              in this workflow, you will not be able to reopen it or perform
+              further workflow actions. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -451,6 +467,7 @@ export function DocTypeFormTemplate({
                 event.preventDefault();
 
                 const action = pendingWorkflowAction;
+
                 if (!action || transitioning) return;
 
                 setPendingWorkflowAction(null);
