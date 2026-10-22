@@ -233,17 +233,6 @@ export class WorkflowManager {
         );
       }
       seen.add(key);
-
-      if (
-        from.doc_status !== undefined &&
-        to.doc_status !== undefined &&
-        (to.doc_status < from.doc_status ||
-          (from.doc_status === 0 && to.doc_status === 2))
-      ) {
-        throw new WorkflowValidationError(
-          `Transition "${transition.action}" changes doc_status from ${from.doc_status} to ${to.doc_status}`,
-        );
-      }
     }
   }
 }

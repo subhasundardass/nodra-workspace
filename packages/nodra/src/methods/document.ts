@@ -31,6 +31,8 @@ export interface DocumentMethodApp {
         orderBy?: string;
       },
     ): Promise<DocumentLike[]>;
+
+    transition(doc: DocumentLike, action: string): Promise<DocumentLike>;
   };
 
   resource: {
@@ -88,8 +90,52 @@ export function registerDocumentMethods(
   getApp: () => Promise<DocumentMethodApp>,
 ): void {
   // --------------------------------------------------
+  // Transition document workflow
+  // --------------------------------------------------
+  /**
+   * await callMethod("document.transition", {
+   *   doctype: "Lot",
+   *   name: lotName,
+   *   action: "Confirm",
+   * });
+   */
+  registry.register(
+    "document.transition",
+    async (ctx) => {
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const name = requiredString(ctx.args.name, "name");
+      const action = requiredString(ctx.args.action, "action");
+
+      const app = await getApp();
+      const meta = app.registry.get(doctype);
+
+      // Load the latest document.
+      const existing = await app.orm.getDoc(doctype, name);
+
+      // Check document write permission.
+      assertPermission(meta, "write", ctx.user, getOwner(existing));
+
+      // The ORM validates the workflow action and role,
+      // updates workflow_state and docstatus, and persists
+      // the change inside a transaction.
+      const doc = await app.orm.transition(existing, action);
+
+      return {
+        document: doc.getData(),
+      };
+    },
+    { requireAuth: true },
+  );
+
+  // --------------------------------------------------
   // Get one document
   // --------------------------------------------------
+  /**
+   const result = await callMethod("document.get", {
+    doctype: "Lots",
+    name: "LOT-0001",
+  });
+   */
   registry.register(
     "document.get",
     async (ctx) => {
