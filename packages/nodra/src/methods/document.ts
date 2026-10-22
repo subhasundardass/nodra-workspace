@@ -29,6 +29,7 @@ export interface DocumentMethodApp {
         limit?: number;
         offset?: number;
         orderBy?: string;
+        fields?: string[];
       },
     ): Promise<DocumentLike[]>;
 
@@ -181,10 +182,18 @@ export function registerDocumentMethods(
         ? `${meta.sort_field} ${meta.sort_order ?? "asc"}`
         : "modified desc";
 
+      //--Linked Field
+      const fields = Array.isArray(ctx.args.fields)
+        ? ctx.args.fields.filter(
+            (field): field is string => typeof field === "string",
+          )
+        : undefined;
+
       const docs = await app.orm.getList(doctype, {
         limit,
         offset,
         orderBy,
+        fields,
       });
 
       return {

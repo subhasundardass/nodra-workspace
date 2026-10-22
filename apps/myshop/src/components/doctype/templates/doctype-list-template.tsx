@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Table } from "@tanstack/react-table";
 import type { DocTypeDefinition } from "nodra";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { GlobalToolbar } from "@/components/toolbar";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/table/data-table";
+import { DocTypeListToolbar } from "@/components/doctype/list/doctype-list-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import PageContainer from "@/components/layout/page-container";
 
@@ -27,6 +27,8 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   doctype: DocTypeDefinition;
   records?: TRecord[];
   columns?: DocTypeListColumn[];
+  /** Pass this when rendering a custom DataTable so the global toolbar controls it. */
+  table?: Table<TRecord>;
   children?: ReactNode;
 
   title?: string;
@@ -46,18 +48,9 @@ function toDocumentRow(record: object): DocumentRow {
 }
 
 function getDisplayValue(value: unknown): string {
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-
-  if (typeof value === "object") {
-    return JSON.stringify(value) ?? "—";
-  }
-
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return JSON.stringify(value) ?? "—";
   return String(value);
 }
 
@@ -67,9 +60,7 @@ function getListFields(doctype: DocTypeDefinition) {
       field.in_list_view && !field.hidden && field.fieldtype !== "Table",
   );
 
-  if (fields.some((field) => field.fieldname === "name")) {
-    return fields;
-  }
+  if (fields.some((field) => field.fieldname === "name")) return fields;
 
   return [
     {
@@ -86,6 +77,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   doctype,
   records = [],
   columns: customColumns,
+  table: suppliedTable,
   children,
   title,
   description,
@@ -97,12 +89,8 @@ export function DocTypeListTemplate<TRecord extends object>({
   onRefresh,
   pageSize = 10,
 }: DocTypeListTemplateProps<TRecord>) {
-  const [search, setSearch] = useState("");
-
   const fields = useMemo<DocTypeListColumn[]>(() => {
-    if (customColumns !== undefined) {
-      return customColumns;
-    }
+    if (customColumns !== undefined) return customColumns;
 
     return getListFields(doctype).map((field) => ({
       id: field.fieldname,
@@ -115,28 +103,6 @@ export function DocTypeListTemplate<TRecord extends object>({
 
   const canCreate = !doctype.is_single && !doctype.is_child;
 
-  const filteredRecords = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return records;
-    }
-
-    return records.filter((record) => {
-      const row = toDocumentRow(record);
-
-      return fields.some((field) => {
-        if (!field.fieldname || field.searchable === false) {
-          return false;
-        }
-
-        return String(row[field.fieldname] ?? "")
-          .toLowerCase()
-          .includes(query);
-      });
-    });
-  }, [records, fields, search]);
-
   const tableColumns = useMemo<ColumnDef<TRecord>[]>(
     () =>
       fields.map((field) => ({
@@ -146,16 +112,14 @@ export function DocTypeListTemplate<TRecord extends object>({
           : undefined,
         header: field.label,
         enableSorting: field.sortable ?? Boolean(field.fieldname),
+        enableHiding: field.fieldname !== "name",
         cell: ({ row }) => {
           const record = row.original;
           const document = toDocumentRow(record);
 
-          if (field.render) {
-            return field.render(document);
-          }
+          if (field.render) return field.render(document);
 
           const value = field.fieldname ? document[field.fieldname] : undefined;
-
           if (field.fieldname === "name" && document.name != null) {
             return onOpen ? (
               <button
@@ -179,26 +143,20 @@ export function DocTypeListTemplate<TRecord extends object>({
     [fields, onOpen],
   );
 
-  const { table } = useDataTable({
-    data: filteredRecords,
+  const internalTableResult = useDataTable({
+    data: records,
     columns: tableColumns,
-    pageCount: Math.max(1, Math.ceil(filteredRecords.length / pageSize)),
+    pageCount: Math.max(1, Math.ceil(records.length / pageSize)),
     initialState: {
-      pagination: {
-        pageIndex: 0,
-        pageSize,
-      },
+      pagination: { pageIndex: 0, pageSize },
     },
   });
+  const table = suppliedTable ?? internalTableResult.table;
+  const visibleRecordCount = table.getFilteredRowModel().rows.length;
 
   const toolbarActions = useMemo<GlobalToolbarAction[]>(() => {
-    if (actions !== undefined) {
-      return actions;
-    }
-
-    if (!canCreate || !onCreate) {
-      return [];
-    }
+    if (actions !== undefined) return actions;
+    if (!canCreate || !onCreate) return [];
 
     return [
       {
@@ -211,11 +169,6 @@ export function DocTypeListTemplate<TRecord extends object>({
     ];
   }, [actions, canCreate, doctype.name, onCreate]);
 
-  function handleSearch(value: string) {
-    setSearch(value);
-    table.setPageIndex(0);
-  }
-
   return (
     <PageContainer>
       <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -223,81 +176,54 @@ export function DocTypeListTemplate<TRecord extends object>({
           title={title ?? doctype.name}
           description={
             description ??
-            `${filteredRecords.length} ${
-              filteredRecords.length === 1 ? "record" : "records"
-            }`
+            `${visibleRecordCount} ${visibleRecordCount === 1 ? "record" : "records"}`
           }
           actions={toolbarActions}
         />
 
-        {children !== undefined ? (
+        <DocTypeListToolbar
+          table={table}
+          doctypeName={title ?? doctype.name}
+          onRefresh={onRefresh}
+          loading={loading}
+        />
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+          >
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+            Loading records...
+          </div>
+        ) : error ? (
+          <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+            Unable to load records.
+          </div>
+        ) : table.getRowModel().rows.length === 0 ? (
+          <div className="rounded-md border border-dashed p-8 text-center">
+            <p className="font-medium">No records found</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create your first {doctype.name.toLowerCase()} record or adjust
+              the filters.
+            </p>
+
+            {canCreate && onCreate && (
+              <Button type="button" className="mt-4" onClick={onCreate}>
+                <Plus className="mr-2 size-4" />
+                Create {doctype.name}
+              </Button>
+            )}
+          </div>
+        ) : children !== undefined ? (
           children
         ) : (
-          <>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="relative w-full sm:max-w-sm">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-
-                <Input
-                  value={search}
-                  onChange={(event) => handleSearch(event.target.value)}
-                  placeholder={`Search ${doctype.name.toLowerCase()}...`}
-                  className="pl-9"
-                  aria-label={`Search ${doctype.name}`}
-                />
-              </div>
-
-              {onRefresh && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onRefresh}
-                  disabled={loading}
-                >
-                  Refresh
-                </Button>
-              )}
-            </div>
-
-            {error && (
-              <div
-                role="alert"
-                className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-              >
-                {error}
-              </div>
-            )}
-
-            {loading ? (
-              <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
-                Loading records...
-              </div>
-            ) : error ? (
-              <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
-                Unable to load records.
-              </div>
-            ) : (
-              <DataTable table={table}>
-                {table.getRowModel().rows.length === 0 && (
-                  <div className="rounded-md border border-dashed p-8 text-center">
-                    <p className="font-medium">No records found</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {search
-                        ? "Try another search."
-                        : `Create your first ${doctype.name.toLowerCase()} record.`}
-                    </p>
-
-                    {!search && canCreate && onCreate && (
-                      <Button type="button" className="mt-4" onClick={onCreate}>
-                        <Plus className="mr-2 size-4" />
-                        Create {doctype.name}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </DataTable>
-            )}
-          </>
+          <DataTable table={table} />
         )}
       </div>
     </PageContainer>
