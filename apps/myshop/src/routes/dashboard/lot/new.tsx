@@ -40,9 +40,7 @@ function CreateLotRoute() {
       });
 
       toast.success("Lot created successfully.");
-
       await navigate({ to: "/dashboard/lot" });
-      await navigate({ to: "/dashboard/lot", reloadDocument: false });
     } finally {
       setSaving(false);
     }
