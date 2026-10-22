@@ -2,13 +2,13 @@
   "name": "Grades",
   "module": "App",
   "naming_rule": "field",
-  "naming_field": "title",
+  "naming_field": "grade_code",
   "is_submittable": false,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
   "is_virtual": false,
-  "title_field": "title",
+  "title_field": "grade_code",
   "search_fields": [
     "grade_code"
   ],

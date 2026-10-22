@@ -5,8 +5,8 @@ import { ArrowLeft, Save } from "lucide-react";
 
 import { callMethod } from "@/lib/call-method";
 import DocTypeFormTemplate from "@/components/doctype/templates/doctype-form-template";
-import { LotFormFields } from "@/features/lots/form";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import { LotForm } from "@/features/lots/form";
 
 export const Route = createFileRoute("/dashboard/lot/new")({
   loader: async (): Promise<DocTypeDefinition> => {
@@ -33,7 +33,10 @@ function NewLotRoute() {
     console.log("Updated form values:", values);
 
     try {
-      await callMethod("lots.create", { data: values });
+      await callMethod("document.create", {
+        doctype: "Lots",
+        doc: values,
+      });
       await navigate({ to: "/dashboard/lot" });
     } finally {
       setSaving(false);
@@ -82,7 +85,7 @@ function NewLotRoute() {
       onSubmit={handleCreate}
       onCancel={handleCancel}
     >
-      {(form) => <LotFormFields form={form} />}
+      {(form) => <LotForm form={form} />}
     </DocTypeFormTemplate>
   );
 }

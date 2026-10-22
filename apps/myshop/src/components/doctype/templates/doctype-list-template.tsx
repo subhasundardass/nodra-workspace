@@ -114,8 +114,6 @@ export function DocTypeListTemplate({
           filteredRecords.length === 1 ? "record" : "records"
         }`}
 
-        view="list"
-        views={["list"]}
         actions={
           canCreate
             ? [

@@ -1,18 +1,20 @@
+import * as React from "react";
+
+import { Input } from "@/components/ui/input";
 import { DataField } from "@/components/doctype/fields/data-field";
 import { DateField } from "@/components/doctype/fields/date-field";
 import { LinkField } from "@/components/doctype/fields/link-field";
-import { Input } from "@/components/ui/input";
 
 import type { NodraForm } from "@/components/doctype/templates/doctype-form-template";
 
-type LotFormFieldsProps = {
+interface LotFormProps {
   form: NodraForm;
-};
+}
 
 function FieldRow({
   label,
   htmlFor,
-  required,
+  required = false,
   children,
 }: {
   label: string;
@@ -32,7 +34,7 @@ function FieldRow({
   );
 }
 
-export function LotFormFields({ form }: LotFormFieldsProps) {
+export function LotForm({ form }: LotFormProps) {
   return (
     <div className="grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
       <form.Field name="factory">
@@ -72,7 +74,6 @@ export function LotFormFields({ form }: LotFormFieldsProps) {
               value={String(field.state.value ?? "")}
               onChange={field.handleChange}
               className="w-full"
-              // inputClassName="text-right"
             />
           </FieldRow>
         )}
@@ -119,7 +120,7 @@ export function LotFormFields({ form }: LotFormFieldsProps) {
               onBlur={field.handleBlur}
               onChange={(event) =>
                 field.handleChange(
-                  event.target.value === "" ? "" : Number(event.target.value),
+                  event.target.value === "" ? 0 : Number(event.target.value),
                 )
               }
               className="bg-background text-right shadow-none"
@@ -141,7 +142,7 @@ export function LotFormFields({ form }: LotFormFieldsProps) {
               onBlur={field.handleBlur}
               onChange={(event) =>
                 field.handleChange(
-                  event.target.value === "" ? "" : Number(event.target.value),
+                  event.target.value === "" ? 0 : Number(event.target.value),
                 )
               }
               className="bg-background text-right shadow-none"

@@ -371,14 +371,24 @@ function parseWorkflow(
       );
     }
 
+    // if (
+    //   docStatus !== undefined &&
+    //   (typeof docStatus !== "number" ||
+    //     !Number.isInteger(docStatus) ||
+    //     ![0, 1, 2].includes(docStatus))
+    // ) {
+    //   throw new ValidationError(
+    //     `DocType "${doctypeName}": invalid doc_status for workflow state "${state}"`,
+    //   );
+    // }
     if (
       docStatus !== undefined &&
       (typeof docStatus !== "number" ||
-        !Number.isInteger(docStatus) ||
-        ![0, 1, 2].includes(docStatus))
+        !Number.isSafeInteger(docStatus) ||
+        docStatus < 0)
     ) {
       throw new ValidationError(
-        `DocType "${doctypeName}": invalid doc_status for workflow state "${state}"`,
+        `DocType "${doctypeName}": doc_status for workflow state "${state}" must be a non-negative safe integer`,
       );
     }
 

@@ -20,11 +20,19 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Lot Management",
-        url: "/dashboard/lot",
+        title: "Entry Module",
+        url: "#",
         icon: "product",
         isActive: false,
-        items: [],
+        items: [
+          {
+            title: "Arrival Entry - Factory",
+            url: "/dashboard/lot",
+            icon: "product",
+            isActive: false,
+            items: [],
+          },
+        ],
       },
       {
         title: "Tea Testing",
