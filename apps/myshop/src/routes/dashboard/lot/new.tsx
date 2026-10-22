@@ -1,89 +1,60 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
-import { ArrowLeft, Save } from "lucide-react";
+import { toast } from "sonner";
 
-import { callMethod } from "@/lib/call-method";
-import DocTypeFormTemplate from "@/components/doctype/templates/doctype-form-template";
-import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
 import { LotForm } from "@/features/lots/form";
+import { callMethod } from "@/lib/call-method";
+
+type FormValues = Record<string, unknown>;
 
 export const Route = createFileRoute("/dashboard/lot/new")({
   loader: async (): Promise<DocTypeDefinition> => {
     const result = await callMethod<{
       doctype: DocTypeDefinition;
-    }>("nodra.doctype.get", {
-      name: "Lots",
-    });
+    }>("nodra.doctype.get", { name: "Lots" });
+
+    if (!result.doctype) {
+      throw new Error('DocType "Lots" is not registered.');
+    }
 
     return result.doctype;
   },
 
-  component: NewLotRoute,
+  component: CreateLotRoute,
 });
 
-function NewLotRoute() {
+function CreateLotRoute() {
   const doctype = Route.useLoaderData();
   const navigate = useNavigate();
-
   const [saving, setSaving] = useState(false);
 
-  async function handleCreate(values: Record<string, unknown>) {
+  async function handleSubmit(values: FormValues): Promise<void> {
     setSaving(true);
-    console.log("Updated form values:", values);
 
     try {
       await callMethod("document.create", {
-        doctype: "Lots",
+        doctype: doctype.name,
         doc: values,
       });
+
+      toast.success("Lot created successfully.");
+
       await navigate({ to: "/dashboard/lot" });
+      await navigate({ to: "/dashboard/lot", reloadDocument: false });
     } finally {
       setSaving(false);
     }
   }
-
-  function handleCancel() {
-    void navigate({ to: "/dashboard/lot" });
-  }
-
-  const toolbarActions: GlobalToolbarAction[] = [
-    {
-      id: "cancel",
-      label: "Back",
-      icon: ArrowLeft,
-      variant: "outline",
-      disabled: saving,
-      onClick: handleCancel,
-    },
-    {
-      id: "save",
-      label: saving ? "Saving..." : "Save Lot",
-      icon: Save,
-      variant: "default",
-      disabled: saving,
-      onClick: () => {
-        // The template owns the form submission handler.
-        // Submit using the form's native submit event below.
-        const formElement = document.getElementById(
-          `doctype-form-${doctype.name}`,
-        );
-
-        if (formElement instanceof HTMLFormElement) {
-          formElement.requestSubmit();
-        }
-      },
-    },
-  ];
 
   return (
     <DocTypeFormTemplate
       doctype={doctype}
       mode="create"
       saving={saving}
-      toolbarActions={toolbarActions}
-      onSubmit={handleCreate}
-      onCancel={handleCancel}
+      onSubmit={handleSubmit}
+      onCancel={() => navigate({ to: "/dashboard/lot" })}
     >
       {(form) => <LotForm form={form} />}
     </DocTypeFormTemplate>
