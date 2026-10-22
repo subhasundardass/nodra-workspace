@@ -1,87 +1,61 @@
-import { useState } from "react";
-import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
-import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
-import { callMethod } from "@/lib/call-method";
 import {
   createFileRoute,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
-import PageContainer from "@/components/layout/page-container";
 
-type LotRecord = Record<string, unknown>;
+import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
+import { callMethod } from "@/lib/call-method";
 
-type LotListData = {
+type DocumentRecord = Record<string, unknown>;
+
+type ListData = {
   doctype: DocTypeDefinition;
-  records: LotRecord[];
+  records: DocumentRecord[];
 };
+
 export const Route = createFileRoute("/dashboard/lot/")({
-  loader: async (): Promise<LotListData> => {
-    const [doctypeResult, result] = await Promise.all([
+  loader: async (): Promise<ListData> => {
+    const [doctypeResult, listResult] = await Promise.all([
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "Lots",
       }),
-      callMethod<{ documents: LotRecord[] }>("document.list", {
+      callMethod<{ documents: DocumentRecord[] }>("document.list", {
         doctype: "Lots",
       }),
     ]);
 
     if (!doctypeResult.doctype) {
-      throw new Error('DocType "Lots" is not registered');
+      throw new Error('DocType "Lots" is not registered.');
     }
 
     return {
       doctype: doctypeResult.doctype,
-      records: Array.isArray(result.documents) ? result.documents : [],
+      records: Array.isArray(listResult.documents) ? listResult.documents : [],
     };
   },
 
-  component: RouteComponent,
+  component: LotListRoute,
 });
 
-function RouteComponent() {
+function LotListRoute() {
   const { doctype, records } = Route.useLoaderData();
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-  async function handleCreate(values: Record<string, unknown>) {
-    setSaving(true);
-    setError(null);
-
-    try {
-      await callMethod("lots.create", { data: values });
-
-      await navigate({
-        to: "/dashboard/lot/new",
-        search: { mode: undefined },
-      });
-
-      await router.invalidate();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create lot.");
-    } finally {
-      setSaving(false);
-    }
-  }
 
   return (
     <DocTypeListTemplate
       doctype={doctype}
       records={records}
-      onCreate={() =>
-        void navigate({
-          to: "/dashboard/lot/new",
-        })
-      }
+      onCreate={() => navigate({ to: "/dashboard/lot/new" })}
       onOpen={(name) =>
-        void navigate({
+        navigate({
           to: "/dashboard/lot/$name",
           params: { name },
         })
       }
+      onRefresh={() => router.invalidate()}
     />
   );
 }

@@ -59,33 +59,38 @@ export function DataTable<TData>({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
-                      className={
-                        row.getIsSelected()
-                          ? "bg-muted"
-                          : index % 2 === 0
-                            ? "bg-background"
-                            : "bg-muted/70"
-                      }
+                      className="group"
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          style={{
-                            ...getCommonPinningStyles({ column: cell.column }),
-                          }}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
+                      {row.getVisibleCells().map((cell) => {
+                        const cellClass = row.getIsSelected()
+                          ? "bg-muted group-hover:!bg-muted/80"
+                          : index % 2 === 0
+                            ? "bg-blue-50 group-hover:!bg-blue-100 dark:bg-background dark:group-hover:!bg-muted/50"
+                            : "bg-background group-hover:!bg-muted/50 dark:bg-muted/70 dark:group-hover:!bg-muted";
+
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            className={cellClass}
+                            style={{
+                              ...getCommonPinningStyles({
+                                column: cell.column,
+                              }),
+                            }}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={table.getAllColumns().length}
+                      colSpan={table.getVisibleLeafColumns().length}
                       className="h-24 text-center"
                     >
                       {table.getState().columnFilters.length > 0

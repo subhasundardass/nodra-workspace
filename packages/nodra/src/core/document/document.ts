@@ -6,11 +6,17 @@
  * overridable lifecycle hooks for subclasses (controllers).
  */
 
-import type { DocTypeDefinition } from '../doctype/schema';
+import type { DocTypeDefinition } from "../doctype/schema";
 
 // Standard field names that are stored as top-level properties
 const STANDARD_FIELD_NAMES = new Set([
-  'name', 'owner', 'creation', 'modified', 'modified_by', 'docstatus', 'idx',
+  "name",
+  "owner",
+  "creation",
+  "modified",
+  "modified_by",
+  "docstatus",
+  "idx",
 ]);
 
 /**
@@ -58,28 +64,35 @@ export class Document {
 
     // Defaults for standard fields
     this.doctype = meta.name;
-    this.name = '';
-    this.owner = '';
+    this.name = "";
+    this.owner = "";
     this.creation = null;
     this.modified = null;
-    this.modified_by = '';
+    this.modified_by = "";
     this.docstatus = 0;
     this.idx = 0;
 
     // Populate from initial data if provided
     if (data) {
       // Handle _isNew flag from data
-      if (data['_isNew'] !== undefined) {
-        this._isNew = Boolean(data['_isNew']);
+      if (data["_isNew"] !== undefined) {
+        this._isNew = Boolean(data["_isNew"]);
       }
 
       for (const [key, value] of Object.entries(data)) {
-        if (key === '_isNew') continue;
+        if (key === "_isNew") continue;
 
         if (STANDARD_FIELD_NAMES.has(key)) {
           this._setStandardField(key, value);
         } else {
-          this._data[key] = value;
+          const field = this._meta.fields.find(
+            (item) => item.fieldname === key,
+          );
+
+          this._data[key] =
+            field && ["Date", "Datetime", "Time"].includes(field.fieldtype)
+              ? normalizeDateValue(value, field.fieldtype)
+              : value;
         }
       }
     }
@@ -193,15 +206,33 @@ export class Document {
   // Lifecycle hooks (override in subclasses)
   // ---------------------------------------------------------------------------
 
-  async beforeValidate(): Promise<void> { /* no-op */ }
-  async validate(): Promise<void> { /* no-op */ }
-  async beforeSave(): Promise<void> { /* no-op */ }
-  async afterSave(): Promise<void> { /* no-op */ }
-  async beforeInsert(): Promise<void> { /* no-op */ }
-  async afterInsert(): Promise<void> { /* no-op */ }
-  async beforeDelete(): Promise<void> { /* no-op */ }
-  async afterDelete(): Promise<void> { /* no-op */ }
-  async onChange(): Promise<void> { /* no-op */ }
+  async beforeValidate(): Promise<void> {
+    /* no-op */
+  }
+  async validate(): Promise<void> {
+    /* no-op */
+  }
+  async beforeSave(): Promise<void> {
+    /* no-op */
+  }
+  async afterSave(): Promise<void> {
+    /* no-op */
+  }
+  async beforeInsert(): Promise<void> {
+    /* no-op */
+  }
+  async afterInsert(): Promise<void> {
+    /* no-op */
+  }
+  async beforeDelete(): Promise<void> {
+    /* no-op */
+  }
+  async afterDelete(): Promise<void> {
+    /* no-op */
+  }
+  async onChange(): Promise<void> {
+    /* no-op */
+  }
 
   // ---------------------------------------------------------------------------
   // Internal: access the DocType metadata
@@ -223,26 +254,48 @@ export class Document {
 
   private _getStandardField(key: string): unknown {
     switch (key) {
-      case 'name': return this.name;
-      case 'owner': return this.owner;
-      case 'creation': return this.creation;
-      case 'modified': return this.modified;
-      case 'modified_by': return this.modified_by;
-      case 'docstatus': return this.docstatus;
-      case 'idx': return this.idx;
-      default: return undefined;
+      case "name":
+        return this.name;
+      case "owner":
+        return this.owner;
+      case "creation":
+        return this.creation;
+      case "modified":
+        return this.modified;
+      case "modified_by":
+        return this.modified_by;
+      case "docstatus":
+        return this.docstatus;
+      case "idx":
+        return this.idx;
+      default:
+        return undefined;
     }
   }
 
   private _setStandardField(key: string, value: unknown): void {
     switch (key) {
-      case 'name': this.name = String(value ?? ''); break;
-      case 'owner': this.owner = String(value ?? ''); break;
-      case 'creation': this.creation = value instanceof Date ? value : (value ? new Date(String(value)) : null); break;
-      case 'modified': this.modified = value instanceof Date ? value : (value ? new Date(String(value)) : null); break;
-      case 'modified_by': this.modified_by = String(value ?? ''); break;
-      case 'docstatus': this.docstatus = Number(value ?? 0); break;
-      case 'idx': this.idx = Number(value ?? 0); break;
+      case "name":
+        this.name = String(value ?? "");
+        break;
+      case "owner":
+        this.owner = String(value ?? "");
+        break;
+      case "creation":
+        this.creation = toValidTimestamp(value);
+        break;
+      case "modified":
+        this.modified = toValidTimestamp(value);
+        break;
+      case "modified_by":
+        this.modified_by = String(value ?? "");
+        break;
+      case "docstatus":
+        this.docstatus = Number(value ?? 0);
+        break;
+      case "idx":
+        this.idx = Number(value ?? 0);
+        break;
     }
   }
 
@@ -264,4 +317,72 @@ export class Document {
 
     return snapshot;
   }
+}
+
+function toValidTimestamp(value: unknown): Date | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const date =
+    value instanceof Date
+      ? value
+      : typeof value === "string" || typeof value === "number"
+        ? new Date(value)
+        : null;
+
+  return date && !Number.isNaN(date.getTime()) ? date : null;
+}
+
+function normalizeDateValue(value: unknown, fieldtype: string): unknown {
+  if (value === null || value === undefined || value === "") {
+    return value;
+  }
+
+  if (fieldtype === "Date") {
+    if (typeof value === "string") {
+      // Keep date-only strings unchanged.
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+      if (match) {
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+
+        const date = new Date(Date.UTC(year, month - 1, day));
+
+        if (
+          date.getUTCFullYear() === year &&
+          date.getUTCMonth() === month - 1 &&
+          date.getUTCDate() === day
+        ) {
+          return value;
+        }
+
+        return value; // Leave invalid values for validation.
+      }
+    }
+
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
+    return value;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? value : value.toISOString();
+  }
+
+  if (typeof value === "string") {
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? value : date.toISOString();
+  }
+
+  return value;
 }

@@ -1,23 +1,49 @@
 import { useMemo, useState } from "react";
-import type { DocTypeDefinition, FieldDefinition } from "nodra";
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { DocTypeDefinition } from "nodra";
+import { Plus, Search } from "lucide-react";
+
 import { GlobalToolbar } from "@/components/toolbar";
+import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTable } from "@/components/ui/table/data-table";
+import { useDataTable } from "@/hooks/use-data-table";
 import PageContainer from "@/components/layout/page-container";
 
 type DocumentRow = Record<string, unknown>;
 
-type DocTypeListTemplateProps = {
+export type DocTypeListColumn = {
+  id: string;
+  label: string;
+  fieldname?: string;
+  searchable?: boolean;
+  sortable?: boolean;
+  render?: (record: DocumentRow) => ReactNode;
+};
+
+export type DocTypeListTemplateProps<TRecord extends object> = {
   doctype: DocTypeDefinition;
-  records: DocumentRow[];
+  records?: TRecord[];
+  columns?: DocTypeListColumn[];
+  children?: ReactNode;
+
+  title?: string;
+  description?: string;
+  actions?: GlobalToolbarAction[];
+
   loading?: boolean;
   error?: string | null;
-  onCreate: () => void;
-  onOpen: (name: string) => void;
+  onCreate?: () => void;
+  onOpen?: (name: string) => void;
   onRefresh?: () => void;
   pageSize?: number;
 };
+
+function toDocumentRow(record: object): DocumentRow {
+  return record as DocumentRow;
+}
 
 function getDisplayValue(value: unknown): string {
   if (value === null || value === undefined || value === "") {
@@ -29,284 +55,253 @@ function getDisplayValue(value: unknown): string {
   }
 
   if (typeof value === "object") {
-    return JSON.stringify(value);
+    return JSON.stringify(value) ?? "—";
   }
 
   return String(value);
 }
 
 function getListFields(doctype: DocTypeDefinition) {
-  const fields = Array.isArray(doctype?.fields) ? doctype.fields : [];
-
-  const listFields = fields.filter(
+  const fields = (doctype.fields ?? []).filter(
     (field) =>
       field.in_list_view && !field.hidden && field.fieldtype !== "Table",
   );
 
-  if (!listFields.some((field) => field.fieldname === "name")) {
-    return [
-      {
-        fieldname: "name",
-        label: "ID",
-        fieldtype: "Data",
-        in_list_view: true,
-      },
-      ...listFields,
-    ];
+  if (fields.some((field) => field.fieldname === "name")) {
+    return fields;
   }
 
-  return listFields;
+  return [
+    {
+      fieldname: "name",
+      label: "ID",
+      fieldtype: "Data",
+      in_list_view: true,
+    },
+    ...fields,
+  ];
 }
 
-export function DocTypeListTemplate({
+export function DocTypeListTemplate<TRecord extends object>({
   doctype,
-  records,
+  records = [],
+  columns: customColumns,
+  children,
+  title,
+  description,
+  actions,
   loading = false,
   error = null,
   onCreate,
   onOpen,
   onRefresh,
   pageSize = 10,
-}: DocTypeListTemplateProps) {
+}: DocTypeListTemplateProps<TRecord>) {
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
 
-  const fields = useMemo(() => getListFields(doctype), [doctype]);
-  const safeRecords = Array.isArray(records) ? records : [];
+  const fields = useMemo<DocTypeListColumn[]>(() => {
+    if (customColumns !== undefined) {
+      return customColumns;
+    }
 
-  const query = String(search ?? "")
-    .trim()
-    .toLowerCase();
-
-  const filteredRecords = safeRecords.filter((record) => {
-    if (!query) return true;
-
-    return fields.some((field) => {
-      const value = record?.[field.fieldname];
-
-      return String(value ?? "")
-        .toLowerCase()
-        .includes(query);
-    });
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
-  const currentPage = Math.min(page, totalPages - 1);
-  const pageRecords = filteredRecords.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize,
-  );
-
-  function handleSearch(value: string) {
-    setSearch(value);
-    setPage(0);
-  }
+    return getListFields(doctype).map((field) => ({
+      id: field.fieldname,
+      fieldname: field.fieldname,
+      label: field.label || field.fieldname,
+      searchable: true,
+      sortable: true,
+    }));
+  }, [customColumns, doctype]);
 
   const canCreate = !doctype.is_single && !doctype.is_child;
 
+  const filteredRecords = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return records;
+    }
+
+    return records.filter((record) => {
+      const row = toDocumentRow(record);
+
+      return fields.some((field) => {
+        if (!field.fieldname || field.searchable === false) {
+          return false;
+        }
+
+        return String(row[field.fieldname] ?? "")
+          .toLowerCase()
+          .includes(query);
+      });
+    });
+  }, [records, fields, search]);
+
+  const tableColumns = useMemo<ColumnDef<TRecord>[]>(
+    () =>
+      fields.map((field) => ({
+        id: field.id,
+        accessorFn: field.fieldname
+          ? (record) => toDocumentRow(record)[field.fieldname!]
+          : undefined,
+        header: field.label,
+        enableSorting: field.sortable ?? Boolean(field.fieldname),
+        cell: ({ row }) => {
+          const record = row.original;
+          const document = toDocumentRow(record);
+
+          if (field.render) {
+            return field.render(document);
+          }
+
+          const value = field.fieldname ? document[field.fieldname] : undefined;
+
+          if (field.fieldname === "name" && document.name != null) {
+            return onOpen ? (
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpen(String(document.name));
+                }}
+              >
+                {getDisplayValue(value)}
+              </button>
+            ) : (
+              getDisplayValue(value)
+            );
+          }
+
+          return getDisplayValue(value);
+        },
+      })),
+    [fields, onOpen],
+  );
+
+  const { table } = useDataTable({
+    data: filteredRecords,
+    columns: tableColumns,
+    pageCount: Math.max(1, Math.ceil(filteredRecords.length / pageSize)),
+    initialState: {
+      pagination: {
+        pageIndex: 0,
+        pageSize,
+      },
+    },
+  });
+
+  const toolbarActions = useMemo<GlobalToolbarAction[]>(() => {
+    if (actions !== undefined) {
+      return actions;
+    }
+
+    if (!canCreate || !onCreate) {
+      return [];
+    }
+
+    return [
+      {
+        id: "create",
+        label: `Create ${doctype.name}`,
+        icon: Plus,
+        variant: "default",
+        onClick: onCreate,
+      },
+    ];
+  }, [actions, canCreate, doctype.name, onCreate]);
+
+  function handleSearch(value: string) {
+    setSearch(value);
+    table.setPageIndex(0);
+  }
+
   return (
     <PageContainer>
-      {/* Page header */}
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <GlobalToolbar
+          title={title ?? doctype.name}
+          description={
+            description ??
+            `${filteredRecords.length} ${
+              filteredRecords.length === 1 ? "record" : "records"
+            }`
+          }
+          actions={toolbarActions}
+        />
 
-      <GlobalToolbar
-        title={doctype.name}
-        description={`${filteredRecords.length} ${
-          filteredRecords.length === 1 ? "record" : "records"
-        }`}
+        {children !== undefined ? (
+          children
+        ) : (
+          <>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:max-w-sm">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
-        actions={
-          canCreate
-            ? [
-                {
-                  id: "create",
-                  label: `Create ${doctype.name}`,
-                  icon: Plus,
-                  variant: "default",
-                  onClick: onCreate,
-                },
-              ]
-            : []
-        }
-      />
+                <Input
+                  value={search}
+                  onChange={(event) => handleSearch(event.target.value)}
+                  placeholder={`Search ${doctype.name.toLowerCase()}...`}
+                  className="pl-9"
+                  aria-label={`Search ${doctype.name}`}
+                />
+              </div>
 
-      {/* Table Toolbar */}
-      <div className="flex flex-col gap-2 mb-1 sm:flex-row sm:items-center">
-        <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(event) => handleSearch(event.target.value)}
-            placeholder={`Search ${String(doctype?.name ?? "records").toLowerCase()}...`}
-            className="pl-9"
-            aria-label={`Search ${doctype?.name ?? "records"}`}
-          />
-        </div>
+              {onRefresh && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onRefresh}
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+              )}
+            </div>
 
-        {onRefresh && (
-          <Button variant="outline" onClick={onRefresh} disabled={loading}>
-            Refresh
-          </Button>
-        )}
-      </div>
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+              >
+                {error}
+              </div>
+            )}
 
-      {/* Error */}
-      {error && (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="overflow-hidden rounded-lg border">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/40">
-              <tr>
-                {fields.map((field) => (
-                  <th
-                    key={field.fieldname}
-                    scope="col"
-                    className="whitespace-nowrap px-4 py-3 text-left font-medium"
-                  >
-                    {field.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody className="divide-y">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={fields.length}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    Loading records...
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td
-                    colSpan={fields.length}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    Unable to load records.
-                  </td>
-                </tr>
-              ) : pageRecords.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={Math.max(fields.length, 1)}
-                    className="px-4 py-12 text-center"
-                  >
+            {loading ? (
+              <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+                Loading records...
+              </div>
+            ) : error ? (
+              <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+                Unable to load records.
+              </div>
+            ) : (
+              <DataTable table={table}>
+                {table.getRowModel().rows.length === 0 && (
+                  <div className="rounded-md border border-dashed p-8 text-center">
                     <p className="font-medium">No records found</p>
-
-                    <p className="mt-1 text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {search
                         ? "Try another search."
-                        : `Create your first ${String(doctype?.name ?? "document").toLowerCase()} record.`}
+                        : `Create your first ${doctype.name.toLowerCase()} record.`}
                     </p>
 
-                    {!search && canCreate && (
-                      <Button className="mt-4" onClick={onCreate}>
-                        <Plus className="size-4" />
-                        Create {doctype?.name ?? "Record"}
+                    {!search && canCreate && onCreate && (
+                      <Button type="button" className="mt-4" onClick={onCreate}>
+                        <Plus className="mr-2 size-4" />
+                        Create {doctype.name}
                       </Button>
                     )}
-                  </td>
-                </tr>
-              ) : (
-                pageRecords.map((record, index) => {
-                  const recordName = record.name;
-
-                  return (
-                    <tr
-                      key={
-                        recordName == null
-                          ? `${currentPage}-${index}`
-                          : String(recordName)
-                      }
-                      onClick={() => {
-                        if (recordName != null) {
-                          onOpen(String(recordName));
-                        }
-                      }}
-                      onKeyDown={(event) => {
-                        if (
-                          recordName != null &&
-                          (event.key === "Enter" || event.key === " ")
-                        ) {
-                          event.preventDefault();
-                          onOpen(String(recordName));
-                        }
-                      }}
-                      tabIndex={recordName != null ? 0 : undefined}
-                      className={
-                        recordName != null
-                          ? "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          : undefined
-                      }
-                    >
-                      {fields.map((field) => (
-                        <td
-                          key={field.fieldname}
-                          className="max-w-xs truncate whitespace-nowrap px-4 py-3"
-                          title={getDisplayValue(record[field.fieldname])}
-                        >
-                          {getDisplayValue(record[field.fieldname])}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          {filteredRecords.length === 0
-            ? "Showing 0 records"
-            : `Showing ${currentPage * pageSize + 1}–${Math.min(
-                (currentPage + 1) * pageSize,
-                filteredRecords.length,
-              )} of ${filteredRecords.length}`}
-        </p>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((value) => Math.max(0, value - 1))}
-            disabled={currentPage === 0 || loading}
-          >
-            <ChevronLeft className="size-4" />
-            Previous
-          </Button>
-
-          <span className="min-w-20 text-center text-sm">
-            Page {currentPage + 1} of {totalPages}
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPage((value) => Math.min(totalPages - 1, value + 1))
-            }
-            disabled={currentPage >= totalPages - 1 || loading}
-          >
-            Next
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
+                  </div>
+                )}
+              </DataTable>
+            )}
+          </>
+        )}
       </div>
     </PageContainer>
   );
 }
+
+export default DocTypeListTemplate;

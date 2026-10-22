@@ -79,10 +79,19 @@ const invokeMethod = createServerFn({ method: "POST" })
         deleteCookie("session_token", { path: "/" });
       return { ok: true as const, data: toJsonValue(result) };
     } catch (e) {
+      const details =
+        typeof e === "object" &&
+        e !== null &&
+        "details" in e &&
+        Array.isArray(e.details)
+          ? e.details
+          : [];
+
       return {
         ok: false as const,
         error: e instanceof Error ? e.message : String(e),
         status: methodErrorStatus(e),
+        details,
       };
     }
   });
@@ -94,7 +103,9 @@ export async function callMethod<TResult = unknown>(
   const result = await invokeMethod({ data: { method, args } });
 
   if (!result.ok) {
-    throw new MethodCallError(result.error, result.status);
+    throw new MethodCallError(result.error, result.status, {
+      details: result.details,
+    });
   }
 
   return result.data as TResult;

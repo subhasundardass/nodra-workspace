@@ -650,6 +650,33 @@ export class ORM {
     return this.persist(doc, "cancel");
   }
 
+  /**
+   * Persist an existing document using the requested lifecycle operation.
+   *
+   * For workflow-enabled DocTypes, workflow state and docstatus changes
+   * must be performed through `orm.transition(doc, action)`. The workflow
+   * engine validates the configured transition and user roles before this
+   * method persists the result.
+   *
+   * Workflow transitions may move docstatus in either direction when the
+   * configured workflow permits it, for example `51 -> 0` when reopening
+   * a confirmed document. This method does not independently impose
+   * monotonically increasing docstatus values on authorized transitions.
+   *
+   * @param doc - The document instance to persist.
+   * @param mode - The lifecycle operation: update, submit, or cancel.
+   * @returns The persisted document with database values applied.
+   *
+   * @throws {DocStatusError} If the requested operation violates the
+   *   DocType's document-status rules.
+   * @throws {WorkflowExecutionError} If a workflow-enabled document uses
+   *   submit/cancel directly or its workflow state is changed outside
+   *   an authorized workflow transition.
+   * @throws {NotFoundError} If the document does not exist in the database.
+   * @throws {StaleDocumentError} If stale checking is enabled and the
+   *   document has been modified since it was loaded.
+   * @throws {PermissionError} If the current user lacks the required access.
+   */
   private async persist(doc: Document, mode: Mode): Promise<Document> {
     const meta = this.registry.get(doc.doctype);
     const now = new Date();
@@ -663,7 +690,7 @@ export class ORM {
       throw new DocStatusError(`${meta.name} is not submittable`);
     }
 
-    // With a workflow, docstatus is owned by the workflow states.
+    // Workflow-enabled documents must use configured workflow actions.
     if (mode !== "update" && workflow) {
       throw new WorkflowExecutionError(
         `${meta.name} uses a workflow. Use orm.transition(doc, action) ` +
@@ -677,6 +704,8 @@ export class ORM {
     doc.modified = now;
     doc.modified_by = user ?? (doc.modified_by || DEFAULT_USER);
 
+    // Run validation for updates and submissions.
+    // Cancellation follows its dedicated lifecycle.
     if (mode !== "cancel") {
       await doc.beforeValidate();
       await doc.validate();
@@ -710,7 +739,7 @@ export class ORM {
       !!this.options.enforcePermissions ||
       !!workflow;
 
-    // True only while orm.transition() is saving this document.
+    // True only while orm.transition() is persisting this document.
     const isWorkflowTransition =
       mode === "update" &&
       !!workflow &&
@@ -734,7 +763,7 @@ export class ORM {
         this.checkDocAccess(meta, ptype, (key) => stored[key]);
 
         // Prevent direct workflow-state changes.
-        // Only transition() may change the configured state field.
+        // Only orm.transition() may change the configured state field.
         if (mode === "update" && workflow) {
           if (
             !isWorkflowTransition &&
@@ -748,6 +777,8 @@ export class ORM {
           }
         }
 
+        // Detect updates made by another request after this document
+        // was loaded, when stale checking is enabled.
         if (
           this.options.staleCheck &&
           (loadedModified instanceof Date ||
@@ -794,31 +825,30 @@ export class ORM {
       } else {
         data = this.buildUpdateData(doc, meta);
 
+        //This ensures the custom status is included for workflow transitions
+        if (isWorkflowTransition && workflow) {
+          data["docstatus"] = doc.docstatus;
+        }
+
         if (mode === "submit") {
           data["docstatus"] = 1;
         }
 
-        if (isWorkflowTransition && submittable && workflow) {
-          const next = Number(data["docstatus"] ?? storedStatus);
+        // Do not impose an increasing-docstatus rule on workflow
+        // transitions. The workflow executor has already validated
+        // the action, target state, and user roles. This allows valid
+        // transitions such as Confirmed (51) -> Draft (0).
 
-          // A workflow may submit (0->1) or cancel (1->2), never go back
-          // or skip the submitted step.
-          if (next < storedStatus || (storedStatus === 0 && next === 2)) {
-            throw new DocStatusError(
-              `${meta.name} ${doc.name}: workflow cannot change docstatus ` +
-                `from ${storedStatus} to ${next}`,
-            );
-          }
-        }
-
+        // Keep submitted-document fields protected during ordinary
+        // updates. A workflow transition may also update its state
+        // field and docstatus while retaining this field protection.
         if (mode === "update" && submittable && storedStatus === 1) {
           const ok = new Set(
             meta.fields.filter(allowOnSubmit).map((field) => field.fieldname),
           );
 
-          // A workflow transition may still move the state field and docstatus
-          // of a submitted document; everything else stays locked.
           const keep = new Set(ok);
+
           if (isWorkflowTransition && workflow) {
             keep.add(workflow.stateField);
             keep.add("docstatus");
@@ -834,6 +864,7 @@ export class ORM {
         }
       }
 
+      // Persist the document and retrieve the database's final values.
       const qb = new QueryBuilder(tableName)
         .update(data)
         .where("name", "=", doc.name);
@@ -848,11 +879,13 @@ export class ORM {
 
       this.applyRowToDocument(doc, row);
 
+      // Save child tables in the same transaction, except for cancellation.
       if (withChildren && mode !== "cancel") {
         await this.saveChildren(db, doc, meta, now, onlyTables);
       }
     });
 
+    // Keep the in-memory status synchronized for traditional operations.
     if (mode === "submit") {
       doc.docstatus = 1;
     }
@@ -863,6 +896,7 @@ export class ORM {
 
     doc.markAsClean();
 
+    // Run post-persistence lifecycle hooks.
     if (mode === "update") {
       await doc.afterSave();
     } else if (mode === "submit") {
