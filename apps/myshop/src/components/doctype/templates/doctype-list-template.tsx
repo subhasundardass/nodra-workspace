@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
-import type { DocTypeDefinition, FieldDefinition } from "nodra";
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { DocTypeDefinition } from "nodra";
+import { Plus, Search } from "lucide-react";
+
 import { GlobalToolbar } from "@/components/toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTable } from "@/components/ui/table/data-table";
+import { useDataTable } from "@/hooks/use-data-table";
 import PageContainer from "@/components/layout/page-container";
 
 type DocumentRow = Record<string, unknown>;
@@ -36,26 +40,24 @@ function getDisplayValue(value: unknown): string {
 }
 
 function getListFields(doctype: DocTypeDefinition) {
-  const fields = Array.isArray(doctype?.fields) ? doctype.fields : [];
-
-  const listFields = fields.filter(
+  const fields = (doctype.fields ?? []).filter(
     (field) =>
       field.in_list_view && !field.hidden && field.fieldtype !== "Table",
   );
 
-  if (!listFields.some((field) => field.fieldname === "name")) {
-    return [
-      {
-        fieldname: "name",
-        label: "ID",
-        fieldtype: "Data",
-        in_list_view: true,
-      },
-      ...listFields,
-    ];
+  if (fields.some((field) => field.fieldname === "name")) {
+    return fields;
   }
 
-  return listFields;
+  return [
+    {
+      fieldname: "name",
+      label: "ID",
+      fieldtype: "Data",
+      in_list_view: true,
+    },
+    ...fields,
+  ];
 }
 
 export function DocTypeListTemplate({
@@ -69,51 +71,72 @@ export function DocTypeListTemplate({
   pageSize = 10,
 }: DocTypeListTemplateProps) {
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
 
   const fields = useMemo(() => getListFields(doctype), [doctype]);
-  const safeRecords = Array.isArray(records) ? records : [];
+  const canCreate = !doctype.is_single && !doctype.is_child;
 
-  const query = String(search ?? "")
-    .trim()
-    .toLowerCase();
+  const filteredRecords = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-  const filteredRecords = safeRecords.filter((record) => {
-    if (!query) return true;
+    if (!query) return records;
 
-    return fields.some((field) => {
-      const value = record?.[field.fieldname];
+    return records.filter((record) =>
+      fields.some((field) =>
+        String(record[field.fieldname] ?? "")
+          .toLowerCase()
+          .includes(query),
+      ),
+    );
+  }, [records, fields, search]);
 
-      return String(value ?? "")
-        .toLowerCase()
-        .includes(query);
-    });
-  });
+  const columns = useMemo<ColumnDef<DocumentRow>[]>(
+    () =>
+      fields.map((field) => ({
+        id: field.fieldname,
+        accessorFn: (row) => row[field.fieldname],
+        header: field.label || field.fieldname,
+        enableSorting: true,
+        cell: ({ row }) => {
+          const value = row.original[field.fieldname];
+          const recordName = row.original.name;
 
-  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
-  const currentPage = Math.min(page, totalPages - 1);
-  const pageRecords = filteredRecords.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize,
+          if (field.fieldname === "name" && recordName != null) {
+            return (
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline"
+                onClick={() => onOpen(String(recordName))}
+              >
+                {getDisplayValue(value)}
+              </button>
+            );
+          }
+
+          return getDisplayValue(value);
+        },
+      })),
+    [fields, onOpen],
   );
 
-  function handleSearch(value: string) {
-    setSearch(value);
-    setPage(0);
-  }
-
-  const canCreate = !doctype.is_single && !doctype.is_child;
+  const { table } = useDataTable({
+    data: filteredRecords,
+    columns,
+    pageCount: Math.max(1, Math.ceil(filteredRecords.length / pageSize)),
+    initialState: {
+      pagination: {
+        pageIndex: 0,
+        pageSize,
+      },
+    },
+  });
 
   return (
     <PageContainer>
-      {/* Page header */}
-
       <GlobalToolbar
         title={doctype.name}
         description={`${filteredRecords.length} ${
           filteredRecords.length === 1 ? "record" : "records"
         }`}
-
         actions={
           canCreate
             ? [
@@ -129,27 +152,31 @@ export function DocTypeListTemplate({
         }
       />
 
-      {/* Table Toolbar */}
-      <div className="flex flex-col gap-2 mb-1 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
           <Input
             value={search}
-            onChange={(event) => handleSearch(event.target.value)}
-            placeholder={`Search ${String(doctype?.name ?? "records").toLowerCase()}...`}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={`Search ${doctype.name.toLowerCase()}...`}
             className="pl-9"
-            aria-label={`Search ${doctype?.name ?? "records"}`}
+            aria-label={`Search ${doctype.name}`}
           />
         </div>
 
         {onRefresh && (
-          <Button variant="outline" onClick={onRefresh} disabled={loading}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onRefresh}
+            disabled={loading}
+          >
             Refresh
           </Button>
         )}
       </div>
 
-      {/* Error */}
       {error && (
         <div
           role="alert"
@@ -159,154 +186,35 @@ export function DocTypeListTemplate({
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-lg border">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/40">
-              <tr>
-                {fields.map((field) => (
-                  <th
-                    key={field.fieldname}
-                    scope="col"
-                    className="whitespace-nowrap px-4 py-3 text-left font-medium"
-                  >
-                    {field.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+      {loading ? (
+        <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+          Loading records...
+        </div>
+      ) : error ? (
+        <div className="rounded-lg border px-4 py-12 text-center text-sm text-muted-foreground">
+          Unable to load records.
+        </div>
+      ) : (
+        <DataTable table={table}>
+          {table.getRowModel().rows.length === 0 && (
+            <div className="rounded-md border border-dashed p-8 text-center">
+              <p className="font-medium">No records found</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {search
+                  ? "Try another search."
+                  : `Create your first ${doctype.name.toLowerCase()} record.`}
+              </p>
 
-            <tbody className="divide-y">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={fields.length}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    Loading records...
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td
-                    colSpan={fields.length}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    Unable to load records.
-                  </td>
-                </tr>
-              ) : pageRecords.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={Math.max(fields.length, 1)}
-                    className="px-4 py-12 text-center"
-                  >
-                    <p className="font-medium">No records found</p>
-
-                    <p className="mt-1 text-muted-foreground">
-                      {search
-                        ? "Try another search."
-                        : `Create your first ${String(doctype?.name ?? "document").toLowerCase()} record.`}
-                    </p>
-
-                    {!search && canCreate && (
-                      <Button className="mt-4" onClick={onCreate}>
-                        <Plus className="size-4" />
-                        Create {doctype?.name ?? "Record"}
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                pageRecords.map((record, index) => {
-                  const recordName = record.name;
-
-                  return (
-                    <tr
-                      key={
-                        recordName == null
-                          ? `${currentPage}-${index}`
-                          : String(recordName)
-                      }
-                      onClick={() => {
-                        if (recordName != null) {
-                          onOpen(String(recordName));
-                        }
-                      }}
-                      onKeyDown={(event) => {
-                        if (
-                          recordName != null &&
-                          (event.key === "Enter" || event.key === " ")
-                        ) {
-                          event.preventDefault();
-                          onOpen(String(recordName));
-                        }
-                      }}
-                      tabIndex={recordName != null ? 0 : undefined}
-                      className={
-                        recordName != null
-                          ? "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          : undefined
-                      }
-                    >
-                      {fields.map((field) => (
-                        <td
-                          key={field.fieldname}
-                          className="max-w-xs truncate whitespace-nowrap px-4 py-3"
-                          title={getDisplayValue(record[field.fieldname])}
-                        >
-                          {getDisplayValue(record[field.fieldname])}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })
+              {!search && canCreate && (
+                <Button type="button" className="mt-4" onClick={onCreate}>
+                  <Plus className="mr-2 size-4" />
+                  Create {doctype.name}
+                </Button>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          {filteredRecords.length === 0
-            ? "Showing 0 records"
-            : `Showing ${currentPage * pageSize + 1}–${Math.min(
-                (currentPage + 1) * pageSize,
-                filteredRecords.length,
-              )} of ${filteredRecords.length}`}
-        </p>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((value) => Math.max(0, value - 1))}
-            disabled={currentPage === 0 || loading}
-          >
-            <ChevronLeft className="size-4" />
-            Previous
-          </Button>
-
-          <span className="min-w-20 text-center text-sm">
-            Page {currentPage + 1} of {totalPages}
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPage((value) => Math.min(totalPages - 1, value + 1))
-            }
-            disabled={currentPage >= totalPages - 1 || loading}
-          >
-            Next
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
-      </div>
+            </div>
+          )}
+        </DataTable>
+      )}
     </PageContainer>
   );
 }
