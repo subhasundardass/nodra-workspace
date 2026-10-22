@@ -4,7 +4,8 @@ import { useForm } from "@tanstack/react-form";
 import type { DocTypeDefinition } from "nodra";
 
 import { GlobalToolbar } from "@/components/toolbar";
-import { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import type { WorkflowTransition } from "@/components/toolbar/toolbar-types";
 
 type FormValues = Record<string, unknown>;
 
@@ -31,6 +32,7 @@ type DocTypeFormTemplateProps = {
   error?: string | null;
   documentStatus?: string;
   toolbarActions?: GlobalToolbarAction[];
+  transitions?: WorkflowTransition[];
   children: (form: NodraForm) => ReactNode;
   onSubmit: (values: FormValues) => Promise<void>;
   onCancel: () => void;
@@ -56,7 +58,6 @@ function getInitialValues(
     }
   }
 
-  // Preserve values that are not declared in the DocType.
   return { ...values, ...initialValues };
 }
 
@@ -69,6 +70,7 @@ export function DocTypeFormTemplate({
   error = null,
   documentStatus,
   toolbarActions,
+  transitions = [],
   children,
   onSubmit,
   onCancel,
@@ -87,9 +89,7 @@ export function DocTypeFormTemplate({
       try {
         await onSubmit(values);
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : "Unable to save this document.",
-        );
+        setSubmitError(getErrorMessage(err));
       }
     },
     [onSubmit],
@@ -97,30 +97,53 @@ export function DocTypeFormTemplate({
 
   const form = useNodraForm(defaults, submitValues);
 
-  // Reset the form when the document defaults change.
   useEffect(() => {
     form.reset(defaults);
     setSubmitError(null);
   }, [form, defaults]);
 
-  const canSave = !loading && !saving && mode !== "view";
+  const workflow = doctype.workflow;
+
+  const currentWorkflowState = useMemo(
+    () => workflow?.states.find((state) => state.state === documentStatus),
+    [workflow, documentStatus],
+  );
+
+  // New documents can be saved before entering a workflow state.
+  // Existing workflow documents are editable only in non-submitted,
+  // non-cancelled, non-final states.
+  const workflowAllowsEditing =
+    mode === "create" ||
+    !workflow ||
+    (currentWorkflowState !== undefined &&
+      currentWorkflowState.is_final !== true &&
+      currentWorkflowState.doc_status !== 1 &&
+      currentWorkflowState.doc_status !== 2);
+
+  const showSaveCancel = mode !== "view" && workflowAllowsEditing;
+
+  const canSave = showSaveCancel && !loading && !saving;
 
   const handleSubmit = useCallback(() => {
     if (!canSave) return;
+
     void form.handleSubmit();
   }, [canSave, form]);
 
   const handleCancel = useCallback(() => {
-    if (!saving) onCancel();
-  }, [saving, onCancel]);
+    if (!saving && showSaveCancel) {
+      onCancel();
+    }
+  }, [saving, showSaveCancel, onCancel]);
 
   const defaultActions = useMemo<GlobalToolbarAction[]>(
     () => [
       {
-        id: "cancel",
-        label: "Cancel",
+        id: "back",
+        label: "Back",
         variant: "outline",
-        disabled: saving,
+        disabled: saving || loading,
+        hidden: !showSaveCancel,
         onClick: handleCancel,
       },
       {
@@ -128,11 +151,11 @@ export function DocTypeFormTemplate({
         label: saving ? "Saving..." : "Save",
         variant: "default",
         disabled: !canSave,
-        hidden: mode === "view",
+        hidden: !showSaveCancel,
         onClick: handleSubmit,
       },
     ],
-    [saving, handleCancel, canSave, mode, handleSubmit],
+    [saving, loading, showSaveCancel, handleCancel, canSave, handleSubmit],
   );
 
   const actions = toolbarActions ?? defaultActions;
@@ -151,12 +174,13 @@ export function DocTypeFormTemplate({
         description={description}
         documentStatus={documentStatus}
         actions={actions}
+        transitions={transitions}
       />
 
       {(error || submitError) && (
         <div
           role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+          className="whitespace-pre-line rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
         >
           {submitError ?? error}
         </div>
@@ -193,7 +217,9 @@ export function DocTypeFormTemplate({
               "
             >
               <fieldset
-                disabled={saving || mode === "view"}
+                disabled={
+                  saving || loading || mode === "view" || !workflowAllowsEditing
+                }
                 className="min-w-0"
               >
                 <div className="w-full min-w-0 md:col-span-2">
@@ -222,3 +248,42 @@ export function DocTypeFormTemplate({
 }
 
 export default DocTypeFormTemplate;
+
+//--Helper
+
+function getErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Unable to save this document.";
+  }
+
+  if (
+    "data" in error &&
+    typeof error.data === "object" &&
+    error.data !== null
+  ) {
+    const data = error.data;
+
+    if ("details" in data && Array.isArray(data.details)) {
+      const messages = data.details
+        .map((detail: unknown) => {
+          if (
+            typeof detail === "object" &&
+            detail !== null &&
+            "message" in detail &&
+            typeof detail.message === "string"
+          ) {
+            return detail.message;
+          }
+
+          return undefined;
+        })
+        .filter((message): message is string => Boolean(message));
+
+      if (messages.length > 0) {
+        return messages.join("\n");
+      }
+    }
+  }
+
+  return error.message;
+}
