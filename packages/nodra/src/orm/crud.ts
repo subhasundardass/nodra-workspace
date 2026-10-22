@@ -825,6 +825,11 @@ export class ORM {
       } else {
         data = this.buildUpdateData(doc, meta);
 
+        //This ensures the custom status is included for workflow transitions
+        if (isWorkflowTransition && workflow) {
+          data["docstatus"] = doc.docstatus;
+        }
+
         if (mode === "submit") {
           data["docstatus"] = 1;
         }

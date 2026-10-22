@@ -90,7 +90,7 @@ export function DataTable<TData>({
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={table.getAllColumns().length}
+                      colSpan={table.getVisibleLeafColumns().length}
                       className="h-24 text-center"
                     >
                       {table.getState().columnFilters.length > 0
