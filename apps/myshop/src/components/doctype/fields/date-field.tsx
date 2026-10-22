@@ -94,7 +94,7 @@ export function DateField({
         maxDate={maxDate}
         clearable={clearable}
         showIcon
-        inputClassName={cn("bg-background shadow-none", inputClassName)}
+        inputClassName={cn("bg-card shadow-none", inputClassName)}
       />
 
       {description && (
