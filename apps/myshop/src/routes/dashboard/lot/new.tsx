@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
+import { toast } from "sonner";
 
-import DocTypeFormTemplate from "@/components/doctype/templates/doctype-form-template";
+import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
 import { LotForm } from "@/features/lots/form";
 import { callMethod } from "@/lib/call-method";
 
@@ -12,9 +13,7 @@ export const Route = createFileRoute("/dashboard/lot/new")({
   loader: async (): Promise<DocTypeDefinition> => {
     const result = await callMethod<{
       doctype: DocTypeDefinition;
-    }>("nodra.doctype.get", {
-      name: "Lots",
-    });
+    }>("nodra.doctype.get", { name: "Lots" });
 
     if (!result.doctype) {
       throw new Error('DocType "Lots" is not registered.');
@@ -23,15 +22,15 @@ export const Route = createFileRoute("/dashboard/lot/new")({
     return result.doctype;
   },
 
-  component: NewLotRoute,
+  component: CreateLotRoute,
 });
 
-function NewLotRoute() {
+function CreateLotRoute() {
   const doctype = Route.useLoaderData();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
-  async function handleCreate(values: FormValues) {
+  async function handleSubmit(values: FormValues): Promise<void> {
     setSaving(true);
 
     try {
@@ -40,20 +39,13 @@ function NewLotRoute() {
         doc: values,
       });
 
-      await navigate({
-        to: "/dashboard/lot",
-      });
+      toast.success("Lot created successfully.");
+
+      await navigate({ to: "/dashboard/lot" });
+      await navigate({ to: "/dashboard/lot", reloadDocument: false });
     } finally {
       setSaving(false);
     }
-  }
-
-  function handleCancel() {
-    if (saving) return;
-
-    void navigate({
-      to: "/dashboard/lot",
-    });
   }
 
   return (
@@ -61,8 +53,8 @@ function NewLotRoute() {
       doctype={doctype}
       mode="create"
       saving={saving}
-      onSubmit={handleCreate}
-      onCancel={handleCancel}
+      onSubmit={handleSubmit}
+      onCancel={() => navigate({ to: "/dashboard/lot" })}
     >
       {(form) => <LotForm form={form} />}
     </DocTypeFormTemplate>

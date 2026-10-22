@@ -1,56 +1,48 @@
 import * as React from "react";
-import { Plus } from "lucide-react";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
+import type { DocTypeDefinition } from "nodra";
 
-import { DataTable } from "@/components/ui/table/data-table";
-import { useDataTable } from "@/hooks/use-data-table";
 import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
-import { Button } from "@/components/ui/button";
-import { getQueryClient } from "@/lib/query-client";
+import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
 import { callMethod } from "@/lib/call-method";
-
-import {
-  lotsQueryKey,
-  lotsQueryOptions,
-  lotDocTypeQueryOptions,
-  type TeaLot,
-} from "./lots.api";
-
-import { createColumns } from "./columns";
 import { LotForm } from "./form";
 
-type LotFormValues = Record<string, unknown>;
-
-type SaveLotVariables = {
-  name?: string;
-  values: LotFormValues;
+export type LotRecord = Record<string, unknown> & {
+  name: string;
 };
 
-export default function LotList() {
-  const [editingLot, setEditingLot] = React.useState<TeaLot | null>(null);
+type LotListProps = {
+  doctype: DocTypeDefinition;
+  records: LotRecord[];
+};
+
+type FormValues = Record<string, unknown>;
+
+type SaveVariables = {
+  name?: string;
+  values: FormValues;
+};
+
+export default function LotList({ doctype, records }: LotListProps) {
+  const router = useRouter();
+
+  const [editingLot, setEditingLot] = React.useState<LotRecord | null>(null);
   const [formOpen, setFormOpen] = React.useState(false);
 
-  const queryClient = getQueryClient();
-
-  const { data: lots } = useSuspenseQuery(lotsQueryOptions());
-  const { data: doctype } = useSuspenseQuery(lotDocTypeQueryOptions());
-
   const saveMutation = useMutation({
-    mutationFn: async ({ name, values }: SaveLotVariables) => {
-      if (name) {
-        return callMethod("document.update", {
-          doctype: "Lots",
-          name,
-          doc: values,
-        });
-      }
-
-      return callMethod("document.create", {
-        doctype: "Lots",
-        doc: values,
-      });
-    },
+    mutationFn: ({ name, values }: SaveVariables) =>
+      name
+        ? callMethod("document.update", {
+            doctype: doctype.name,
+            name,
+            doc: values,
+          })
+        : callMethod("document.create", {
+            doctype: doctype.name,
+            doc: values,
+          }),
 
     onSuccess: async (_result, variables) => {
       toast.success(
@@ -59,12 +51,10 @@ export default function LotList() {
           : "Lot created successfully.",
       );
 
-      await queryClient.invalidateQueries({
-        queryKey: lotsQueryKey,
-      });
-
       setFormOpen(false);
       setEditingLot(null);
+
+      await router.invalidate();
     },
 
     onError: (error: Error) => {
@@ -72,74 +62,59 @@ export default function LotList() {
     },
   });
 
-  const columns = React.useMemo(
-    () =>
-      createColumns((lot) => {
-        setEditingLot(lot);
-        setFormOpen(true);
-      }),
-    [],
-  );
-
-  const { table } = useDataTable({
-    data: lots,
-    columns,
-    pageCount: 1,
-    shallow: true,
-    initialState: {
-      pagination: {
-        pageIndex: 0,
-        pageSize: 10,
-      },
-    },
-  });
-
-  function openCreateForm() {
+  const openCreateForm = () => {
     setEditingLot(null);
     setFormOpen(true);
-  }
+  };
 
-  function closeForm() {
+  const openEditForm = (name: string) => {
+    const lot = records.find((record) => record.name === name);
+
+    if (!lot) {
+      toast.error("Lot not found.");
+      return;
+    }
+
+    setEditingLot(lot);
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
     if (saveMutation.isPending) return;
 
     setFormOpen(false);
     setEditingLot(null);
-  }
+  };
 
-  async function handleSubmit(values: LotFormValues) {
+  const handleSubmit = async (values: FormValues): Promise<void> => {
     await saveMutation.mutateAsync({
       name: editingLot?.name,
       values,
     });
+  };
+
+  if (formOpen) {
+    return (
+      <DocTypeFormTemplate
+        doctype={doctype}
+        mode={editingLot ? "edit" : "create"}
+        initialValues={editingLot ?? {}}
+        saving={saveMutation.isPending}
+        onSubmit={handleSubmit}
+        onCancel={closeForm}
+      >
+        {(form) => <LotForm form={form} />}
+      </DocTypeFormTemplate>
+    );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      {!formOpen ? (
-        <>
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="text-xl font-semibold">Lots</h1>
-
-            <Button type="button" onClick={openCreateForm}>
-              <Plus className="mr-2 size-4" />
-              Create Lot
-            </Button>
-          </div>
-
-          <DataTable table={table} />
-        </>
-      ) : (
-        <DocTypeFormTemplate
-          doctype={doctype}
-          mode={editingLot ? "edit" : "create"}
-          initialValues={editingLot ? { ...editingLot } : {}}
-          saving={saveMutation.isPending}
-          onSubmit={handleSubmit}
-          onCancel={closeForm}
-        >
-          {(form) => <LotForm form={form} />}
-        </DocTypeFormTemplate>
-      )}
-    </div>
+    <DocTypeListTemplate
+      doctype={doctype}
+      records={records}
+      title="Lots"
+      onCreate={openCreateForm}
+      onOpen={openEditForm}
+    />
   );
 }

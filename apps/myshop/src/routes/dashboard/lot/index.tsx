@@ -1,23 +1,27 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
 
 import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
 import { callMethod } from "@/lib/call-method";
 
-type LotRecord = Record<string, unknown>;
+type DocumentRecord = Record<string, unknown>;
 
-type LotListData = {
+type ListData = {
   doctype: DocTypeDefinition;
-  records: LotRecord[];
+  records: DocumentRecord[];
 };
 
 export const Route = createFileRoute("/dashboard/lot/")({
-  loader: async (): Promise<LotListData> => {
+  loader: async (): Promise<ListData> => {
     const [doctypeResult, listResult] = await Promise.all([
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "Lots",
       }),
-      callMethod<{ documents: LotRecord[] }>("document.list", {
+      callMethod<{ documents: DocumentRecord[] }>("document.list", {
         doctype: "Lots",
       }),
     ]);
@@ -38,26 +42,20 @@ export const Route = createFileRoute("/dashboard/lot/")({
 function LotListRoute() {
   const { doctype, records } = Route.useLoaderData();
   const navigate = useNavigate();
-
-  function handleCreate() {
-    void navigate({
-      to: "/dashboard/lot/new",
-    });
-  }
-
-  function handleOpen(name: string) {
-    void navigate({
-      to: "/dashboard/lot/$name",
-      params: { name },
-    });
-  }
+  const router = useRouter();
 
   return (
     <DocTypeListTemplate
       doctype={doctype}
       records={records}
-      onCreate={handleCreate}
-      onOpen={handleOpen}
+      onCreate={() => navigate({ to: "/dashboard/lot/new" })}
+      onOpen={(name) =>
+        navigate({
+          to: "/dashboard/lot/$name",
+          params: { name },
+        })
+      }
+      onRefresh={() => router.invalidate()}
     />
   );
 }
