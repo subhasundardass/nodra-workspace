@@ -368,6 +368,12 @@ export function DocTypeFormTemplate({
     handleWorkflowTransition,
   ]);
 
+  const handleBack = useCallback(() => {
+    if (!saving && !loading && !transitioning) {
+      onCancel();
+    }
+  }, [saving, loading, transitioning, onCancel]);
+
   const defaultActions = useMemo<GlobalToolbarAction[]>(
     () => [
       {
@@ -375,8 +381,7 @@ export function DocTypeFormTemplate({
         label: "Back",
         variant: "outline",
         disabled: saving || loading || transitioning,
-        hidden: !showSaveCancel,
-        onClick: handleCancel,
+        onClick: handleBack,
       },
       {
         id: "save",
@@ -409,9 +414,13 @@ export function DocTypeFormTemplate({
         ? `View ${String(documentValues.name ?? doctype.name)}`
         : `Edit ${String(documentValues.name ?? doctype.name)}`;
 
+  const currentDocumentStatusValue = workflow
+    ? documentValues[workflow.state_field]
+    : undefined;
+
   const currentDocumentStatus =
-    typeof documentValues.workflow_state === "string"
-      ? documentValues.workflow_state
+    typeof currentDocumentStatusValue === "string"
+      ? currentDocumentStatusValue
       : documentStatus;
 
   return (
