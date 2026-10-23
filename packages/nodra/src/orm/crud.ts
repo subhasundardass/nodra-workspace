@@ -569,6 +569,10 @@ export class ORM {
   async getList(doctype: string, options?: ListOptions): Promise<Document[]> {
     const meta = this.registry.get(doctype);
     this.assertNotVirtual(meta, "list");
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9babd339 (fix: Bug Fix for is_virtual doctype)
     // New features used, or permissions enforced -> new compiler
     if (isAdvanced(options) || this.options.enforcePermissions) {
       const rows = await this.queryRows(doctype, options ?? {});
@@ -1537,6 +1541,15 @@ export class ORM {
     }
 
     return data;
+  }
+
+  private assertNotVirtual(meta: DocTypeDefinition, operation: string): void {
+    if (meta.is_virtual) {
+      throw new Error(
+        `Cannot ${operation} virtual DocType "${meta.name}": ` +
+          `no data provider is configured`,
+      );
+    }
   }
 
   private rowToDocument(
