@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { format, isValid, parse } from "date-fns";
 
-import { DatePicker, type DatePickerProps } from "@/components/date-picker";
+import { DatePicker } from "@/components/date-picker";
 import { cn } from "@/lib/utils";
 
 export interface DateFieldProps {
@@ -31,7 +30,6 @@ function parseStoredDate(value?: string): Date | undefined {
     return undefined;
   }
 
-  // Noon avoids changing the calendar day when serialized to UTC.
   return new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -59,20 +57,12 @@ export function DateField({
   className,
   inputClassName,
 }: DateFieldProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
-    parseStoredDate(value),
-  );
-
-  useEffect(() => {
-    setSelectedDate(parseStoredDate(value));
-  }, [value]);
-
-  const isDisabled = disabled || readOnly;
+  const selectedDate = parseStoredDate(value);
 
   return (
     <div className={cn("min-w-0 space-y-1.5", className)}>
       {label && (
-        <label className="text-sm font-medium">
+        <label htmlFor={id ?? name} className="text-sm font-medium">
           {label}
           {required && <span className="ml-1 text-destructive">*</span>}
         </label>
@@ -83,13 +73,11 @@ export function DateField({
         name={name}
         value={selectedDate}
         onChange={(date) => {
-          setSelectedDate(date);
-
           onChange(date && isValid(date) ? format(date, "yyyy-MM-dd") : "");
         }}
         format="dd/MM/yyyy"
         placeholder={placeholder ?? "dd/mm/yyyy"}
-        disabled={isDisabled}
+        disabled={disabled || readOnly}
         minDate={minDate}
         maxDate={maxDate}
         clearable={clearable}

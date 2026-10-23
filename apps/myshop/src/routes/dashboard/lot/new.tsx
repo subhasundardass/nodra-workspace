@@ -53,7 +53,7 @@ function CreateLotRoute() {
       saving={saving}
       onSubmit={handleSubmit}
       onCancel={() => navigate({ to: "/dashboard/lot" })}
-      // initialValues={initialValues}
+
       initialValues={{
         entry_date: new Date().toLocaleDateString("en-CA"),
         arrival_date: new Date().toLocaleDateString("en-CA"),

@@ -164,6 +164,19 @@ export function LotForm({ form }: LotFormProps) {
         )}
       </form.Field>
 
+      <form.Field name="warehouse">
+        {(field) => (
+          <FieldRow label="Warehouse/Godown" htmlFor={field.name} required>
+            <LinkField
+              value={String(field.state.value ?? "")}
+              onChange={field.handleChange}
+              doctype="Warehouse"
+              className="w-full"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+
       <form.Field name="workflow_state">
         {(field) => (
           <FieldRow label="Status" htmlFor={field.name}>

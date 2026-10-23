@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { DocTypeDefinition } from "nodra";
@@ -212,7 +212,18 @@ export function DocTypeFormTemplate({
 
   const form = useNodraForm(defaults, submitValues);
 
+  const previousDefaultsKey = useRef(JSON.stringify(defaults));
+
   useEffect(() => {
+    const defaultsKey = JSON.stringify(defaults);
+
+    // Don't reset the form when only the object reference changes.
+    if (previousDefaultsKey.current === defaultsKey) {
+      return;
+    }
+
+    previousDefaultsKey.current = defaultsKey;
+
     setDocumentValues(defaults);
     form.reset(defaults);
     setSubmitError(null);
@@ -507,7 +518,7 @@ export function DocTypeFormTemplate({
         </div>
       ) : (
         <div className="grid w-full min-w-0 grid-cols-1 items-start gap-6 md:grid-cols-3">
-          <div className="min-w-0 rounded-sm border bg-blue-50 p-3 dark:bg-muted/30 md:col-span-2">
+          <div className="min-w-0 rounded-sm border bg-blue-50 p-6 dark:bg-muted/30 md:col-span-2">
             <form
               id={`doctype-form-${doctype.name}`}
               onSubmit={(event) => {

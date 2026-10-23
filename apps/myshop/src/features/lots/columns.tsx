@@ -1,3 +1,4 @@
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export interface TableColumns {
@@ -33,7 +34,10 @@ export function createColumns(
   return [
     {
       accessorKey: "name",
-      header: "ID#",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ID#" />
+      ),
+      enableSorting: true,
       size: 110,
       minSize: 90,
       cell: ({ row }) => (
@@ -47,68 +51,74 @@ export function createColumns(
       ),
     },
     {
-      id: "lot_no",
       accessorKey: "lot_no",
       header: ({ column }) => (
-        <button
-          type="button"
-          className="hover:text-foreground"
-          onClick={column.getToggleSortingHandler()}
-        >
-          Lot No.
-          {column.getIsSorted() === "asc"
-            ? " ↑"
-            : column.getIsSorted() === "desc"
-              ? " ↓"
-              : ""}
-        </button>
+        <DataTableColumnHeader column={column} title="Lot No." />
       ),
       enableSorting: true,
       cell: ({ row }) => (
-        <span className="font-medium">{row.original.lot_no}</span>
+        <span className="font-semibold">{row.original.lot_no}</span>
       ),
     },
     {
       accessorKey: "entry_date",
-      header: "Entry Date",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Entry Date" />
+      ),
+      enableSorting: true,
       size: 115,
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "arrival_date",
-      header: "Arrival Date",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Arrival Date" />
+      ),
+      enableSorting: true,
       size: 115,
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       id: "factory_name",
-      header: "Factory",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Factory" />
+      ),
       accessorFn: (row) => row["factory.factory_name"] || row.factory || "—",
+      enableSorting: true,
       size: 160,
       minSize: 110,
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       id: "original_brand_name",
-      header: "Original Brand",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Original Brand" />
+      ),
       accessorFn: (row) =>
         row["original_brand.title"] || row.original_brand || "—",
+      enableSorting: true,
       size: 145,
       minSize: 100,
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       id: "warehouse_title",
-      header: "WH/Godown",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="WH/Godown" />
+      ),
       accessorFn: (row) => row["warehouse.title"] || row.warehouse || "—",
+      enableSorting: true,
       size: 115,
       minSize: 85,
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       id: "grade_code",
-      header: "Grade",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Grade" />
+      ),
       accessorFn: (row) => row["grade.grade_code"] || row.grade || "—",
+      enableSorting: true,
       size: 50,
       minSize: 30,
       maxSize: 50,
@@ -116,7 +126,14 @@ export function createColumns(
     },
     {
       accessorKey: "bags",
-      header: () => <div className="text-right">Bags</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Bags"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      enableSorting: true,
       size: 80,
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
@@ -126,7 +143,14 @@ export function createColumns(
     },
     {
       accessorKey: "net_kg_per_bag",
-      header: () => <div className="text-right">Kg/Bag</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Kg/Bag"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      enableSorting: true,
       size: 90,
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
@@ -137,7 +161,14 @@ export function createColumns(
     {
       id: "net_weight",
       accessorFn: (row) => row.bags * row.net_kg_per_bag,
-      header: () => <div className="text-right">Net Weight (kg)</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Net Weight (kg)"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      enableSorting: true,
       size: 125,
       cell: ({ getValue }) => (
         <div className="text-right tabular-nums">
@@ -147,7 +178,9 @@ export function createColumns(
     },
     {
       id: "status",
-      header: "Status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       accessorFn: (row) => {
         const status = Number(row.docstatus);
 
@@ -157,16 +190,16 @@ export function createColumns(
             ? "Cancelled"
             : "Draft";
       },
-      size: 110,
       enableSorting: true,
+      size: 110,
       cell: ({ getValue }) => {
         const status = getValue<string>();
 
         const styles =
           status === "Confirmed"
-            ? "bg-emerald-50/70 text-emerald-700"
+            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
             : status === "Cancelled"
-              ? "bg-red-50/70 text-red-700"
+              ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
               : "bg-muted text-muted-foreground";
 
         const dotStyles =
@@ -174,7 +207,7 @@ export function createColumns(
             ? "bg-emerald-500"
             : status === "Cancelled"
               ? "bg-red-500"
-              : "bg-muted-foreground/60";
+              : "bg-muted-foreground";
 
         return (
           <span
