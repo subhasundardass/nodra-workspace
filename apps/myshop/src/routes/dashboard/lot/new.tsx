@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
 import { toast } from "sonner";
@@ -53,6 +53,11 @@ function CreateLotRoute() {
       saving={saving}
       onSubmit={handleSubmit}
       onCancel={() => navigate({ to: "/dashboard/lot" })}
+      // initialValues={initialValues}
+      initialValues={{
+        entry_date: new Date().toLocaleDateString("en-CA"),
+        arrival_date: new Date().toLocaleDateString("en-CA"),
+      }}
     >
       {(form) => <LotForm form={form} />}
     </DocTypeFormTemplate>
