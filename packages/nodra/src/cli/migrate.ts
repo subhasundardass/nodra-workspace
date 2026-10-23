@@ -279,49 +279,63 @@ export class MigrateCommand implements Command {
       await this.metadataSync.sync(doctype);
       metadataCount++;
 
-      // Step 6.3: Check whether the physical table exists
-      const exists = await this.tableExists(tableName);
-
-      if (!exists) {
-        // Step 6.4: Create a new physical table
+      // Step 6.3–6.6: Sync the physical table and indexes.
+      // Virtual DocTypes only need metadata; they have no physical table.
+      if (doctype.is_virtual) {
         if (options.verbose) {
-          console.log(`Creating table: ${tableName}`);
-        }
-
-        await this.pool.query(this.schemaSync.generateCreateTable(doctype));
-        createCount++;
-      } else {
-        // Step 6.5: Alter an existing physical table
-        if (options.verbose) {
-          console.log(`Checking table: ${tableName}`);
-        }
-
-        const existingColumns = await this.getExistingColumns(tableName);
-        const alterStatements = this.schemaSync.generateAlterTable(
-          doctype,
-          existingColumns,
-        );
-
-        if (alterStatements.length > 0 && options.verbose) {
           console.log(
-            `Altering table: ${tableName} (${alterStatements.length} columns)`,
+            `Skipping physical table for virtual DocType: ${doctype.name}`,
           );
         }
+      } else {
+        // Step 6.3: Check whether the physical table exists
+        const exists = await this.tableExists(tableName);
 
-        for (const alterSql of alterStatements) {
-          await this.pool.query(alterSql);
-          alterCount++;
+        if (!exists) {
+          // Step 6.4: Create a new physical table
+          if (options.verbose) {
+            console.log(`Creating table: ${tableName}`);
+          }
+
+          const createTableSql = this.schemaSync.generateCreateTable(doctype);
+
+          if (createTableSql) {
+            await this.pool.query(createTableSql);
+            createCount++;
+          }
+        } else {
+          // Step 6.5: Alter an existing physical table
+          if (options.verbose) {
+            console.log(`Checking table: ${tableName}`);
+          }
+
+          const existingColumns = await this.getExistingColumns(tableName);
+          const alterStatements = this.schemaSync.generateAlterTable(
+            doctype,
+            existingColumns,
+          );
+
+          if (alterStatements.length > 0 && options.verbose) {
+            console.log(
+              `Altering table: ${tableName} (${alterStatements.length} columns)`,
+            );
+          }
+
+          for (const alterSql of alterStatements) {
+            await this.pool.query(alterSql);
+            alterCount++;
+          }
         }
-      }
 
-      // Step 6.6: Ensure indexes exist
-      for (const indexSql of this.schemaSync.generateIndexes(doctype)) {
-        await this.pool.query(indexSql);
-        indexCount++;
+        // Step 6.6: Ensure indexes exist
+        for (const indexSql of this.schemaSync.generateIndexes(doctype)) {
+          await this.pool.query(indexSql);
+          indexCount++;
+        }
       }
 
       // Step 6.7: Record successful migration.
-      // Only reached if metadata, table, and indexes all succeeded.
+      // Virtual DocTypes also need migration history.
       await this.history.record(doctype.name, definitionHash);
     }
 
