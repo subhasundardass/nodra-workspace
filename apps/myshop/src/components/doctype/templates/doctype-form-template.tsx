@@ -432,12 +432,14 @@ export function DocTypeFormTemplate({
         ? `View ${String(documentValues.name ?? doctype.name)}`
         : `Edit ${String(documentValues.name ?? doctype.name)}`;
 
-  const stateValue = workflow
+  const currentDocumentStatusValue = workflow
     ? documentValues[workflow.state_field]
     : undefined;
 
   const currentDocumentStatus =
-    typeof stateValue === "string" ? stateValue : documentStatus;
+    typeof currentDocumentStatusValue === "string"
+      ? currentDocumentStatusValue
+      : documentStatus;
 
   return (
     <section className="w-full min-w-0 space-y-4 p-4">
