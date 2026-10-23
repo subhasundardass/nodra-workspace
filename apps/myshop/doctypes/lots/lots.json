@@ -1,13 +1,13 @@
 {
   "name": "Lots",
   "module": "App",
-  "naming_rule": "hash",
+  "naming_rule": "series",
+  "naming_series": "LOT-.YY.-.#####",
   "is_submittable": true,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
   "is_virtual": false,
-  "title_field": "lot_no",
   "search_fields": [
     "factory",
     "lot_no",
