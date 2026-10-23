@@ -21,7 +21,7 @@ import { Document } from "../core/document/document";
 import { validateDocument } from "../core/validation/validator";
 import { toTableName } from "../core/doctype/naming";
 import { generateHash } from "../core/doctype/naming";
-import { NotFoundError } from "../core/errors";
+import { NotFoundError, ValidationError } from "../core/errors";
 import { QueryBuilder } from "../database/query-builder";
 import { withTransaction } from "../database/transaction";
 
@@ -430,12 +430,9 @@ export class ORM {
     const user = this.user();
     const a = this.access(meta, "create");
 
-    // Naming: legacy (hash) happens now; doctypes with `autoname`
-    // are named after validation.
-    const autoname = this.autoname(meta);
-
-    if (!doc.name && !autoname) {
-      doc.name = this.generateName(meta);
+    // Generate the name before workflow initialization.
+    if (!doc.name) {
+      doc.name = await this.generateName(meta, doc, now);
     }
 
     if (!doc.owner) {
@@ -497,10 +494,6 @@ export class ORM {
     }
 
     this.checkUserPerms(meta, a.s, this.docGetter(doc));
-
-    if (!doc.name && autoname) {
-      doc.name = await this.nameFromAutoname(doc, autoname, now);
-    }
 
     // Lifecycle: pre-insert/save
     await doc.beforeInsert();
@@ -1353,9 +1346,9 @@ export class ORM {
   // Naming
   // ===========================================================================
 
-  private autoname(meta: DocTypeDefinition): string | undefined {
-    return (meta as { autoname?: string }).autoname || undefined;
-  }
+  // private autoname(meta: DocTypeDefinition): string | undefined {
+  //   return (meta as { autoname?: string }).autoname || undefined;
+  // }
 
   /**
    * autoname values:
@@ -1364,25 +1357,25 @@ export class ORM {
    *   "prompt"                     caller must set doc.name
    *   "series:LOAN-.YYYY.-.####"   counter per prefix (LOAN-2026-0001)
    */
-  private async nameFromAutoname(
-    doc: Document,
-    rule: string,
-    now: Date,
-  ): Promise<string> {
-    if (rule === "hash") return generateHash(10);
-    if (rule === "prompt") throw new Error(`${doc.doctype}: name is required`);
-    if (rule.startsWith("field:")) {
-      const v = doc.get(rule.slice(6));
-      if (v === undefined || v === null || v === "") {
-        throw new Error(
-          `${doc.doctype}: ${rule.slice(6)} is required to name the document`,
-        );
-      }
-      return String(v);
-    }
-    if (rule.startsWith("series:")) return this.nextSeries(rule.slice(7), now);
-    throw new Error(`Unsupported autoname: ${rule}`);
-  }
+  // private async nameFromAutoname(
+  //   doc: Document,
+  //   rule: string,
+  //   now: Date,
+  // ): Promise<string> {
+  //   if (rule === "hash") return generateHash(10);
+  //   if (rule === "prompt") throw new Error(`${doc.doctype}: name is required`);
+  //   if (rule.startsWith("field:")) {
+  //     const v = doc.get(rule.slice(6));
+  //     if (v === undefined || v === null || v === "") {
+  //       throw new Error(
+  //         `${doc.doctype}: ${rule.slice(6)} is required to name the document`,
+  //       );
+  //     }
+  //     return String(v);
+  //   }
+  //   if (rule.startsWith("series:")) return this.nextSeries(rule.slice(7), now);
+  //   throw new Error(`Unsupported autoname: ${rule}`);
+  // }
 
   private async nextSeries(pattern: string, now: Date): Promise<string> {
     const parts = pattern.split(".");
@@ -1418,17 +1411,76 @@ export class ORM {
   /**
    * Legacy naming (doctypes without `autoname`).
    */
-  private generateName(meta: DocTypeDefinition): string {
+  private async generateName(
+    meta: DocTypeDefinition,
+    doc: Document,
+    now: Date,
+  ): Promise<string> {
     switch (meta.naming_rule) {
+      case "field": {
+        const field = meta.naming_field;
+
+        if (!field) {
+          throw new ValidationError(
+            `DocType "${meta.name}": naming_field is required`,
+          );
+        }
+
+        const value = doc.get(field);
+
+        if (typeof value !== "string" || !value.trim()) {
+          throw new ValidationError(
+            `DocType "${meta.name}": field "${field}" is required for naming`,
+          );
+        }
+
+        return value.trim();
+      }
+
       case "hash":
         return generateHash(10);
+
+      case "series":
+        if (!meta.naming_series) {
+          throw new ValidationError(
+            `DocType "${meta.name}": naming_series is required`,
+          );
+        }
+
+        return this.nextSeries(meta.naming_series, now);
+
       case "autoincrement":
-        // Autoincrement is handled by the DB, but we need a placeholder.
-        // In a real implementation this would use a sequence. Use hash as fallback.
-        return generateHash(10);
-      default:
-        return generateHash(10);
+        return this.nextCounter(`__AUTO__:${meta.name}`);
     }
+  }
+
+  /**Next Counter */
+  private async nextCounter(key: string): Promise<string> {
+    this.seriesState.ready ??= this.db
+      .execute(
+        `CREATE TABLE IF NOT EXISTS nodra_series (
+        name TEXT PRIMARY KEY,
+        counter BIGINT NOT NULL DEFAULT 0
+      )`,
+      )
+      .then(() => undefined);
+
+    await this.seriesState.ready;
+
+    const rows = await this.q.query<{ counter: string | number }>(
+      `INSERT INTO nodra_series (name, counter)
+     VALUES ($1, 1)
+     ON CONFLICT (name)
+     DO UPDATE SET counter = nodra_series.counter + 1
+     RETURNING counter`,
+      [key],
+    );
+
+    if (!rows[0]) {
+      throw new Error(`Failed to generate counter for "${key}"`);
+    }
+
+    return String(rows[0].counter);
   }
 
   // ===========================================================================
