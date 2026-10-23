@@ -17,21 +17,14 @@ import type { FieldType } from "./field-types";
  *
  * - autoincrement — numeric sequence
  * - hash — random hash
- * - field — value from a designated field
- * - format — pattern-based (e.g. PREFIX-{#####})
- * - prompt — user-supplied at creation time
- * - expression — computed by an expression
  */
-export type NamingRule =
-  "autoincrement" | "hash" | "field" | "format" | "prompt" | "expression";
+export type NamingRule = "hash" | "series" | "autoincrement" | "field";
 
 const VALID_NAMING_RULES = new Set<string>([
   "autoincrement",
   "hash",
+  "series",
   "field",
-  "format",
-  "prompt",
-  "expression",
 ]);
 
 /**
@@ -155,6 +148,10 @@ export interface DocTypeDefinition {
   module: string;
   /** Strategy used to generate document names. */
   naming_rule: NamingRule;
+  /** Naming pattern used when naming_rule is "series". */
+  naming_series?: string;
+  /** Naming used when naming_rule is "field". */
+  naming_field?: string;
   /** Whether documents can be submitted/cancelled. */
   is_submittable: boolean;
   /** Whether this is a child table (embedded in a parent). */
@@ -552,6 +549,20 @@ export function parseDocType(raw: unknown): DocTypeDefinition {
 
   const fields = rawFields.map((field, index) => validateField(field, index));
 
+  const namingSeries = raw["naming_series"];
+
+  if (namingRule === "series") {
+    if (
+      typeof namingSeries !== "string" ||
+      namingSeries.trim() === "" ||
+      !namingSeries.includes("#")
+    ) {
+      throw new ValidationError(
+        `DocType "${name}": naming_series is required for series naming`,
+      );
+    }
+  }
+
   // Parse permissions.
   const rawPermissions = raw["permissions"];
 
@@ -678,6 +689,14 @@ export function parseDocType(raw: unknown): DocTypeDefinition {
     name,
     module,
     naming_rule: namingRule as NamingRule,
+
+    ...(typeof raw["naming_field"] === "string" && {
+      naming_field: raw["naming_field"],
+    }),
+    ...(typeof raw["naming_series"] === "string" && {
+      naming_series: raw["naming_series"],
+    }),
+
     is_submittable: Boolean(raw["is_submittable"]),
     is_child: Boolean(raw["is_child"]),
     is_single: Boolean(raw["is_single"]),
