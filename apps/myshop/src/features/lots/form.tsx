@@ -37,19 +37,6 @@ function FieldRow({
 export function LotForm({ form }: LotFormProps) {
   return (
     <div className="grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
-      <form.Field name="factory">
-        {(field) => (
-          <FieldRow label="Factory" htmlFor={field.name} required>
-            <LinkField
-              value={String(field.state.value ?? "")}
-              onChange={field.handleChange}
-              doctype="Factory"
-              className="w-full"
-            />
-          </FieldRow>
-        )}
-      </form.Field>
-
       <form.Field name="entry_date">
         {(field) => (
           <FieldRow label="Entry Date" htmlFor={field.name} required>
@@ -60,6 +47,32 @@ export function LotForm({ form }: LotFormProps) {
               onChange={field.handleChange}
               className="w-full"
               inputClassName="text-right"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+      <form.Field name="arrival_date">
+        {(field) => (
+          <FieldRow label="Arrival Date" htmlFor={field.name} required>
+            <DateField
+              id={field.name}
+              name={field.name}
+              value={String(field.state.value ?? "")}
+              onChange={field.handleChange}
+              className="w-full"
+              inputClassName="text-right"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+      <form.Field name="factory">
+        {(field) => (
+          <FieldRow label="Factory" htmlFor={field.name} required>
+            <LinkField
+              value={String(field.state.value ?? "")}
+              onChange={field.handleChange}
+              doctype="Factory"
+              className="w-full"
             />
           </FieldRow>
         )}
