@@ -300,6 +300,14 @@ export class ORM {
     this.options = options;
   }
 
+  private assertNotVirtual(meta: DocTypeDefinition, operation: string): void {
+    if (meta.is_virtual) {
+      throw new Error(
+        `Cannot ${operation} virtual DocType "${meta.name}": ` +
+          `no data provider is configured`,
+      );
+    }
+  }
   /**
    * Run several ORM calls in ONE database transaction (BEGIN ... COMMIT, ROLLBACK on throw).
    * `fn` receives an ORM bound to the transaction; use it for every call that must be atomic.
@@ -561,7 +569,6 @@ export class ORM {
   async getList(doctype: string, options?: ListOptions): Promise<Document[]> {
     const meta = this.registry.get(doctype);
     this.assertNotVirtual(meta, "list");
-
     // New features used, or permissions enforced -> new compiler
     if (isAdvanced(options) || this.options.enforcePermissions) {
       const rows = await this.queryRows(doctype, options ?? {});
@@ -1084,6 +1091,8 @@ export class ORM {
       typeof fieldname === "string" &&
       !this.options.enforcePermissions
     ) {
+      const meta = this.registry.get(doctype);
+      this.assertNotVirtual(meta, "read from");
       const tableName = toTableName(doctype);
       const row = await this.q.queryOne<Row>(
         `SELECT ${this.safeColumn(fieldname)} FROM ${tableName} WHERE name = $1`,
@@ -1528,15 +1537,6 @@ export class ORM {
     }
 
     return data;
-  }
-
-  private assertNotVirtual(meta: DocTypeDefinition, operation: string): void {
-    if (meta.is_virtual) {
-      throw new Error(
-        `Cannot ${operation} virtual DocType "${meta.name}": ` +
-          `no data provider is configured`,
-      );
-    }
   }
 
   private rowToDocument(
