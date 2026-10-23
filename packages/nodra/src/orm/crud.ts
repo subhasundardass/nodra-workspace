@@ -1,16 +1,9 @@
 /**
- * Nodra Framework - ORM CRUD Layer
+ * Nodra ORM
  *
- * Backward compatible: calls that worked before still run through the ORIGINAL
- * code path. Everything new is additive or opt-in:
- *
- *   1. Session user        runWithSession({ user, roles }, fn)  -> owner / modified_by
- *   2. Permissions         { enforcePermissions: true }  (doctype `permissions` + userPermissions)
- *   3. Naming series       doctype `autoname`: "series:LOAN-.YYYY.-.####" | "field:x" | "hash" | "prompt"
- *   4. Stale-modified      { staleCheck: true }  -> StaleDocumentError
- *   5. Submit / cancel     doctype `is_submittable`  -> orm.submit(doc) / orm.cancel(doc)
- *   6. group_by + aggregates  fields: ['sum(amount) as total'], groupBy: 'status'
- *   +  Frappe filters, Link dot-paths of any depth, opt-in child tables / link validation.
+ * Create, read, update, delete, query, and manage document workflows.
+ * Supports transactions, permissions, naming rules, validation,
+ * optional child tables, and advanced query filters.
  */
 
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -19,8 +12,7 @@ import type { DocTypeRegistry } from "../core/doctype/registry";
 import type { DocTypeDefinition } from "../core/doctype/schema";
 import { Document } from "../core/document/document";
 import { validateDocument } from "../core/validation/validator";
-import { toTableName } from "../core/doctype/naming";
-import { generateHash } from "../core/doctype/naming";
+import { generateHash, toTableName } from "../core/doctype/naming";
 import { NotFoundError } from "../core/errors";
 import { QueryBuilder } from "../database/query-builder";
 import { withTransaction } from "../database/transaction";
@@ -340,6 +332,7 @@ export class ORM {
   async transition(doc: Document, action: string): Promise<Document> {
     return this.transaction(async (tx) => {
       const meta = tx.registry.get(doc.doctype);
+      tx.assertNotVirtual(meta, "transition");
       const workflow = tx.workflowComponents(meta);
 
       if (!workflow) {
@@ -426,6 +419,7 @@ export class ORM {
 
   async insert(doc: Document): Promise<Document> {
     const meta = this.registry.get(doc.doctype);
+    this.assertNotVirtual(meta, "insert into");
     const now = new Date();
     const user = this.user();
     const a = this.access(meta, "create");
@@ -547,6 +541,7 @@ export class ORM {
    */
   async getDoc(doctype: string, name: string): Promise<Document> {
     const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "read");
     const tableName = toTableName(doctype);
 
     const row = await this.q.queryOne<Row>(
@@ -572,6 +567,7 @@ export class ORM {
 
   async getList(doctype: string, options?: ListOptions): Promise<Document[]> {
     const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "list");
 
     // New features used, or permissions enforced -> new compiler
     if (isAdvanced(options) || this.options.enforcePermissions) {
@@ -679,6 +675,7 @@ export class ORM {
    */
   private async persist(doc: Document, mode: Mode): Promise<Document> {
     const meta = this.registry.get(doc.doctype);
+    this.assertNotVirtual(meta, mode);
     const now = new Date();
     const tableName = toTableName(doc.doctype);
     const user = this.user();
@@ -921,6 +918,7 @@ export class ORM {
    */
   async deleteDoc(doctype: string, name: string): Promise<void> {
     const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "delete from");
     const doc = await this.getDoc(doctype, name);
     const tableName = toTableName(doctype);
 
@@ -962,6 +960,7 @@ export class ORM {
     orFilters?: Filters,
   ): Promise<number> {
     const meta = this.registry.get(doctype); // validate doctype exists
+    this.assertNotVirtual(meta, "count records in");
     const tableName = toTableName(doctype);
 
     if (isAdvanced({ filters, orFilters }) || this.options.enforcePermissions) {
@@ -1016,7 +1015,8 @@ export class ORM {
     nameOrFilters: string | Filters,
     fieldname: string | string[],
   ): Promise<unknown> {
-    this.registry.get(doctype); // validate doctype exists
+    const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "read from");
 
     if (
       typeof nameOrFilters === "string" &&
@@ -1062,6 +1062,7 @@ export class ORM {
     value?: unknown,
   ): Promise<void> {
     const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "update");
     const tableName = toTableName(doctype);
     const now = new Date();
     const user = this.user();
@@ -1131,7 +1132,8 @@ export class ORM {
     doctype: string,
     nameOrFilters: string | Filters,
   ): Promise<boolean> {
-    this.registry.get(doctype); // validate doctype exists
+    const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "check existence in");
 
     if (typeof nameOrFilters === "string" && !this.options.enforcePermissions) {
       const tableName = toTableName(doctype);
@@ -1408,6 +1410,15 @@ export class ORM {
     return data;
   }
 
+  private assertNotVirtual(meta: DocTypeDefinition, operation: string): void {
+    if (meta.is_virtual) {
+      throw new Error(
+        `Cannot ${operation} virtual DocType "${meta.name}": ` +
+          `no data provider is configured`,
+      );
+    }
+  }
+
   private rowToDocument(
     meta: DocTypeDefinition,
     row: Row,
@@ -1445,6 +1456,7 @@ export class ORM {
 
   private async queryRows(doctype: string, o: ListOptions): Promise<Row[]> {
     const meta = this.registry.get(doctype);
+    this.assertNotVirtual(meta, "query");
     const ctx = new Ctx();
     const aggAliases = new Set<string>();
     const numeric: string[] = [];
@@ -1777,7 +1789,6 @@ export class ORM {
     manager.registerWorkflow(definition);
 
     return {
-      manager,
       executor: new WorkflowExecutor(manager),
       stateField: definition.workflow_state_field || "workflow_state",
     };
