@@ -17,6 +17,7 @@ import { GlobalToolbar } from "@/components/toolbar";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { getCurrentUser } from "@/lib/auth-current-user";
 import { callMethod } from "@/lib/call-method";
+import DocumentActivity from "@/components/document-activity";
 
 type FormValues = Record<string, unknown>;
 
@@ -557,134 +558,15 @@ export function DocTypeFormTemplate({
               </fieldset>
             </form>
           </div>
-
-          <aside className="flex min-w-0 flex-col overflow-hidden rounded-sm border bg-background md:sticky md:top-4 md:col-span-1 md:h-fit md:self-start">
-            <div className="shrink-0 border-b bg-muted/20 px-4 py-3">
-              <h2 className="text-sm font-semibold">Document Activity</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Recent document activity
-              </p>
-            </div>
-
-            <div className="min-h-0">
-              <ul className="divide-y">
-                <li className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                      AM
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">Amit Mondal</span>{" "}
-                        <span className="text-muted-foreground">
-                          updated the grade
-                        </span>
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Grade: Assam CTC
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Oct 23, 2026 · 11:15 AM
-                      </p>
-                    </div>
-                  </div>
-                </li>
-
-                <li className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                      RK
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">Rahul Kumar</span>{" "}
-                        <span className="text-muted-foreground">
-                          changed the bag quantity
-                        </span>
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Bags: 80 → 100
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Oct 23, 2026 · 11:42 AM
-                      </p>
-                    </div>
-                  </div>
-                </li>
-
-                <li className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                      SD
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">Subha Das</span>{" "}
-                        <span className="text-muted-foreground">
-                          changed the warehouse
-                        </span>
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Warehouse: Siliguri Main Godown
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Oct 23, 2026 · 12:05 PM
-                      </p>
-                    </div>
-                  </div>
-                </li>
-
-                <li className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                      PB
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">Priya Biswas</span>{" "}
-                        <span className="text-muted-foreground">
-                          submitted this document
-                        </span>
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Status: Draft → Pending
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Oct 23, 2026 · 12:30 PM
-                      </p>
-                    </div>
-                  </div>
-                </li>
-
-                <li className="px-4 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                      AM
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">Amit Mondal</span>{" "}
-                        <span className="text-muted-foreground">
-                          added a remark
-                        </span>
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Quality checked; awaiting final valuation.
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Oct 23, 2026 · 1:10 PM
-                      </p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </aside>
+          {/* Document Activity  */}
+          <DocumentActivity
+            doctype={doctype.name}
+            name={
+              mode === "create"
+                ? undefined
+                : String(documentValues.name ?? "") || undefined
+            }
+          />
         </div>
       )}
     </section>
