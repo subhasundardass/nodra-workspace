@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 import { callMethod } from "@/lib/call-method";
 import { getQueryClient } from "@/lib/query-client";
+import { Leaf } from "lucide-react";
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
@@ -54,12 +55,12 @@ export default function AppSidebar() {
             <SidebarMenuButton size="lg" asChild>
               <Link to="/dashboard/overview" aria-label="Dashboard">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-md">
-                  <Icons.logo className="size-4" />
+                  <Leaf className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">TanStack Start</span>
+                  <span className="truncate font-semibold">TeaFlow</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    Dashboard
+                    Version 1.0.0
                   </span>
                 </div>
               </Link>

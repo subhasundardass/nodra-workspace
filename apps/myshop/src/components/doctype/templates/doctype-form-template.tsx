@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { DocTypeDefinition } from "nodra";
@@ -212,7 +212,18 @@ export function DocTypeFormTemplate({
 
   const form = useNodraForm(defaults, submitValues);
 
+  const previousDefaultsKey = useRef(JSON.stringify(defaults));
+
   useEffect(() => {
+    const defaultsKey = JSON.stringify(defaults);
+
+    // Don't reset the form when only the object reference changes.
+    if (previousDefaultsKey.current === defaultsKey) {
+      return;
+    }
+
+    previousDefaultsKey.current = defaultsKey;
+
     setDocumentValues(defaults);
     form.reset(defaults);
     setSubmitError(null);
@@ -507,7 +518,7 @@ export function DocTypeFormTemplate({
         </div>
       ) : (
         <div className="grid w-full min-w-0 grid-cols-1 items-start gap-6 md:grid-cols-3">
-          <div className="min-w-0 rounded-sm border bg-blue-50 p-3 dark:bg-muted/30 md:col-span-2">
+          <div className="min-w-0 rounded-sm border bg-blue-50 p-6 dark:bg-muted/30 md:col-span-2">
             <form
               id={`doctype-form-${doctype.name}`}
               onSubmit={(event) => {
@@ -545,16 +556,131 @@ export function DocTypeFormTemplate({
             </form>
           </div>
 
-          <aside className="flex min-w-0 flex-col overflow-hidden rounded-sm border bg-background md:sticky md:top-4 md:col-span-1 md:h-[calc(100vh-2rem)] md:self-start">
+          <aside className="flex min-w-0 flex-col overflow-hidden rounded-sm border bg-background md:sticky md:top-4 md:col-span-1 md:h-fit md:self-start">
             <div className="shrink-0 border-b bg-muted/20 px-4 py-3">
-              <h2 className="text-sm font-semibold">Document Logs</h2>
+              <h2 className="text-sm font-semibold">Document Activity</h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Recent document activity
               </p>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <ul className="divide-y" />
+            <div className="min-h-0">
+              <ul className="divide-y">
+                <li className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                      AM
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Amit Mondal</span>{" "}
+                        <span className="text-muted-foreground">
+                          updated the grade
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Grade: Assam CTC
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Oct 23, 2026 · 11:15 AM
+                      </p>
+                    </div>
+                  </div>
+                </li>
+
+                <li className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                      RK
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Rahul Kumar</span>{" "}
+                        <span className="text-muted-foreground">
+                          changed the bag quantity
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Bags: 80 → 100
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Oct 23, 2026 · 11:42 AM
+                      </p>
+                    </div>
+                  </div>
+                </li>
+
+                <li className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                      SD
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Subha Das</span>{" "}
+                        <span className="text-muted-foreground">
+                          changed the warehouse
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Warehouse: Siliguri Main Godown
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Oct 23, 2026 · 12:05 PM
+                      </p>
+                    </div>
+                  </div>
+                </li>
+
+                <li className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                      PB
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Priya Biswas</span>{" "}
+                        <span className="text-muted-foreground">
+                          submitted this document
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Status: Draft → Pending
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Oct 23, 2026 · 12:30 PM
+                      </p>
+                    </div>
+                  </div>
+                </li>
+
+                <li className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                      AM
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-semibold">Amit Mondal</span>{" "}
+                        <span className="text-muted-foreground">
+                          added a remark
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Quality checked; awaiting final valuation.
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Oct 23, 2026 · 1:10 PM
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
           </aside>
         </div>

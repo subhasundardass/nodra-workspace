@@ -20,7 +20,7 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Entry Module",
+        title: "Lot Management",
         url: "#",
         icon: "product",
         isActive: false,
@@ -56,7 +56,7 @@ export const navGroups: NavGroup[] = [
         items: [],
       },
       {
-        title: "Sales",
+        title: "Distribution",
         url: "/dashboard/sales",
         icon: "product",
         isActive: false,
