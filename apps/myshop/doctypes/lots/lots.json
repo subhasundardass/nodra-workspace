@@ -2,7 +2,7 @@
   "name": "Lots",
   "module": "App",
   "naming_rule": "series",
-  "naming_series": "LOT-.YY.-.#####",
+  "naming_series": "LFYYFMM###",
   "is_submittable": true,
   "is_child": false,
   "is_single": false,
@@ -28,6 +28,13 @@
       "fieldtype": "Date",
       "label": "Entry Date",
       "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "arrival_date",
+      "fieldtype": "Date",
+      "label": "Arrival Date",
+      "reqd": false,
       "in_list_view": true
     },
     {
@@ -61,6 +68,14 @@
       "label": "Bags",
       "reqd": true,
       "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "warehouse",
+      "fieldtype": "Link",
+      "label": "Warehouse/Godown",
+      "options": "Warehouse",
+      "reqd": false,
       "in_list_view": true
     },
     {

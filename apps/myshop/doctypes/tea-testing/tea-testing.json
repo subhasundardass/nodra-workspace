@@ -1,0 +1,157 @@
+{
+  "name": "TeaTesting",
+  "module": "App",
+  "naming_rule": "series",
+  "naming_series": "TT-FYYFMM-###",
+  "title_field": "lot",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot",
+    "tested_grade"
+  ],
+  "fields": [
+    {
+      "fieldname": "lot",
+      "label": "Lot",
+      "fieldtype": "Link",
+      "options": "Lot",
+      "description": "Registered tea lot from which the sample was taken for testing.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sample_date",
+      "label": "Testing Date",
+      "fieldtype": "Date",
+      "description": "Date on which the tea sample was tested.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "incoming_grade",
+      "label": "Incoming Grade",
+      "fieldtype": "Link",
+      "options": "Grades",
+      "description": "Original grade recorded on the linked Lot, displayed for reference and populated from that Lot.",
+      "read_only": true
+    },
+    {
+      "fieldname": "tested_grade",
+      "label": "Tested Grade",
+      "fieldtype": "Link",
+      "options": "Grades",
+      "description": "Grade identified by the tester after evaluating the tea sample.",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "appearance",
+      "label": "Appearance",
+      "fieldtype": "SmallText",
+      "description": "Observations about the dry tea leaf appearance, including size, colour, and overall look."
+    },
+    {
+      "fieldname": "liquor",
+      "label": "Liquor",
+      "fieldtype": "SmallText",
+      "description": "Observations about the brewed tea liquor, including colour and clarity."
+    },
+    {
+      "fieldname": "taste",
+      "label": "Taste and Flavour",
+      "fieldtype": "SmallText",
+      "description": "Assessment of the tea's taste, flavour, strength, briskness, and aroma."
+    },
+    {
+      "fieldname": "test_remarks",
+      "label": "Testing Remarks",
+      "fieldtype": "SmallText",
+      "description": "Additional testing observations not covered by the other testing fields."
+    },
+    {
+      "fieldname": "tested_by",
+      "label": "Tested By",
+      "fieldtype": "Link",
+      "options": "User",
+      "description": "User who performed the tea sample testing."
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Data",
+      "description": "Current state of the tea testing process, managed by the workflow.",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "In Progress",
+        "doc_status": 20
+      },
+      {
+        "state": "Completed",
+        "doc_status": 51,
+        "is_final": true
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Start Testing",
+        "from": "Draft",
+        "to": "In Progress",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Complete Testing",
+        "from": "In Progress",
+        "to": "Completed",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "In Progress",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

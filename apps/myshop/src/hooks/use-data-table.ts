@@ -223,7 +223,15 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   const columnIds = React.useMemo(
     () =>
-      new Set(columns.map((column) => column.id).filter(Boolean) as string[]),
+      new Set(
+        columns.flatMap((column) => {
+          if (column.id) return [column.id];
+          if ("accessorKey" in column && column.accessorKey) {
+            return [String(column.accessorKey)];
+          }
+          return [];
+        }),
+      ),
     [columns],
   );
 
@@ -382,7 +390,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
     manualPagination: true,
-    manualSorting: true,
+    manualSorting: false,
     manualFiltering: false,
   });
 
