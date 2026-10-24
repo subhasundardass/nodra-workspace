@@ -87,7 +87,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   onCreate,
   onOpen,
   onRefresh,
-  pageSize = 10,
+  pageSize = 20,
 }: DocTypeListTemplateProps<TRecord>) {
   const fields = useMemo<DocTypeListColumn[]>(() => {
     if (customColumns !== undefined) return customColumns;
