@@ -2,7 +2,7 @@
   "name": "Lots",
   "module": "App",
   "naming_rule": "series",
-  "naming_series": "LOT-.YY.-.#####",
+  "naming_series": "LFYYFMM###",
   "is_submittable": true,
   "is_child": false,
   "is_single": false,

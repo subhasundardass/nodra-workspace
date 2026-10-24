@@ -1381,35 +1381,113 @@ export class ORM {
   //   throw new Error(`Unsupported autoname: ${rule}`);
   // }
 
-  private async nextSeries(pattern: string, now: Date): Promise<string> {
-    const parts = pattern.split(".");
-    const hashes = parts.pop();
-    if (!hashes || !/^#+$/.test(hashes))
-      throw new Error(`Invalid naming series: ${pattern}`);
+  // private async nextSeries(pattern: string, now: Date): Promise<string> {
+  //   const parts = pattern.split(".");
+  //   const hashes = parts.pop();
+  //   if (!hashes || !/^#+$/.test(hashes))
+  //     throw new Error(`Invalid naming series: ${pattern}`);
 
-    const y = String(now.getFullYear());
+  //   const y = String(now.getFullYear());
+  //   const tokens: Record<string, string> = {
+  //     YYYY: y,
+  //     YY: y.slice(-2),
+  //     MM: pad2(now.getMonth() + 1),
+  //     DD: pad2(now.getDate()),
+  //   };
+  //   const prefix = parts.map((p) => tokens[p] ?? p).join("");
+
+  //   this.seriesState.ready ??= this.db
+  //     .execute(
+  //       "CREATE TABLE IF NOT EXISTS nodra_series (name TEXT PRIMARY KEY, counter BIGINT NOT NULL DEFAULT 0)",
+  //     )
+  //     .then(() => undefined);
+  //   await this.seriesState.ready;
+
+  //   const rows = await this.q.query<{ counter: string }>(
+  //     `INSERT INTO nodra_series (name, counter) VALUES ($1, 1)
+  //      ON CONFLICT (name) DO UPDATE SET counter = nodra_series.counter + 1
+  //      RETURNING counter`,
+  //     [prefix],
+  //   );
+  //   return prefix + String(rows[0]!.counter).padStart(hashes.length, "0");
+  // }
+
+  private async nextSeries(pattern: string, now: Date): Promise<string> {
+    const match = pattern.match(/^(.*?)(#+)$/);
+
+    if (!match) {
+      throw new ValidationError(`Invalid naming series: ${pattern}`);
+    }
+
+    const template = match[1];
+    const hashes = match[2];
+
+    if (template === undefined || hashes === undefined) {
+      throw new ValidationError(`Invalid naming series: ${pattern}`);
+    }
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .formatToParts(now)
+      .reduce<Record<string, string>>((result, part) => {
+        if (part.type !== "literal") result[part.type] = part.value;
+        return result;
+      }, {});
+
+    const yearValue = parts.year;
+    const monthValue = parts.month;
+    const dayValue = parts.day;
+
+    if (!yearValue || !monthValue || !dayValue) {
+      throw new Error("Failed to resolve date for naming series");
+    }
+
+    const year = Number(yearValue);
+    const month = Number(monthValue);
+
+    const financialYear = month >= 4 ? year : year - 1;
+    const financialMonth = month >= 4 ? month - 3 : month + 9;
+
     const tokens: Record<string, string> = {
-      YYYY: y,
-      YY: y.slice(-2),
-      MM: pad2(now.getMonth() + 1),
-      DD: pad2(now.getDate()),
+      YYYY: String(year),
+      YY: String(year).slice(-2),
+      MM: monthValue,
+      DD: dayValue,
+      FYY: String(financialYear).slice(-2),
+      FMM: pad2(financialMonth),
     };
-    const prefix = parts.map((p) => tokens[p] ?? p).join("");
+
+    const prefix = template.replace(
+      /FYY|FMM|YYYY|YY|MM|DD/g,
+      (token) => tokens[token]!,
+    );
 
     this.seriesState.ready ??= this.db
       .execute(
         "CREATE TABLE IF NOT EXISTS nodra_series (name TEXT PRIMARY KEY, counter BIGINT NOT NULL DEFAULT 0)",
       )
       .then(() => undefined);
+
     await this.seriesState.ready;
 
-    const rows = await this.q.query<{ counter: string }>(
-      `INSERT INTO nodra_series (name, counter) VALUES ($1, 1)
-       ON CONFLICT (name) DO UPDATE SET counter = nodra_series.counter + 1
-       RETURNING counter`,
+    const rows = await this.q.query<{ counter: string | number }>(
+      `INSERT INTO nodra_series (name, counter)
+     VALUES ($1, 1)
+     ON CONFLICT (name)
+     DO UPDATE SET counter = nodra_series.counter + 1
+     RETURNING counter`,
       [prefix],
     );
-    return prefix + String(rows[0]!.counter).padStart(hashes.length, "0");
+
+    if (!rows[0]) {
+      throw new Error(`Failed to generate naming series for "${prefix}"`);
+    }
+
+    return prefix + String(rows[0].counter).padStart(hashes.length, "0");
   }
 
   /**
