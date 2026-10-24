@@ -34,9 +34,35 @@ function FieldRow({
   );
 }
 
+function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+        {children}
+      </div>
+    </section>
+  );
+}
+
 export function LotForm({ form }: LotFormProps) {
   return (
-    <div className="grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+    <FormSection
+      title="Lot Registration"
+      description="These details come from the confirmed lot registry and cannot be edited here."
+    >
       <form.Field name="entry_date">
         {(field) => (
           <FieldRow label="Entry Date" htmlFor={field.name} required>
@@ -51,6 +77,7 @@ export function LotForm({ form }: LotFormProps) {
           </FieldRow>
         )}
       </form.Field>
+
       <form.Field name="arrival_date">
         {(field) => (
           <FieldRow label="Arrival Date" htmlFor={field.name} required>
@@ -65,6 +92,7 @@ export function LotForm({ form }: LotFormProps) {
           </FieldRow>
         )}
       </form.Field>
+
       <form.Field name="factory">
         {(field) => (
           <FieldRow label="Factory" htmlFor={field.name} required>
@@ -192,6 +220,6 @@ export function LotForm({ form }: LotFormProps) {
           </FieldRow>
         )}
       </form.Field>
-    </div>
+    </FormSection>
   );
 }
