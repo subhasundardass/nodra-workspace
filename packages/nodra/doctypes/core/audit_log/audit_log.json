@@ -1,0 +1,76 @@
+{
+  "name": "Audit Log",
+  "module": "Core",
+  "naming_rule": "autoincrement",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "name",
+  "search_fields": [
+    "reference_doctype",
+    "reference_name",
+    "action",
+    "user"
+  ],
+  "fields": [
+    {
+      "fieldname": "reference_doctype",
+      "fieldtype": "Data",
+      "label": "Reference DocType",
+      "reqd": true,
+      "in_list_view": true,
+      "search_index": true
+    },
+    {
+      "fieldname": "reference_name",
+      "fieldtype": "Data",
+      "label": "Reference Name",
+      "reqd": true,
+      "in_list_view": true,
+      "search_index": true
+    },
+    {
+      "fieldname": "action",
+      "fieldtype": "Select",
+      "label": "Action",
+      "options": "create\nupdate\ndelete\nsubmit\ncancel\namend\nworkflow",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "label": "User",
+      "options": "User",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "changes",
+      "fieldtype": "JSON",
+      "label": "Changes"
+    },
+    {
+      "fieldname": "before_data",
+      "fieldtype": "JSON",
+      "label": "Before Data"
+    },
+    {
+      "fieldname": "after_data",
+      "fieldtype": "JSON",
+      "label": "After Data"
+    },
+    {
+      "fieldname": "ip_address",
+      "fieldtype": "Data",
+      "label": "IP Address"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true
+    }
+  ]
+}

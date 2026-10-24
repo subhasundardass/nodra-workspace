@@ -368,4 +368,44 @@ export function registerDocumentMethods(
     },
     { requireAuth: true },
   );
+
+  // --------------------------------------------------
+  // Get document audit history
+  // --------------------------------------------------
+  /**
+   * await callMethod("document.get_audit_history", {
+   *   doctype: "Lots",
+   *   name: "LOT-0001",
+   * });
+   */
+  registry.register(
+    "document.get_audit_history",
+    async (ctx) => {
+      const doctype = requiredString(ctx.args.doctype, "doctype");
+      const name = requiredString(ctx.args.name, "name");
+
+      const app = await getApp();
+
+      // Verify the requested document exists and the user can read it.
+      const meta = app.registry.get(doctype);
+      const doc = await app.orm.getDoc(doctype, name);
+
+      assertPermission(meta, "read", ctx.user, getOwner(doc));
+
+      // Read audit records for this document only.
+      const logs = await app.orm.getList("Audit Log", {
+        filters: {
+          reference_doctype: doctype,
+          reference_name: name,
+        },
+        orderBy: "creation desc",
+        limit: 100,
+      });
+
+      return {
+        activities: logs.map((log) => log.getData()),
+      };
+    },
+    { requireAuth: true },
+  );
 }
