@@ -9,6 +9,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { Database } from "../database/connection";
 import type { DocTypeRegistry } from "../core/doctype/registry";
+import type { WorkflowActionHooks } from "./workflow-hooks";
 import type { DocTypeDefinition } from "../core/doctype/schema";
 import { Document } from "../core/document/document";
 import { validateDocument } from "../core/validation/validator";
@@ -135,6 +136,8 @@ export interface ORMOptions {
   staleCheck?: boolean;
   /** Override where the session comes from (default: runWithSession / AsyncLocalStorage). */
   getSession?: () => SessionContext | undefined;
+  /**Workflow Action Hook */
+  workflowHooks?: WorkflowActionHooks;
 }
 
 /** Shape read from doctype meta (all optional, cast so your schema type needs no change). */
@@ -333,6 +336,7 @@ export class ORM {
     return this.transaction(async (tx) => {
       const meta = tx.registry.get(doc.doctype);
       tx.assertNotVirtual(meta, "transition");
+
       const workflow = tx.workflowComponents(meta);
 
       if (!workflow) {
@@ -343,7 +347,6 @@ export class ORM {
 
       const session = tx.session();
 
-      // Workflow actions must have an authenticated user and roles.
       if (!session?.user) {
         throw new PermissionError(
           `An authenticated session is required to transition ${meta.name}`,
@@ -352,7 +355,7 @@ export class ORM {
 
       const tableName = toTableName(meta.name);
 
-      // Lock the latest persisted version before checking the action.
+      // Lock and read the latest persisted document.
       const stored = await tx.q.queryOne<Row>(
         `SELECT * FROM ${tableName} WHERE name = $1 FOR UPDATE`,
         [doc.name],
@@ -370,8 +373,7 @@ export class ORM {
 
       const fresh = tx.rowToDocument(meta, stored, children);
 
-      // The executor works with a plain object. Copy the current persisted
-      // values into it, then copy the resulting state back to the Document.
+      // The workflow executor operates on a plain object.
       const workflowDoc: Record<string, unknown> = {
         name: fresh.name,
         docstatus: fresh.docstatus,
@@ -381,6 +383,7 @@ export class ORM {
         workflowDoc[field.fieldname] = fresh.get(field.fieldname);
       }
 
+      // Validate and apply the requested workflow action.
       await workflow.executor.applyTransition(
         meta.name,
         workflowDoc,
@@ -389,10 +392,24 @@ export class ORM {
         session.roles,
       );
 
+      // Synchronize the resulting workflow state with the Document.
       fresh.set(workflow.stateField, workflowDoc[workflow.stateField]);
 
       if (workflowDoc.docstatus !== undefined) {
         fresh.docstatus = Number(workflowDoc.docstatus);
+      }
+
+      // Run the hook registered for this specific DocType and action.
+      const handler = tx.options.workflowHooks?.[`${meta.name}.${action}`];
+
+      if (handler) {
+        await handler({
+          orm: tx,
+          doc: fresh,
+          action,
+          user: session.user,
+          roles: session.roles,
+        });
       }
 
       const key = tx.workflowTransitionKey(meta.name, fresh.name);
@@ -400,8 +417,7 @@ export class ORM {
       tx.workflowTransitionDocs.add(key);
 
       try {
-        // Uses beforeValidate, validate, beforeSave, DB update,
-        // afterSave and onChange through the existing lifecycle.
+        // Preserve the existing document lifecycle and database update.
         return await tx.update(fresh);
       } finally {
         tx.workflowTransitionDocs.delete(key);

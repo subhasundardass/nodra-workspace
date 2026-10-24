@@ -17,6 +17,8 @@ import { Database } from "nodra/database/connection.js";
 import { DocTypeRegistry } from "nodra/core/doctype/registry.js";
 import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader.js";
 import { registerFrameworkMethods } from "nodra/methods";
+import type { WorkflowActionHooks } from "nodra/orm/workflow-hooks.js";
+import { workflowHooks } from "./hooks/index";
 import {
   ORM,
   runWithSession,
@@ -57,12 +59,13 @@ function flag(name: string, fallback: boolean): boolean {
   return v === "1" || v === "true" || v === "yes";
 }
 
-function ormOptionsFromEnv(): ORMOptions {
+function ormOptionsFromEnv(workflowHooks?: WorkflowActionHooks): ORMOptions {
   return {
     staleCheck: flag("NODRA_STALE_CHECK", true),
     enforcePermissions: flag("NODRA_ENFORCE_PERMISSIONS", false),
     childTables: flag("NODRA_CHILD_TABLES", false),
     validateLinks: flag("NODRA_VALIDATE_LINKS", false),
+    workflowHooks,
   };
 }
 
@@ -82,7 +85,7 @@ export class NodraApp {
     this.config = config;
     this.db = new Database(config.db);
     this.registry = new DocTypeRegistry();
-    this.ormOptions = ormOptionsFromEnv();
+    this.ormOptions = ormOptionsFromEnv(workflowHooks);
     this.orm = new ORM(this.db, this.registry, this.ormOptions);
     this.resource = new ResourceAPI(this.orm, this.registry);
     this.logger = createLogger(config.logging);
