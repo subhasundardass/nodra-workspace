@@ -17,6 +17,7 @@ import { generateHash, toTableName } from "../core/doctype/naming";
 import { NotFoundError, ValidationError } from "../core/errors";
 import { QueryBuilder } from "../database/query-builder";
 import { withTransaction } from "../database/transaction";
+import { recordAuditLog } from "./audit-log";
 
 import {
   toWorkflowDefinition,
@@ -510,8 +511,10 @@ export class ORM {
     await doc.beforeSave();
 
     const withChildren = this.hasChildren(meta);
+    // Audit logging must share the document's transaction.
+    const transactional = withChildren || meta.name !== "Audit Log";
 
-    await this.run(withChildren, async (db) => {
+    await this.run(transactional, async (db) => {
       const data = this.buildInsertData(doc, meta);
       const tableName = toTableName(doc.doctype);
       const qb = new QueryBuilder(tableName).insert(data);
@@ -526,6 +529,50 @@ export class ORM {
 
       if (withChildren) {
         await this.saveChildren(db, doc, meta, now);
+      }
+      // Record creation only after the document and its children
+      // have been written successfully.
+      if (meta.name !== "Audit Log") {
+        const auditMeta = this.registry.get("Audit Log");
+
+        // Create an Audit Log document so naming follows its own DocType.
+        const auditDoc = new Document(auditMeta, {
+          owner: user ?? DEFAULT_USER,
+          creation: now,
+          modified: now,
+          modified_by: user ?? DEFAULT_USER,
+          docstatus: 0,
+        });
+
+        const auditName = await this.generateName(auditMeta, auditDoc, now);
+
+        // Capture the persisted document's values.
+        const after: Record<string, unknown> = {
+          name: doc.name,
+          owner: doc.owner,
+          creation: doc.creation,
+          modified: doc.modified,
+          modified_by: doc.modified_by,
+          docstatus: doc.docstatus,
+        };
+
+        for (const field of meta.fields) {
+          if (field.fieldtype === "Table") continue;
+
+          const value = doc.get(field.fieldname);
+          if (value !== undefined) {
+            after[field.fieldname] = value;
+          }
+        }
+
+        await recordAuditLog(db, {
+          name: auditName,
+          referenceDoctype: meta.name,
+          referenceName: doc.name,
+          action: "create",
+          user: user ?? DEFAULT_USER,
+          after,
+        });
       }
     });
 
@@ -741,7 +788,11 @@ export class ORM {
 
     const withChildren = this.hasChildren(meta);
 
+    //Audit
+    const shouldAudit = meta.name !== "Audit Log";
+
     const needsStored =
+      shouldAudit ||
       !!this.options.staleCheck ||
       submittable ||
       !!this.options.enforcePermissions ||
@@ -957,6 +1008,31 @@ export class ORM {
       if (withChildren && mode !== "cancel") {
         await this.saveChildren(db, doc, meta, now, onlyTables);
       }
+
+      // Audit the update in the same transaction as the document write.
+      if (mode === "update" && shouldAudit && stored) {
+        const auditMeta = this.registry.get("Audit Log");
+
+        const auditDoc = new Document(auditMeta, {
+          owner: user ?? DEFAULT_USER,
+          creation: now,
+          modified: now,
+          modified_by: user ?? DEFAULT_USER,
+          docstatus: 0,
+        });
+
+        const auditName = await this.generateName(auditMeta, auditDoc, now);
+
+        await recordAuditLog(db, {
+          name: auditName,
+          referenceDoctype: meta.name,
+          referenceName: doc.name,
+          action: "update",
+          user: user ?? DEFAULT_USER,
+          before: stored,
+          after: row,
+        });
+      }
     });
 
     // Keep in-memory status synchronized for traditional operations.
@@ -993,13 +1069,19 @@ export class ORM {
    * @throws {NotFoundError} If the document does not exist.
    * @throws {DocStatusError} If the document is submitted (cancel it first).
    */
+
   async deleteDoc(doctype: string, name: string): Promise<void> {
     const meta = this.registry.get(doctype);
     this.assertNotVirtual(meta, "delete from");
+
+    // Load the document before deletion so its data remains available.
     const doc = await this.getDoc(doctype, name);
     const tableName = toTableName(doctype);
+    const user = this.user();
+    const now = new Date();
 
     this.checkDocAccess(meta, "delete", this.docGetter(doc));
+
     if (this.isSubmittable(meta) && Number(doc.docstatus) === 1) {
       throw new DocStatusError(
         `${doctype} ${name} is submitted. Cancel it before deleting.`,
@@ -1010,17 +1092,82 @@ export class ORM {
     await doc.beforeDelete();
 
     const withChildren = this.hasChildren(meta);
-    await this.run(withChildren, async (db) => {
+    const shouldAudit = meta.name !== "Audit Log";
+
+    // Build a snapshot before removing the document.
+    const before: Record<string, unknown> = {
+      name: doc.name,
+      owner: doc.owner,
+      creation: doc.creation,
+      modified: doc.modified,
+      modified_by: doc.modified_by,
+      docstatus: doc.docstatus,
+    };
+
+    for (const field of meta.fields) {
+      if (field.fieldtype === "Table") {
+        const value = doc.get(field.fieldname);
+        if (value !== undefined) {
+          before[field.fieldname] = value;
+        }
+        continue;
+      }
+
+      const value = doc.get(field.fieldname);
+      if (value !== undefined) {
+        before[field.fieldname] = value;
+      }
+    }
+
+    // Generate the audit name before entering the deletion transaction.
+    let auditName: string | undefined;
+
+    if (shouldAudit) {
+      const auditMeta = this.registry.get("Audit Log");
+      const auditDoc = new Document(auditMeta, {
+        owner: user ?? DEFAULT_USER,
+        creation: now,
+        modified: now,
+        modified_by: user ?? DEFAULT_USER,
+        docstatus: 0,
+      });
+
+      auditName = await this.generateName(auditMeta, auditDoc, now);
+    }
+
+    // Force a transaction so deletion and its audit entry are atomic.
+    await this.run(true, async (db) => {
       if (withChildren) {
-        for (const f of meta.fields.filter(isTable)) {
+        for (const field of meta.fields.filter(isTable)) {
           await db.execute(
-            `DELETE FROM ${toTableName(opts(f))} WHERE parent = $1 AND parenttype = $2 AND parentfield = $3`,
-            [name, meta.name, f.fieldname],
+            `DELETE FROM ${toTableName(opts(field))}
+           WHERE parent = $1
+             AND parenttype = $2
+             AND parentfield = $3`,
+            [name, meta.name, field.fieldname],
           );
         }
       }
-      // DB DELETE
-      await db.execute(`DELETE FROM ${tableName} WHERE name = $1`, [name]);
+
+      const deleted = await db.query<Row>(
+        `DELETE FROM ${tableName} WHERE name = $1 RETURNING *`,
+        [name],
+      );
+
+      if (!deleted[0]) {
+        throw new NotFoundError(meta.name, name);
+      }
+
+      if (shouldAudit && auditName) {
+        await recordAuditLog(db, {
+          name: auditName,
+          referenceDoctype: meta.name,
+          referenceName: name,
+          action: "delete",
+          user: user ?? DEFAULT_USER,
+          before,
+        });
+      }
     });
 
     // Lifecycle: post-delete
