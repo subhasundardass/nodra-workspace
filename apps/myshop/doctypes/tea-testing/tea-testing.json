@@ -2,7 +2,7 @@
   "name": "TeaTesting",
   "module": "App",
   "naming_rule": "series",
-  "naming_series": "TT-FYYFMM-###",
+  "naming_series": "TTFYYFMM###",
   "title_field": "lot",
   "is_submittable": false,
   "is_child": false,
@@ -18,7 +18,7 @@
       "fieldname": "lot",
       "label": "Lot",
       "fieldtype": "Link",
-      "options": "Lot",
+      "options": "Lots",
       "description": "Registered tea lot from which the sample was taken for testing.",
       "reqd": true,
       "in_list_view": true
@@ -36,8 +36,9 @@
       "label": "Incoming Grade",
       "fieldtype": "Link",
       "options": "Grades",
-      "description": "Original grade recorded on the linked Lot, displayed for reference and populated from that Lot.",
-      "read_only": true
+      "description": "Original grade recorded on the linked Lot, retained for reference.",
+      "read_only": true,
+      "in_list_view": true
     },
     {
       "fieldname": "tested_grade",
@@ -49,34 +50,52 @@
     },
     {
       "fieldname": "appearance",
-      "label": "Appearance",
+      "label": "Dry Leaf Appearance",
       "fieldtype": "SmallText",
-      "description": "Observations about the dry tea leaf appearance, including size, colour, and overall look."
+      "description": "Observations about dry tea leaf size, colour, shape, tips, and overall appearance."
+    },
+    {
+      "fieldname": "infusion",
+      "label": "Infusion (Wet Leaf)",
+      "fieldtype": "SmallText",
+      "description": "Observations about the infused wet leaf, including colour, evenness, brightness, and leaf condition."
     },
     {
       "fieldname": "liquor",
       "label": "Liquor",
       "fieldtype": "SmallText",
-      "description": "Observations about the brewed tea liquor, including colour and clarity."
+      "description": "Observations about brewed tea liquor, including colour, brightness, clarity, and strength."
     },
     {
       "fieldname": "taste",
       "label": "Taste and Flavour",
       "fieldtype": "SmallText",
-      "description": "Assessment of the tea's taste, flavour, strength, briskness, and aroma."
+      "description": "Assessment of briskness, body, aroma, flavour, astringency, and aftertaste."
+    },
+    {
+      "fieldname": "defects",
+      "label": "Defects / Quality Issues",
+      "fieldtype": "SmallText",
+      "description": "Specific quality issues observed during testing, such as stale, smoky, coarse, musty, or other undesirable characteristics."
+    },
+    {
+      "fieldname": "quality_score",
+      "label": "Quality Score",
+      "fieldtype": "Float",
+      "description": "Overall quality score based on the tea testing team's established scoring criteria."
     },
     {
       "fieldname": "test_remarks",
       "label": "Testing Remarks",
       "fieldtype": "SmallText",
-      "description": "Additional testing observations not covered by the other testing fields."
+      "description": "Additional observations, defects, quality concerns, or recommendations."
     },
     {
       "fieldname": "tested_by",
       "label": "Tested By",
       "fieldtype": "Link",
       "options": "User",
-      "description": "User who performed the tea sample testing."
+      "description": "User responsible for performing the tea sample testing."
     },
     {
       "fieldname": "workflow_state",
@@ -96,13 +115,9 @@
         "is_initial": true
       },
       {
-        "state": "In Progress",
-        "doc_status": 20
-      },
-      {
         "state": "Completed",
         "doc_status": 51,
-        "is_final": true
+        "is_final": false
       },
       {
         "state": "Cancelled",
@@ -112,16 +127,8 @@
     ],
     "transitions": [
       {
-        "action": "Start Testing",
-        "from": "Draft",
-        "to": "In Progress",
-        "roles": [
-          "System Manager"
-        ]
-      },
-      {
         "action": "Complete Testing",
-        "from": "In Progress",
+        "from": "Draft",
         "to": "Completed",
         "roles": [
           "System Manager"
@@ -137,7 +144,7 @@
       },
       {
         "action": "Cancel",
-        "from": "In Progress",
+        "from": "Completed",
         "to": "Cancelled",
         "roles": [
           "System Manager"
@@ -151,7 +158,11 @@
       "read": true,
       "write": true,
       "create": true,
-      "delete": true
+      "delete": true,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
     }
   ]
 }
