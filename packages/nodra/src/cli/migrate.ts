@@ -17,6 +17,7 @@ import {
 import path from "node:path";
 import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { isDataField } from "../core/doctype/field-types";
 
 export class MigrateCommand implements Command {
   name = "migrate";
@@ -132,6 +133,23 @@ export class MigrateCommand implements Command {
     }
 
     return [...core, ...app];
+  }
+
+  /**
+   * Comments
+   */
+  private async syncColumnComment(
+    tableName: string,
+    columnName: string,
+    description: string,
+  ): Promise<void> {
+    const quoteIdentifier = (value: string) => `"${value.replace(/"/g, '""')}"`;
+
+    const escapedDescription = description.replace(/'/g, "''");
+
+    await this.pool.query(
+      `COMMENT ON COLUMN ${quoteIdentifier(tableName)}.${quoteIdentifier(columnName)} IS '${escapedDescription}'`,
+    );
   }
 
   /**
@@ -252,6 +270,18 @@ export class MigrateCommand implements Command {
             await this.pool.query(alterSql);
             alterCount++;
           }
+        }
+
+        for (const field of doctype.fields) {
+          if (!field.description || !isDataField(field.fieldtype)) {
+            continue;
+          }
+
+          await this.syncColumnComment(
+            tableName,
+            field.fieldname,
+            field.description,
+          );
         }
 
         // Step 6.6: Ensure indexes exist
