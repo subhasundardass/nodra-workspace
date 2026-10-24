@@ -5,7 +5,6 @@ import { Breadcrumbs } from "../breadcrumbs";
 import SearchInput from "../search-input";
 import { ThemeSelector } from "../themes/theme-selector";
 import { ThemeModeToggle } from "../themes/theme-mode-toggle";
-import { NotificationCenter } from "@/features/notifications/components/notification-center";
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentUser } from "@/lib/auth-current-user";
 import { UserNav } from "./user-nav";
@@ -32,7 +31,6 @@ export default function Header() {
         <div className="hidden sm:block">
           <ThemeSelector />
         </div>
-        <NotificationCenter />
         {user ? <UserNav user={user} /> : <div className="h-8 w-8" />}
       </div>
     </header>

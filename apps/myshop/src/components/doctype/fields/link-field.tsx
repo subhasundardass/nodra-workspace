@@ -68,10 +68,50 @@ export function LinkField({
   const [error, setError] = useState<string | null>(null);
 
   const filtersKey = JSON.stringify(filters ?? {});
+  const isDisabled = disabled || readOnly;
 
-  // Load the selected record's display label when editing an existing form.
+  // Load the selected record when the value is provided externally.
+  // This supports default values, edit forms, and programmatic updates.
+  useEffect(() => {
+    let cancelled = false;
 
-  // Load initial options and search as the user types.
+    if (!value) {
+      setSelected(null);
+      return;
+    }
+
+    async function loadSelectedItem() {
+      try {
+        const result = await callMethod<LinkSearchResponse>("links.search", {
+          doctype,
+          query: "",
+          selectedName: value,
+          titleField,
+          filters: JSON.parse(filtersKey) as Record<string, unknown>,
+          limit: pageSize,
+        });
+
+        if (cancelled) return;
+
+        const item = result.items.find((candidate) => candidate.name === value);
+
+        setSelected(item ?? null);
+      } catch (cause) {
+        if (!cancelled) {
+          setSelected(null);
+          console.error("Unable to resolve LinkField value:", cause);
+        }
+      }
+    }
+
+    void loadSelectedItem();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [value, doctype, titleField, filtersKey, pageSize]);
+
+  // Search records when the dropdown is open.
   useEffect(() => {
     let cancelled = false;
 
@@ -139,8 +179,6 @@ export function LinkField({
     setQuery("");
   }
 
-  const isDisabled = disabled || readOnly;
-
   return (
     <div className={cn("grid gap-1.5", className)}>
       {label && (
@@ -154,9 +192,12 @@ export function LinkField({
         <Popover
           open={open}
           onOpenChange={(nextOpen) => {
-            if (!isDisabled) {
-              setOpen(nextOpen);
-              if (!nextOpen) setQuery("");
+            if (isDisabled) return;
+
+            setOpen(nextOpen);
+
+            if (!nextOpen) {
+              setQuery("");
             }
           }}
         >
@@ -170,6 +211,7 @@ export function LinkField({
               className="w-full min-w-0 justify-between font-normal"
             >
               <span className="truncate">{selected?.label || placeholder}</span>
+
               <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -198,9 +240,12 @@ export function LinkField({
                   </div>
                 )}
 
-                {!loading && !error && query.trim() && items.length === 0 && (
-                  <CommandEmpty>No records found.</CommandEmpty>
-                )}
+                {!loading &&
+                  !error &&
+                  query.trim() !== "" &&
+                  items.length === 0 && (
+                    <CommandEmpty>No records found.</CommandEmpty>
+                  )}
 
                 {!loading &&
                   !error &&
@@ -216,6 +261,7 @@ export function LinkField({
                           value === item.name ? "opacity-100" : "opacity-0",
                         )}
                       />
+
                       <span className="truncate">{item.label}</span>
                     </CommandItem>
                   ))}
