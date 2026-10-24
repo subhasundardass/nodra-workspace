@@ -48,6 +48,7 @@ type WorkflowDocType = DocTypeDefinition & {
 };
 
 type DocTypeFormTemplateProps = {
+  title?: string;
   doctype: DocTypeDefinition;
   mode: "create" | "edit" | "view";
   initialValues?: FormValues;
@@ -145,6 +146,7 @@ function getTransitionRoles(
 }
 
 export function DocTypeFormTemplate({
+  title,
   doctype,
   mode,
   initialValues,
@@ -494,7 +496,7 @@ export function DocTypeFormTemplate({
       </AlertDialog>
 
       <GlobalToolbar
-        title={doctype.name}
+        title={title ?? doctype.name}
         description={description}
         documentStatus={currentDocumentStatus}
         actions={actions}
