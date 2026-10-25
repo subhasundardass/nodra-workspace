@@ -37,24 +37,18 @@ export const navGroups: NavGroup[] = [
       {
         title: "Tea Testing",
         url: "/dashboard/tea-testing",
-        icon: "forms",
+        icon: "flask",
         isActive: false,
         items: [],
       },
       {
         title: "Valuation",
-        url: "/dashboard/valuation",
-        icon: "kanban",
+        url: "/dashboard/tea-valuation",
+        icon: "scale",
         isActive: false,
         items: [],
       },
-      {
-        title: "Warehouse",
-        url: "/dashboard/warehouse",
-        icon: "product",
-        isActive: false,
-        items: [],
-      },
+
       {
         title: "Distribution",
         url: "/dashboard/sales",

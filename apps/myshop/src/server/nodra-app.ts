@@ -19,6 +19,7 @@ import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader.js";
 import { registerFrameworkMethods } from "nodra/methods";
 import type { WorkflowActionHooks } from "nodra/orm/workflow-hooks.js";
 import { workflowHooks } from "./hooks/index";
+import { DocTypeControllerRegistry } from "./controller-registry.js";
 import {
   ORM,
   runWithSession,
@@ -40,7 +41,10 @@ import { ResourceAPI } from "nodra";
 import { registerOrdersMethods } from "./methods/orders.js";
 
 const require = createRequire(import.meta.url);
-
+const controllerModules = import.meta.glob<Record<string, unknown>>(
+  "../../doctypes/*/*.ts",
+  { eager: true },
+);
 /**
  * Absolute path to `packages/nodra/doctypes` regardless of how `nodra` was
  * resolved (workspace symlink today, hoisted/published package later).
@@ -80,6 +84,7 @@ export class NodraApp {
   readonly ormOptions: ORMOptions;
   readonly sessions: SessionManager;
   readonly auth: AuthService;
+  readonly controllers = new DocTypeControllerRegistry();
 
   private constructor(config: NodraConfig) {
     this.config = config;
@@ -87,7 +92,9 @@ export class NodraApp {
     this.registry = new DocTypeRegistry();
     this.ormOptions = ormOptionsFromEnv(workflowHooks);
     this.orm = new ORM(this.db, this.registry, this.ormOptions);
-    this.resource = new ResourceAPI(this.orm, this.registry);
+    this.resource = new ResourceAPI(this.orm, this.registry, (doctype, data) =>
+      this.controllers.create(this.registry.get(doctype), data),
+    );
     this.logger = createLogger(config.logging);
     this.methods = new DefaultMethodRegistry();
 
@@ -139,9 +146,15 @@ export class NodraApp {
       loadDocTypesFromDirectory(path.join(process.cwd(), "doctypes")),
     ]);
 
-    for (const doctype of [...frameworkDoctypes, ...appDoctypes]) {
+    const doctypes = [...frameworkDoctypes, ...appDoctypes];
+
+    for (const doctype of doctypes) {
       app.registry.register(doctype);
     }
+
+    // Register matching controllers after all metadata is available.
+    app.controllers.registerModules(doctypes, controllerModules);
+
     app.logger.info(
       `Loaded ${frameworkDoctypes.length} framework doctype(s), ${appDoctypes.length} app doctype(s)`,
     );

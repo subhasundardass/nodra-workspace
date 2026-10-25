@@ -139,6 +139,14 @@ export interface ORMOptions {
   getSession?: () => SessionContext | undefined;
   /**Workflow Action Hook */
   workflowHooks?: WorkflowActionHooks;
+  /**
+   * Creates the registered controller for a DocType.
+   * Falls back to Document when no controller is registered.
+   */
+  documentFactory?: (
+    meta: DocTypeDefinition,
+    data: Record<string, unknown>,
+  ) => Document;
 }
 
 /** Shape read from doctype meta (all optional, cast so your schema type needs no change). */
@@ -1787,8 +1795,40 @@ export class ORM {
     row: Row,
     children: Row = {},
   ): Document {
-    const doc = new Document(meta, { ...row, ...children, _isNew: false });
+    const data: Row = {
+      ...row,
+      ...children,
+      _isNew: false,
+    };
+
+    // PostgreSQL NUMERIC values may arrive as strings.
+    // The framework validator expects JS numbers for numeric fields.
+    for (const field of meta.fields) {
+      if (
+        field.fieldtype !== "Int" &&
+        field.fieldtype !== "Float" &&
+        field.fieldtype !== "Currency"
+      ) {
+        continue;
+      }
+
+      const value = data[field.fieldname];
+
+      if (typeof value !== "string" || value.trim() === "") {
+        continue;
+      }
+
+      const numberValue = Number(value);
+
+      // Leave invalid values unchanged so validation can reject them.
+      if (Number.isFinite(numberValue)) {
+        data[field.fieldname] = numberValue;
+      }
+    }
+
+    const doc = new Document(meta, data);
     doc.markAsClean();
+
     return doc;
   }
 
