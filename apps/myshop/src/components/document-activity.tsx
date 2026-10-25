@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Activity,
   AlertCircle,
@@ -13,8 +14,9 @@ import {
 } from "lucide-react";
 
 import { callMethod } from "@/lib/call-method";
+import { formatTimestamp } from "@/lib/format";
 
-type UnknownRecord = Record<string, unknown>;
+type RecordValue = Record<string, unknown>;
 
 type DocumentActivityProps = {
   doctype: string;
@@ -29,6 +31,20 @@ type ActivityItem = {
   timestamp: string | null;
   sortTime: number | null;
   details: string[];
+};
+
+type DocTypeField = {
+  fieldname: string;
+  fieldtype: string;
+  options?: string;
+};
+
+type DocTypeMeta = {
+  fields?: DocTypeField[];
+};
+
+type LinkSearchResponse = {
+  items?: Array<{ name: string; label: string }>;
 };
 
 const VISIBLE_CHANGES = 2;
@@ -48,16 +64,49 @@ const SYSTEM_FIELDS = new Set([
   "reference_name",
 ]);
 
-function asRecord(value: unknown): UnknownRecord | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as UnknownRecord)
-    : null;
+const CREATE_ACTIONS = new Set(["create", "created", "insert"]);
+const DELETE_ACTIONS = new Set(["delete", "deleted"]);
+const UPDATE_ACTIONS = new Set(["update", "updated"]);
+const WORKFLOW_ACTIONS = new Set(["workflow", "transition"]);
+
+function asRecord(value: unknown): RecordValue | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as RecordValue;
+}
+
+function formatFieldValue(value: unknown): string {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  if (typeof value === "string" && value.trim() !== "") {
+    const normalized = value.trim();
+
+    // Format numeric strings only; leave IDs and ordinary text unchanged.
+    if (/^-?\d+(?:\.\d+)?$/.test(normalized)) {
+      const number = Number(normalized);
+
+      if (Number.isFinite(number)) {
+        return new Intl.NumberFormat("en-IN", {
+          maximumFractionDigits: 2,
+        }).format(number);
+      }
+    }
+  }
+
+  return asText(value);
 }
 
 function asText(value: unknown): string {
   if (value == null || value === "") return "—";
 
   if (typeof value === "string") return value;
+
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
@@ -65,15 +114,18 @@ function asText(value: unknown): string {
   const record = asRecord(value);
 
   if (record) {
-    const display =
-      record.full_name ??
-      record.fullName ??
-      record.label ??
-      record.title ??
-      record.name ??
-      record.email;
-
-    if (display !== undefined) return asText(display);
+    for (const key of [
+      "full_name",
+      "fullName",
+      "label",
+      "title",
+      "name",
+      "email",
+    ]) {
+      if (record[key] != null && record[key] !== "") {
+        return asText(record[key]);
+      }
+    }
   }
 
   try {
@@ -81,11 +133,6 @@ function asText(value: unknown): string {
   } catch {
     return String(value);
   }
-}
-
-function getUserName(value: unknown): string {
-  const user = asText(value);
-  return user === "—" ? "System" : user;
 }
 
 function getDate(value: unknown): Date | null {
@@ -102,26 +149,17 @@ function getDate(value: unknown): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function formatTimestamp(value: unknown): string | null {
-  const date = getDate(value);
-  if (!date) return null;
+function getTimestamp(record: RecordValue): unknown {
+  const changes = asRecord(record.changes);
+  const after = asRecord(record.after_data ?? record.afterData);
 
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  }).format(date);
-}
-
-function readableFieldName(field: string): string {
-  return field
-    .replace(/_/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return (
+    record.created_at ??
+    record.createdAt ??
+    record.timestamp ??
+    asRecord(changes?.creation)?.after ??
+    after?.creation
+  );
 }
 
 function normalizeAction(action: string): string {
@@ -150,16 +188,35 @@ function describeAction(action: string): string {
     transition: "changed the workflow state",
   };
 
+  const normalized = normalizeAction(action);
+
   return (
-    descriptions[normalizeAction(action)] ??
-    `${action.replace(/_/g, " ")} this document`
+    descriptions[normalized] ??
+    `${normalized.replace(/_/g, " ") || "recorded"} this document`
   );
+}
+
+function readableFieldName(field: string): string {
+  return field
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function sameValue(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
 }
 
 function getActionStyle(action: string) {
   const value = normalizeAction(action);
 
-  if (["create", "created", "insert"].includes(value)) {
+  if (CREATE_ACTIONS.has(value)) {
     return {
       icon: CirclePlus,
       color: "text-emerald-600 dark:text-emerald-400",
@@ -167,7 +224,7 @@ function getActionStyle(action: string) {
     };
   }
 
-  if (["delete", "deleted"].includes(value)) {
+  if (DELETE_ACTIONS.has(value)) {
     return {
       icon: Trash2,
       color: "text-destructive",
@@ -183,7 +240,7 @@ function getActionStyle(action: string) {
     };
   }
 
-  if (["workflow", "transition"].includes(value)) {
+  if (WORKFLOW_ACTIONS.has(value)) {
     return {
       icon: GitBranch,
       color: "text-violet-600 dark:text-violet-400",
@@ -214,16 +271,72 @@ function getActionStyle(action: string) {
   };
 }
 
-function sameValue(a: unknown, b: unknown): boolean {
-  try {
-    return JSON.stringify(a) === JSON.stringify(b);
-  } catch {
-    return Object.is(a, b);
-  }
+function normalizeHistory(response: unknown): RecordValue[] {
+  const wrapper = asRecord(response);
+
+  const value = Array.isArray(response)
+    ? response
+    : wrapper
+      ? [
+          wrapper.activities,
+          wrapper.data,
+          wrapper.logs,
+          wrapper.history,
+          wrapper.items,
+          wrapper.results,
+        ].find(Array.isArray)
+      : [];
+
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map(asRecord)
+    .filter((item): item is RecordValue => item !== null);
 }
 
-function getFieldChanges(value: unknown): string[] {
-  const changes = asRecord(value);
+function getChanges(record: RecordValue): RecordValue | null {
+  return asRecord(record.changes);
+}
+
+function getBefore(record: RecordValue): RecordValue | null {
+  return asRecord(record.before_data ?? record.beforeData);
+}
+
+function getAfter(record: RecordValue): RecordValue | null {
+  return asRecord(record.after_data ?? record.afterData);
+}
+
+type LinkLabels = Map<string, Map<string, string>>;
+
+function displayValue(
+  field: string,
+  value: unknown,
+  linkLabels: LinkLabels,
+): string {
+  if (value == null || value === "") return "—";
+
+  // Preserve existing Link-field label resolution.
+  const linkLabel = linkLabels.get(field)?.get(String(value));
+  if (linkLabel) return linkLabel;
+
+  // Format numeric values, including PostgreSQL NUMERIC strings.
+  if (
+    (typeof value === "number" ||
+      (typeof value === "string" && /^-?\d+(?:\.\d+)?$/.test(value.trim()))) &&
+    Number.isFinite(Number(value))
+  ) {
+    return new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 2,
+    }).format(Number(value));
+  }
+
+  return asText(value);
+}
+
+function getFieldChanges(
+  changes: RecordValue | null,
+  linkLabels: LinkLabels,
+): string[] {
   if (!changes) return [];
 
   return Object.entries(changes).flatMap(([field, raw]) => {
@@ -238,23 +351,28 @@ function getFieldChanges(value: unknown): string[] {
     if (sameValue(before, after)) return [];
 
     const label = readableFieldName(field);
+    const next = displayValue(field, after, linkLabels);
 
-    if (before == null) {
-      return [`${label}: ${asText(after)}`];
+    if (before == null || before === "") {
+      return [`${label}: ${next}`];
     }
 
-    return [`${label}: ${asText(before)} → ${asText(after)}`];
+    const previous = displayValue(field, before, linkLabels);
+
+    return [`${label}: ${previous} → ${next}`];
   });
 }
 
-function getDetails(record: UnknownRecord): string[] {
-  const action = normalizeAction(asText(record.action ?? record.operation));
+function getDetails(record: RecordValue, linkLabels: LinkLabels): string[] {
+  const action = normalizeAction(
+    asText(record.action ?? record.operation ?? "activity"),
+  );
 
-  const before = asRecord(record.before_data ?? record.beforeData);
-  const after = asRecord(record.after_data ?? record.afterData);
-  const changes = asRecord(record.changes);
+  const before = getBefore(record);
+  const after = getAfter(record);
+  const changes = getChanges(record);
 
-  if (["create", "created", "insert"].includes(action)) {
+  if (CREATE_ACTIONS.has(action)) {
     const lotNo = asText(after?.lot_no ?? asRecord(changes?.lot_no)?.after);
     const bags = asText(after?.bags ?? asRecord(changes?.bags)?.after);
     const documentName = asText(after?.name ?? record.reference_name);
@@ -268,7 +386,7 @@ function getDetails(record: UnknownRecord): string[] {
     return [summary.join(" · ") || "Document created"];
   }
 
-  if (["delete", "deleted"].includes(action)) {
+  if (DELETE_ACTIONS.has(action)) {
     return ["Document deleted"];
   }
 
@@ -284,7 +402,7 @@ function getDetails(record: UnknownRecord): string[] {
     return [`Workflow: ${asText(oldState)} → ${asText(newState)}`];
   }
 
-  const fieldChanges = getFieldChanges(changes);
+  const fieldChanges = getFieldChanges(changes, linkLabels);
   if (fieldChanges.length) return fieldChanges;
 
   if (before && after) {
@@ -294,86 +412,157 @@ function getDetails(record: UnknownRecord): string[] {
 
     for (const field of fields) {
       if (SYSTEM_FIELDS.has(field)) continue;
+      if (sameValue(before[field], after[field])) continue;
 
-      if (!sameValue(before[field], after[field])) {
-        details.push(
-          `${readableFieldName(field)}: ${asText(before[field])} → ${asText(after[field])}`,
-        );
-      }
+      const previous = displayValue(field, before[field], linkLabels);
+      const next = displayValue(field, after[field], linkLabels);
+
+      details.push(`${readableFieldName(field)}: ${previous} → ${next}`);
     }
 
     if (details.length) return details;
   }
 
-  if (["update", "updated"].includes(action)) {
+  if (UPDATE_ACTIONS.has(action)) {
     return ["Document details were updated"];
   }
 
-  if (["workflow", "transition"].includes(action)) {
+  if (WORKFLOW_ACTIONS.has(action)) {
     return ["Document workflow was changed"];
   }
 
   return ["Activity recorded"];
 }
 
-function normalizeHistory(response: unknown): UnknownRecord[] {
-  if (Array.isArray(response)) {
-    return response
-      .map(asRecord)
-      .filter((item): item is UnknownRecord => item !== null);
-  }
-
-  const wrapper = asRecord(response);
-  if (!wrapper) return [];
-
-  for (const key of [
-    "activities",
-    "data",
-    "logs",
-    "history",
-    "items",
-    "results",
-  ]) {
-    if (Array.isArray(wrapper[key])) {
-      return (wrapper[key] as unknown[])
-        .map(asRecord)
-        .filter((item): item is UnknownRecord => item !== null);
-    }
-  }
-
-  return [];
-}
-
-function normalizeActivity(record: UnknownRecord, index: number): ActivityItem {
+function normalizeActivity(
+  record: RecordValue,
+  index: number,
+  linkLabels: LinkLabels,
+): ActivityItem {
   const rawAction = asText(record.action ?? record.operation ?? "activity");
-
-  const changes = asRecord(record.changes);
-  const after = asRecord(record.after_data ?? record.afterData);
-
-  const rawTimestamp =
-    record.created_at ??
-    record.createdAt ??
-    record.timestamp ??
-    asRecord(changes?.creation)?.after ??
-    after?.creation;
-
-  const date = getDate(rawTimestamp);
+  const timestamp = getTimestamp(record);
+  const date = getDate(timestamp);
 
   return {
     id: asText(record.name ?? record.id ?? `${rawAction}-${index}`),
-    user: getUserName(
-      record.user_full_name ??
-        record.userFullName ??
-        record.user ??
-        record.owner ??
-        record.created_by,
-    ),
+    user:
+      asText(
+        record.user_full_name ??
+          record.userFullName ??
+          record.user ??
+          record.owner ??
+          record.created_by,
+      ) === "—"
+        ? "System"
+        : asText(
+            record.user_full_name ??
+              record.userFullName ??
+              record.user ??
+              record.owner ??
+              record.created_by,
+          ),
     action: describeAction(rawAction),
     actionType: normalizeAction(rawAction),
-    timestamp: formatTimestamp(rawTimestamp),
+    timestamp:
+      typeof timestamp === "string" ||
+      typeof timestamp === "number" ||
+      timestamp instanceof Date
+        ? formatTimestamp(timestamp) || null
+        : null,
     sortTime: date?.getTime() ?? null,
-    details: getDetails(record),
+    details: getDetails(record, linkLabels),
   };
+}
+
+/**
+ * Resolves Link-field IDs using the target DocType's configured title_field.
+ * Audit data remains unchanged; only the activity display values are enriched.
+ */
+async function resolveLinkLabels(
+  doctype: string,
+  records: RecordValue[],
+): Promise<LinkLabels> {
+  const labels: LinkLabels = new Map();
+
+  try {
+    const metaResult = await callMethod<{ doctype?: DocTypeMeta }>(
+      "nodra.doctype.get",
+      { name: doctype },
+    );
+
+    const linkFields = (metaResult.doctype?.fields ?? []).filter(
+      (field) =>
+        field.fieldtype.toLowerCase() === "link" &&
+        typeof field.options === "string" &&
+        field.options.trim() !== "",
+    );
+
+    const changesByField = new Map<string, Set<string>>();
+
+    for (const record of records) {
+      const changes = getChanges(record);
+      const before = getBefore(record);
+      const after = getAfter(record);
+
+      for (const field of linkFields) {
+        const values = changesByField.get(field.fieldname) ?? new Set<string>();
+
+        const change = asRecord(changes?.[field.fieldname]);
+
+        for (const value of [
+          change?.before,
+          change?.after,
+          before?.[field.fieldname],
+          after?.[field.fieldname],
+        ]) {
+          if (value != null && value !== "") {
+            values.add(asText(value));
+          }
+        }
+
+        changesByField.set(field.fieldname, values);
+      }
+    }
+
+    await Promise.all(
+      linkFields.map(async (field) => {
+        const values = changesByField.get(field.fieldname);
+        if (!values?.size || !field.options) return;
+
+        const fieldLabels = new Map<string, string>();
+
+        await Promise.all(
+          [...values].map(async (name) => {
+            try {
+              const result = await callMethod<LinkSearchResponse>(
+                "links.search",
+                {
+                  doctype: field.options,
+                  query: "",
+                  selectedName: name,
+                  limit: 1,
+                },
+              );
+
+              const item = result.items?.find(
+                (candidate) => candidate.name === name,
+              );
+
+              if (item?.label) fieldLabels.set(name, item.label);
+            } catch {
+              // If a linked record is unavailable, keep displaying its ID.
+            }
+          }),
+        );
+
+        labels.set(field.fieldname, fieldLabels);
+      }),
+    );
+  } catch {
+    // Metadata lookup failure should not prevent activity from being displayed.
+  }
+
+  return labels;
 }
 
 function ActivityChanges({ details }: { details: string[] }) {
@@ -381,20 +570,23 @@ function ActivityChanges({ details }: { details: string[] }) {
   const visible = expanded ? details : details.slice(0, VISIBLE_CHANGES);
   const hasMore = details.length > VISIBLE_CHANGES;
 
+  useEffect(() => {
+    setExpanded(false);
+  }, [details]);
+
   return (
-    <div className="mt-1 space-y-0.5">
+    <div className="mt-1 space-y-1">
       {visible.map((detail, index) => {
         const separator = detail.indexOf(":");
         const field = separator >= 0 ? detail.slice(0, separator) : null;
         const value =
           separator >= 0 ? detail.slice(separator + 1).trim() : detail;
-
         const transition = value.indexOf(" → ");
 
         return (
           <p
             key={`${index}-${detail}`}
-            className="break-words text-sm leading-4 text-muted-foreground"
+            className="break-words text-sm leading-5 text-muted-foreground"
           >
             {field && (
               <span className="font-medium text-foreground">{field}: </span>
@@ -402,7 +594,7 @@ function ActivityChanges({ details }: { details: string[] }) {
 
             {transition >= 0 ? (
               <>
-                <span className="line-through opacity-60">
+                <span className="line-through decoration-muted-foreground/60 opacity-60">
                   {value.slice(0, transition)}
                 </span>
                 <span className="mx-1">→</span>
@@ -421,13 +613,35 @@ function ActivityChanges({ details }: { details: string[] }) {
         <button
           type="button"
           onClick={() => setExpanded((current) => !current)}
-          className="text-xs font-medium text-primary hover:underline"
+          className="rounded-sm text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {expanded
             ? "Show less"
             : `+${details.length - VISIBLE_CHANGES} more changes`}
         </button>
       )}
+    </div>
+  );
+}
+
+function EmptyActivity({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="px-3 py-6 text-center">
+      <div className="mx-auto flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        {icon}
+      </div>
+      <p className="mt-2 text-sm font-semibold">{title}</p>
+      <p className="mx-auto mt-1 max-w-48 text-xs leading-4 text-muted-foreground">
+        {description}
+      </p>
     </div>
   );
 }
@@ -464,9 +678,15 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
 
         if (!active) return;
 
-        const result = normalizeHistory(response)
-          .map(normalizeActivity)
+        const records = normalizeHistory(response);
+        const linkLabels = await resolveLinkLabels(doctype, records);
+
+        if (!active) return;
+
+        const result = records
+          .map((record, index) => normalizeActivity(record, index, linkLabels))
           .sort((a, b) => {
+            if (a.sortTime == null && b.sortTime == null) return 0;
             if (a.sortTime == null) return 1;
             if (b.sortTime == null) return -1;
             return b.sortTime - a.sortTime;
@@ -512,9 +732,12 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
           disabled={!name || loading}
           aria-label="Refresh document activity"
           title="Refresh activity"
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+          className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
         >
-          <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            aria-hidden="true"
+            className={`size-3.5 ${loading ? "animate-spin" : ""}`}
+          />
         </button>
       </header>
 
@@ -525,7 +748,11 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
           description="Activity appears after the document is saved."
         />
       ) : loading && activities.length === 0 ? (
-        <div className="space-y-6 p-3" aria-label="Loading activity">
+        <div
+          className="space-y-6 p-3"
+          aria-label="Loading activity"
+          role="status"
+        >
           {[1, 2, 3].map((item) => (
             <div key={item} className="flex gap-2">
               <div className="size-7 shrink-0 animate-pulse rounded-full bg-muted" />
@@ -535,18 +762,19 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
               </div>
             </div>
           ))}
+          <span className="sr-only">Loading document activity…</span>
         </div>
       ) : error && activities.length === 0 ? (
-        <div className="p-4 text-center">
+        <div className="p-4 text-center" role="alert">
           <AlertCircle className="mx-auto size-5 text-destructive" />
           <p className="mt-2 text-sm font-medium">Unable to load activity</p>
-          <p className="mt-1 wrap-break-word text-sm text-muted-foreground">
+          <p className="mt-1 break-words text-sm text-muted-foreground">
             {error}
           </p>
           <button
             type="button"
             onClick={refresh}
-            className="mt-3 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+            className="mt-3 rounded-md border px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Try again
           </button>
@@ -558,7 +786,7 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
           description="Document changes will appear here."
         />
       ) : (
-        <div className="p-3">
+        <div className="p-3" aria-busy={loading}>
           <div className="mb-3 flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Recent events</span>
             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
@@ -584,7 +812,7 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
                   <div
                     className={`relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full ring-2 ring-card ${style.background} ${style.color}`}
                   >
-                    <Icon className="size-3.5" />
+                    <Icon aria-hidden="true" className="size-3.5" />
                   </div>
 
                   <div className={`min-w-0 flex-1 ${isLast ? "pb-0" : "pb-6"}`}>
@@ -592,9 +820,9 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
                       <span className="text-sm font-semibold text-foreground">
                         {item.user}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <time className="text-[10px] text-muted-foreground">
                         {item.timestamp ?? "Time unavailable"}
-                      </span>
+                      </time>
                     </div>
 
                     <p className="text-xs leading-4 text-muted-foreground">
@@ -611,33 +839,14 @@ export function DocumentActivity({ doctype, name }: DocumentActivityProps) {
       )}
 
       {error && activities.length > 0 && (
-        <div className="border-t px-3 py-2 text-xs text-destructive">
+        <div
+          className="border-t px-3 py-2 text-xs text-destructive"
+          role="status"
+        >
           Refresh failed: {error}
         </div>
       )}
     </aside>
-  );
-}
-
-function EmptyActivity({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="px-3 py-6 text-center">
-      <div className="mx-auto flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        {icon}
-      </div>
-      <p className="mt-2 text-sm font-semibold">{title}</p>
-      <p className="mx-auto mt-1 max-w-48 text-xs leading-4 text-muted-foreground">
-        {description}
-      </p>
-    </div>
   );
 }
 
