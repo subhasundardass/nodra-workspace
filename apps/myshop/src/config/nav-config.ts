@@ -43,7 +43,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         title: "Valuation",
-        url: "/dashboard/valuation",
+        url: "/dashboard/tea-valuation",
         icon: "scale",
         isActive: false,
         items: [],
