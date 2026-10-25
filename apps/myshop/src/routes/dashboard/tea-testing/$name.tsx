@@ -8,7 +8,7 @@ import type { DocTypeDefinition } from "nodra";
 import { toast } from "sonner";
 
 import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
-import { TeaTestingForm } from "@/features/tea-testing/form";
+import { TeaTestingForm } from "@/features/master/tea-testing/form";
 import { callMethod } from "@/lib/call-method";
 
 type DocumentRecord = Record<string, unknown>;
