@@ -1,0 +1,197 @@
+{
+  "name": "TeaValuation",
+  "module": "App",
+  "naming_rule": "autoincrement",
+  "title_field": "lot",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot",
+    "final_grade"
+  ],
+  "sort_field": "valuation_date",
+  "sort_order": "desc",
+  "fields": [
+    {
+      "fieldname": "lot",
+      "label": "Lot",
+      "fieldtype": "Link",
+      "options": "Lot",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "tea_testing",
+      "label": "Tea Testing",
+      "fieldtype": "Link",
+      "options": "Tea Testing",
+      "reqd": true
+    },
+    {
+      "fieldname": "valuation_date",
+      "label": "Valuation Date",
+      "fieldtype": "Date",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "valuation_basis",
+      "label": "Valuation Basis",
+      "fieldtype": "Select",
+      "options": [
+        "Market",
+        "Previous Auction",
+        "Both"
+      ],
+      "reqd": true,
+      "default": "Market",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "reference_rate",
+      "label": "Reference Rate per Kg",
+      "fieldtype": "Currency",
+      "reqd": true,
+      "precision": 2
+    },
+    {
+      "fieldname": "reference_details",
+      "label": "Reference Details",
+      "fieldtype": "SmallText",
+      "description": "Record market conditions, auction reference, date and source details."
+    },
+    {
+      "fieldname": "final_grade",
+      "label": "Final Grade",
+      "fieldtype": "Link",
+      "options": "Tea Grades",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "final_rate",
+      "label": "Final Rate per Kg",
+      "fieldtype": "Currency",
+      "reqd": true,
+      "precision": 2,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "valuation_weight",
+      "label": "Valuation Weight (Kg)",
+      "fieldtype": "Float",
+      "reqd": true,
+      "read_only": true,
+      "precision": 3
+    },
+    {
+      "fieldname": "estimated_value",
+      "label": "Estimated Value",
+      "fieldtype": "Currency",
+      "read_only": true,
+      "precision": 2,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "remarks",
+      "label": "Remarks",
+      "fieldtype": "SmallText"
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Select",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 1,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 2,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm Valuation",
+        "to": "Confirmed",
+        "roles": [
+          "Valuation Manager",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel Valuation",
+        "to": "Cancelled",
+        "roles": [
+          "Valuation Manager",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel Valuation",
+        "to": "Cancelled",
+        "roles": [
+          "Valuation Manager",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "Valuation Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}
