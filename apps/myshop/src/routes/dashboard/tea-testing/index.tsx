@@ -11,7 +11,7 @@ import { useDataTable } from "@/hooks/use-data-table";
 import {
   createColumns,
   type TableColumns,
-} from "@/features/master/tea-testing/columns";
+} from "@/features/tea-testing/columns";
 
 type DocumentRecord = Record<string, unknown>;
 
