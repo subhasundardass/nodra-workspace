@@ -10,6 +10,8 @@ export function registerAuthMethods(
     async (ctx) => {
       const email = String(ctx.args.email ?? "").trim();
       const password = String(ctx.args.password ?? "");
+      const forwardedFor = ctx.request.headers.get("x-forwarded-for");
+      const clientIp = forwardedFor?.split(",")[0]?.trim() ?? null;
 
       if (!email || !password) {
         throw new AuthenticationError("Email and password are required");
@@ -17,7 +19,11 @@ export function registerAuthMethods(
 
       const app = await getApp();
       const result = await app.asSystem(() =>
-        app.auth.login({ username: email, password }),
+        app.auth.login({
+          username: email,
+          password,
+          ip: ctx.request.ip ?? null,
+        }),
       );
 
       ctx.state.set("sessionToken", result.token);
