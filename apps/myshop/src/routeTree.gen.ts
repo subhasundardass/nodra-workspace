@@ -33,6 +33,8 @@ import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/no
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
 import { Route as DashboardTeaTestingIndexRouteImport } from './routes/dashboard/tea-testing/index'
 import { Route as DashboardTeaTestingNameRouteImport } from './routes/dashboard/tea-testing/$name'
+import { Route as DashboardTeaValuationIndexRouteImport } from './routes/dashboard/tea-valuation/index'
+import { Route as DashboardTeaValuationNameRouteImport } from './routes/dashboard/tea-valuation/$name'
 import { Route as DashboardUserIndexRouteImport } from './routes/dashboard/user/index'
 import { Route as DashboardUserNameRouteImport } from './routes/dashboard/user/$name'
 import { Route as DashboardUserNewRouteImport } from './routes/dashboard/user/new'
@@ -161,6 +163,18 @@ const DashboardTeaTestingNameRoute = DashboardTeaTestingNameRouteImport.update({
   path: '/tea-testing/$name',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardTeaValuationIndexRoute =
+  DashboardTeaValuationIndexRouteImport.update({
+    id: '/tea-valuation/',
+    path: '/tea-valuation/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardTeaValuationNameRoute =
+  DashboardTeaValuationNameRouteImport.update({
+    id: '/tea-valuation/$name',
+    path: '/tea-valuation/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardUserIndexRoute = DashboardUserIndexRouteImport.update({
   id: '/user/',
   path: '/user/',
@@ -197,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
+  '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -204,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
+  '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
 }
 export interface FileRoutesByTo {
@@ -225,6 +241,7 @@ export interface FileRoutesByTo {
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
+  '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
@@ -232,6 +249,7 @@ export interface FileRoutesByTo {
   '/dashboard/lot': typeof DashboardLotIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
+  '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
 }
 export interface FileRoutesById {
@@ -255,6 +273,7 @@ export interface FileRoutesById {
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
+  '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -262,6 +281,7 @@ export interface FileRoutesById {
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
+  '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
 }
 export interface FileRouteTypes {
@@ -286,6 +306,7 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/tea-testing/$name'
+    | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in/'
@@ -293,6 +314,7 @@ export interface FileRouteTypes {
     | '/dashboard/lot/'
     | '/dashboard/orders/'
     | '/dashboard/tea-testing/'
+    | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -314,6 +336,7 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/tea-testing/$name'
+    | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in'
@@ -321,6 +344,7 @@ export interface FileRouteTypes {
     | '/dashboard/lot'
     | '/dashboard/orders'
     | '/dashboard/tea-testing'
+    | '/dashboard/tea-valuation'
     | '/dashboard/user'
   id:
     | '__root__'
@@ -343,6 +367,7 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
     | '/dashboard/tea-testing/$name'
+    | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in/'
@@ -350,6 +375,7 @@ export interface FileRouteTypes {
     | '/dashboard/lot/'
     | '/dashboard/orders/'
     | '/dashboard/tea-testing/'
+    | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
   fileRoutesById: FileRoutesById
 }
@@ -534,6 +560,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTeaTestingNameRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/tea-valuation/': {
+      id: '/dashboard/tea-valuation/'
+      path: '/tea-valuation'
+      fullPath: '/dashboard/tea-valuation/'
+      preLoaderRoute: typeof DashboardTeaValuationIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/tea-valuation/$name': {
+      id: '/dashboard/tea-valuation/$name'
+      path: '/tea-valuation/$name'
+      fullPath: '/dashboard/tea-valuation/$name'
+      preLoaderRoute: typeof DashboardTeaValuationNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/user/': {
       id: '/dashboard/user/'
       path: '/user'
@@ -569,11 +609,13 @@ interface DashboardRouteRouteChildren {
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardTeaTestingNameRoute: typeof DashboardTeaTestingNameRoute
+  DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
   DashboardUserNewRoute: typeof DashboardUserNewRoute
   DashboardLotIndexRoute: typeof DashboardLotIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardTeaTestingIndexRoute: typeof DashboardTeaTestingIndexRoute
+  DashboardTeaValuationIndexRoute: typeof DashboardTeaValuationIndexRoute
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
 }
 
@@ -588,11 +630,13 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardTeaTestingNameRoute: DashboardTeaTestingNameRoute,
+  DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
   DashboardUserNewRoute: DashboardUserNewRoute,
   DashboardLotIndexRoute: DashboardLotIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardTeaTestingIndexRoute: DashboardTeaTestingIndexRoute,
+  DashboardTeaValuationIndexRoute: DashboardTeaValuationIndexRoute,
   DashboardUserIndexRoute: DashboardUserIndexRoute,
 }
 

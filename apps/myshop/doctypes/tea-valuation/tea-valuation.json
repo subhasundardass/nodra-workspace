@@ -1,7 +1,8 @@
 {
   "name": "TeaValuation",
   "module": "App",
-  "naming_rule": "autoincrement",
+  "naming_series": "TVFYYFMM###",
+  "naming_rule": "series",
   "title_field": "lot",
   "is_submittable": false,
   "is_child": false,
@@ -19,7 +20,7 @@
       "fieldname": "lot",
       "label": "Lot",
       "fieldtype": "Link",
-      "options": "Lot",
+      "options": "Lots",
       "reqd": true,
       "in_list_view": true,
       "in_standard_filter": true
@@ -69,7 +70,7 @@
       "fieldname": "final_grade",
       "label": "Final Grade",
       "fieldtype": "Link",
-      "options": "Tea Grades",
+      "options": "Grades",
       "reqd": true,
       "in_list_view": true,
       "in_standard_filter": true
