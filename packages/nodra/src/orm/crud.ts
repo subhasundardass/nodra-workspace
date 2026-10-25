@@ -1795,17 +1795,40 @@ export class ORM {
     row: Row,
     children: Row = {},
   ): Document {
-    const data = {
+    const data: Row = {
       ...row,
       ...children,
       _isNew: false,
     };
 
-    const doc = this.options.documentFactory
-      ? this.options.documentFactory(meta, data)
-      : new Document(meta, data);
+    // PostgreSQL NUMERIC values may arrive as strings.
+    // The framework validator expects JS numbers for numeric fields.
+    for (const field of meta.fields) {
+      if (
+        field.fieldtype !== "Int" &&
+        field.fieldtype !== "Float" &&
+        field.fieldtype !== "Currency"
+      ) {
+        continue;
+      }
 
+      const value = data[field.fieldname];
+
+      if (typeof value !== "string" || value.trim() === "") {
+        continue;
+      }
+
+      const numberValue = Number(value);
+
+      // Leave invalid values unchanged so validation can reject them.
+      if (Number.isFinite(numberValue)) {
+        data[field.fieldname] = numberValue;
+      }
+    }
+
+    const doc = new Document(meta, data);
     doc.markAsClean();
+
     return doc;
   }
 
