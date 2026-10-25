@@ -139,6 +139,14 @@ export interface ORMOptions {
   getSession?: () => SessionContext | undefined;
   /**Workflow Action Hook */
   workflowHooks?: WorkflowActionHooks;
+  /**
+   * Creates the registered controller for a DocType.
+   * Falls back to Document when no controller is registered.
+   */
+  documentFactory?: (
+    meta: DocTypeDefinition,
+    data: Record<string, unknown>,
+  ) => Document;
 }
 
 /** Shape read from doctype meta (all optional, cast so your schema type needs no change). */
@@ -1787,7 +1795,16 @@ export class ORM {
     row: Row,
     children: Row = {},
   ): Document {
-    const doc = new Document(meta, { ...row, ...children, _isNew: false });
+    const data = {
+      ...row,
+      ...children,
+      _isNew: false,
+    };
+
+    const doc = this.options.documentFactory
+      ? this.options.documentFactory(meta, data)
+      : new Document(meta, data);
+
     doc.markAsClean();
     return doc;
   }
