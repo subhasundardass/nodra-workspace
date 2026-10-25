@@ -40,6 +40,19 @@ export class ORMAuthUserRepository implements AuthUserRepository {
     }
   }
 
+  async updateLoginMetadata(
+    id: string,
+    lastLogin: Date,
+    lastIp: string | null,
+  ): Promise<void> {
+    const user = await this.orm.getDoc("User", id);
+
+    user.set("last_login", lastLogin);
+    user.set("last_ip", lastIp);
+
+    await this.orm.update(user);
+  }
+
   private toAuthUser(user: {
     get(fieldname: string): unknown;
     name: string;

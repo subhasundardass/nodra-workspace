@@ -103,6 +103,17 @@ export async function callMethod<TResult = unknown>(
   const result = await invokeMethod({ data: { method, args } });
 
   if (!result.ok) {
+    if (result.status === 403 && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("nodra:forbidden", {
+          detail: {
+            message: result.error,
+            method,
+          },
+        }),
+      );
+    }
+
     throw new MethodCallError(result.error, result.status, {
       details: result.details,
     });
