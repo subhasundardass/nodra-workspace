@@ -31,6 +31,9 @@ import { Route as DashboardMasterWarehousesRouteImport } from './routes/dashboar
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
+import { Route as DashboardPartyIndexRouteImport } from './routes/dashboard/party/index'
+import { Route as DashboardPartyNameRouteImport } from './routes/dashboard/party/$name'
+import { Route as DashboardPartyNewRouteImport } from './routes/dashboard/party/new'
 import { Route as DashboardTeaTestingIndexRouteImport } from './routes/dashboard/tea-testing/index'
 import { Route as DashboardTeaTestingNameRouteImport } from './routes/dashboard/tea-testing/$name'
 import { Route as DashboardTeaValuationIndexRouteImport } from './routes/dashboard/tea-valuation/index'
@@ -152,6 +155,21 @@ const DashboardOrdersIndexRoute = DashboardOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardPartyIndexRoute = DashboardPartyIndexRouteImport.update({
+  id: '/party/',
+  path: '/party/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardPartyNameRoute = DashboardPartyNameRouteImport.update({
+  id: '/party/$name',
+  path: '/party/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardPartyNewRoute = DashboardPartyNewRouteImport.update({
+  id: '/party/new',
+  path: '/party/new',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardTeaTestingIndexRoute =
   DashboardTeaTestingIndexRouteImport.update({
     id: '/tea-testing/',
@@ -210,6 +228,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/party/$name': typeof DashboardPartyNameRoute
+  '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -218,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
+  '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -240,6 +261,8 @@ export interface FileRoutesByTo {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/party/$name': typeof DashboardPartyNameRoute
+  '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -248,6 +271,7 @@ export interface FileRoutesByTo {
   '/auth/sign-up': typeof AuthSignUpIndexRoute
   '/dashboard/lot': typeof DashboardLotIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
+  '/dashboard/party': typeof DashboardPartyIndexRoute
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
@@ -272,6 +296,8 @@ export interface FileRoutesById {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/party/$name': typeof DashboardPartyNameRoute
+  '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -280,6 +306,7 @@ export interface FileRoutesById {
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
+  '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -305,6 +332,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/party/$name'
+    | '/dashboard/party/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -313,6 +342,7 @@ export interface FileRouteTypes {
     | '/auth/sign-up/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
+    | '/dashboard/party/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -335,6 +365,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/party/$name'
+    | '/dashboard/party/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -343,6 +375,7 @@ export interface FileRouteTypes {
     | '/auth/sign-up'
     | '/dashboard/lot'
     | '/dashboard/orders'
+    | '/dashboard/party'
     | '/dashboard/tea-testing'
     | '/dashboard/tea-valuation'
     | '/dashboard/user'
@@ -366,6 +399,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/party/$name'
+    | '/dashboard/party/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -374,6 +409,7 @@ export interface FileRouteTypes {
     | '/auth/sign-up/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
+    | '/dashboard/party/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -546,6 +582,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrdersIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/party/': {
+      id: '/dashboard/party/'
+      path: '/party'
+      fullPath: '/dashboard/party/'
+      preLoaderRoute: typeof DashboardPartyIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/party/$name': {
+      id: '/dashboard/party/$name'
+      path: '/party/$name'
+      fullPath: '/dashboard/party/$name'
+      preLoaderRoute: typeof DashboardPartyNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/party/new': {
+      id: '/dashboard/party/new'
+      path: '/party/new'
+      fullPath: '/dashboard/party/new'
+      preLoaderRoute: typeof DashboardPartyNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/tea-testing/': {
       id: '/dashboard/tea-testing/'
       path: '/tea-testing'
@@ -608,12 +665,15 @@ interface DashboardRouteRouteChildren {
   DashboardMasterWarehousesRoute: typeof DashboardMasterWarehousesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
+  DashboardPartyNameRoute: typeof DashboardPartyNameRoute
+  DashboardPartyNewRoute: typeof DashboardPartyNewRoute
   DashboardTeaTestingNameRoute: typeof DashboardTeaTestingNameRoute
   DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
   DashboardUserNewRoute: typeof DashboardUserNewRoute
   DashboardLotIndexRoute: typeof DashboardLotIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
+  DashboardPartyIndexRoute: typeof DashboardPartyIndexRoute
   DashboardTeaTestingIndexRoute: typeof DashboardTeaTestingIndexRoute
   DashboardTeaValuationIndexRoute: typeof DashboardTeaValuationIndexRoute
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
@@ -629,12 +689,15 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardMasterWarehousesRoute: DashboardMasterWarehousesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
+  DashboardPartyNameRoute: DashboardPartyNameRoute,
+  DashboardPartyNewRoute: DashboardPartyNewRoute,
   DashboardTeaTestingNameRoute: DashboardTeaTestingNameRoute,
   DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
   DashboardUserNewRoute: DashboardUserNewRoute,
   DashboardLotIndexRoute: DashboardLotIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
+  DashboardPartyIndexRoute: DashboardPartyIndexRoute,
   DashboardTeaTestingIndexRoute: DashboardTeaTestingIndexRoute,
   DashboardTeaValuationIndexRoute: DashboardTeaValuationIndexRoute,
   DashboardUserIndexRoute: DashboardUserIndexRoute,

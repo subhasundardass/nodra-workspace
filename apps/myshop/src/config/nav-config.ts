@@ -70,6 +70,11 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
+            title: "Party",
+            url: "/dashboard/party",
+            icon: "product",
+          },
+          {
             title: "Factories",
             url: "/dashboard/master/factories",
             icon: "product",
