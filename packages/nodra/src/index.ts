@@ -179,7 +179,7 @@ export {
   DefaultAppRegistry,
   DefaultAppInstaller,
   DependencyResolver,
-} from "./apps";
+} from "./app";
 
 export type {
   AppManifest,
@@ -190,7 +190,7 @@ export type {
   AppInstaller,
   AppRegistry,
   DependencyResolution,
-} from "./apps";
+} from "./app";
 
 // API Methods
 export {
