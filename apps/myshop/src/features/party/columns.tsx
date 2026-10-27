@@ -84,8 +84,6 @@ export function createColumns(
       enableSorting: true,
       cell: ({ row }) => {
         const roles = getRoles(row.original);
-        console.log("Party row:", row.original);
-        console.log("Party roles:", getRoles(row.original));
 
         return roles.length > 0 ? (
           <div className="flex flex-wrap gap-1">
