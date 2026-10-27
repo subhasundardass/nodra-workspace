@@ -6,20 +6,20 @@
  * internal call endpoint. Uses the raw Response/Web API directly since the
  * old json() helper (built for the REST layer) was removed along with it.
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { getNodra } from '../server/nodra-app';
+import { createFileRoute } from "@tanstack/react-router";
+import { getNodra } from "../server/nodra-app";
 
-export const Route = createFileRoute('/health')({
+export const Route = createFileRoute("/health")({
   server: {
     handlers: {
       GET: async () => {
         try {
           const app = await getNodra();
-          await app.db.query('SELECT 1');
-          return Response.json({ status: 'ok' });
+          await app.db.query("SELECT 1");
+          return Response.json({ status: "ok" });
         } catch (err) {
-          console.error({ err }, 'Health check failed');
-          return Response.json({ status: 'unhealthy' }, { status: 503 });
+          console.error({ err }, "Health check failed");
+          return Response.json({ status: "unhealthy" }, { status: 503 });
         }
       },
     },

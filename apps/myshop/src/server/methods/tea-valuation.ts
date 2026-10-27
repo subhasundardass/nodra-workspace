@@ -14,11 +14,7 @@ import { serialise } from "../http";
 type RecordData = Record<string, unknown>;
 
 function isRecord(value: unknown): value is RecordData {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    !Array.isArray(value)
-  );
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function getRequiredName(value: unknown): string {
@@ -31,9 +27,7 @@ function getRequiredName(value: unknown): string {
   return name;
 }
 
-export function registerTeaValuationMethods(
-  registry: MethodRegistry,
-): void {
+export function registerTeaValuationMethods(registry: MethodRegistry): void {
   registry.register(
     "tea-valuation.get",
     async (ctx) => {
@@ -66,8 +60,7 @@ export function registerTeaValuationMethods(
 
       const fields = Array.isArray(args.fields)
         ? args.fields.filter(
-            (field): field is string =>
-              typeof field === "string",
+            (field): field is string => typeof field === "string",
           )
         : undefined;
 
@@ -89,9 +82,7 @@ export function registerTeaValuationMethods(
         offset,
         ...(fields ? { fields } : {}),
         ...(filters ? { filters } : {}),
-        ...(typeof args.orderBy === "string"
-          ? { orderBy: args.orderBy }
-          : {}),
+        ...(typeof args.orderBy === "string" ? { orderBy: args.orderBy } : {}),
       };
 
       const [docs, totalCount] = await Promise.all([
@@ -122,10 +113,7 @@ export function registerTeaValuationMethods(
 
       const app = await getNodra();
       const meta = app.registry.get("TeaValuation");
-      const doc = new TeaValuation(
-        meta,
-        data,
-      );
+      const doc = new TeaValuation(meta, data);
 
       const inserted = await app.orm.insert(doc);
 

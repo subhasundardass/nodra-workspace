@@ -21,6 +21,9 @@ import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overvi
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignUpIndexRouteImport } from './routes/auth/sign-up/index'
+import { Route as DashboardDispatchesIndexRouteImport } from './routes/dashboard/dispatches/index'
+import { Route as DashboardDispatchesNameRouteImport } from './routes/dashboard/dispatches/$name'
+import { Route as DashboardDispatchesNewRouteImport } from './routes/dashboard/dispatches/new'
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
 import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
@@ -34,6 +37,21 @@ import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/ord
 import { Route as DashboardPartyIndexRouteImport } from './routes/dashboard/party/index'
 import { Route as DashboardPartyNameRouteImport } from './routes/dashboard/party/$name'
 import { Route as DashboardPartyNewRouteImport } from './routes/dashboard/party/new'
+import { Route as DashboardPaymentReceiptsIndexRouteImport } from './routes/dashboard/payment-receipts/index'
+import { Route as DashboardPaymentReceiptsNameRouteImport } from './routes/dashboard/payment-receipts/$name'
+import { Route as DashboardPaymentReceiptsNewRouteImport } from './routes/dashboard/payment-receipts/new'
+import { Route as DashboardSalesInvoicesIndexRouteImport } from './routes/dashboard/sales-invoices/index'
+import { Route as DashboardSalesInvoicesNameRouteImport } from './routes/dashboard/sales-invoices/$name'
+import { Route as DashboardSalesInvoicesNewRouteImport } from './routes/dashboard/sales-invoices/new'
+import { Route as DashboardSalesOrdersIndexRouteImport } from './routes/dashboard/sales-orders/index'
+import { Route as DashboardSalesOrdersNameRouteImport } from './routes/dashboard/sales-orders/$name'
+import { Route as DashboardSalesOrdersNewRouteImport } from './routes/dashboard/sales-orders/new'
+import { Route as DashboardSalesReturnsIndexRouteImport } from './routes/dashboard/sales-returns/index'
+import { Route as DashboardSalesReturnsNameRouteImport } from './routes/dashboard/sales-returns/$name'
+import { Route as DashboardSalesReturnsNewRouteImport } from './routes/dashboard/sales-returns/new'
+import { Route as DashboardStockMovementsIndexRouteImport } from './routes/dashboard/stock-movements/index'
+import { Route as DashboardStockMovementsNameRouteImport } from './routes/dashboard/stock-movements/$name'
+import { Route as DashboardStockMovementsNewRouteImport } from './routes/dashboard/stock-movements/new'
 import { Route as DashboardTeaTestingIndexRouteImport } from './routes/dashboard/tea-testing/index'
 import { Route as DashboardTeaTestingNameRouteImport } from './routes/dashboard/tea-testing/$name'
 import { Route as DashboardTeaValuationIndexRouteImport } from './routes/dashboard/tea-valuation/index'
@@ -101,6 +119,22 @@ const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardDispatchesIndexRoute =
+  DashboardDispatchesIndexRouteImport.update({
+    id: '/dispatches/',
+    path: '/dispatches/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardDispatchesNameRoute = DashboardDispatchesNameRouteImport.update({
+  id: '/dispatches/$name',
+  path: '/dispatches/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardDispatchesNewRoute = DashboardDispatchesNewRouteImport.update({
+  id: '/dispatches/new',
+  path: '/dispatches/new',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardLotIndexRoute = DashboardLotIndexRouteImport.update({
   id: '/lot/',
@@ -170,6 +204,95 @@ const DashboardPartyNewRoute = DashboardPartyNewRouteImport.update({
   path: '/party/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardPaymentReceiptsIndexRoute =
+  DashboardPaymentReceiptsIndexRouteImport.update({
+    id: '/payment-receipts/',
+    path: '/payment-receipts/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPaymentReceiptsNameRoute =
+  DashboardPaymentReceiptsNameRouteImport.update({
+    id: '/payment-receipts/$name',
+    path: '/payment-receipts/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardPaymentReceiptsNewRoute =
+  DashboardPaymentReceiptsNewRouteImport.update({
+    id: '/payment-receipts/new',
+    path: '/payment-receipts/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesInvoicesIndexRoute =
+  DashboardSalesInvoicesIndexRouteImport.update({
+    id: '/sales-invoices/',
+    path: '/sales-invoices/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesInvoicesNameRoute =
+  DashboardSalesInvoicesNameRouteImport.update({
+    id: '/sales-invoices/$name',
+    path: '/sales-invoices/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesInvoicesNewRoute =
+  DashboardSalesInvoicesNewRouteImport.update({
+    id: '/sales-invoices/new',
+    path: '/sales-invoices/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesOrdersIndexRoute =
+  DashboardSalesOrdersIndexRouteImport.update({
+    id: '/sales-orders/',
+    path: '/sales-orders/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesOrdersNameRoute =
+  DashboardSalesOrdersNameRouteImport.update({
+    id: '/sales-orders/$name',
+    path: '/sales-orders/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesOrdersNewRoute = DashboardSalesOrdersNewRouteImport.update({
+  id: '/sales-orders/new',
+  path: '/sales-orders/new',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSalesReturnsIndexRoute =
+  DashboardSalesReturnsIndexRouteImport.update({
+    id: '/sales-returns/',
+    path: '/sales-returns/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesReturnsNameRoute =
+  DashboardSalesReturnsNameRouteImport.update({
+    id: '/sales-returns/$name',
+    path: '/sales-returns/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardSalesReturnsNewRoute =
+  DashboardSalesReturnsNewRouteImport.update({
+    id: '/sales-returns/new',
+    path: '/sales-returns/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardStockMovementsIndexRoute =
+  DashboardStockMovementsIndexRouteImport.update({
+    id: '/stock-movements/',
+    path: '/stock-movements/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardStockMovementsNameRoute =
+  DashboardStockMovementsNameRouteImport.update({
+    id: '/stock-movements/$name',
+    path: '/stock-movements/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardStockMovementsNewRoute =
+  DashboardStockMovementsNewRouteImport.update({
+    id: '/stock-movements/new',
+    path: '/stock-movements/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardTeaTestingIndexRoute =
   DashboardTeaTestingIndexRouteImport.update({
     id: '/tea-testing/',
@@ -220,6 +343,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
+  '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -230,15 +355,31 @@ export interface FileRoutesByFullPath {
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
+  '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
+  '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
+  '/dashboard/sales-invoices/$name': typeof DashboardSalesInvoicesNameRoute
+  '/dashboard/sales-invoices/new': typeof DashboardSalesInvoicesNewRoute
+  '/dashboard/sales-orders/$name': typeof DashboardSalesOrdersNameRoute
+  '/dashboard/sales-orders/new': typeof DashboardSalesOrdersNewRoute
+  '/dashboard/sales-returns/$name': typeof DashboardSalesReturnsNameRoute
+  '/dashboard/sales-returns/new': typeof DashboardSalesReturnsNewRoute
+  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
+  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
+  '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/sales-invoices/': typeof DashboardSalesInvoicesIndexRoute
+  '/dashboard/sales-orders/': typeof DashboardSalesOrdersIndexRoute
+  '/dashboard/sales-returns/': typeof DashboardSalesReturnsIndexRoute
+  '/dashboard/stock-movements/': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -253,6 +394,8 @@ export interface FileRoutesByTo {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
+  '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -263,15 +406,31 @@ export interface FileRoutesByTo {
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
+  '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
+  '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
+  '/dashboard/sales-invoices/$name': typeof DashboardSalesInvoicesNameRoute
+  '/dashboard/sales-invoices/new': typeof DashboardSalesInvoicesNewRoute
+  '/dashboard/sales-orders/$name': typeof DashboardSalesOrdersNameRoute
+  '/dashboard/sales-orders/new': typeof DashboardSalesOrdersNewRoute
+  '/dashboard/sales-returns/$name': typeof DashboardSalesReturnsNameRoute
+  '/dashboard/sales-returns/new': typeof DashboardSalesReturnsNewRoute
+  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
+  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
+  '/dashboard/dispatches': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot': typeof DashboardLotIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/party': typeof DashboardPartyIndexRoute
+  '/dashboard/payment-receipts': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/sales-invoices': typeof DashboardSalesInvoicesIndexRoute
+  '/dashboard/sales-orders': typeof DashboardSalesOrdersIndexRoute
+  '/dashboard/sales-returns': typeof DashboardSalesReturnsIndexRoute
+  '/dashboard/stock-movements': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
@@ -288,6 +447,8 @@ export interface FileRoutesById {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
+  '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -298,15 +459,31 @@ export interface FileRoutesById {
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
+  '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
+  '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
+  '/dashboard/sales-invoices/$name': typeof DashboardSalesInvoicesNameRoute
+  '/dashboard/sales-invoices/new': typeof DashboardSalesInvoicesNewRoute
+  '/dashboard/sales-orders/$name': typeof DashboardSalesOrdersNameRoute
+  '/dashboard/sales-orders/new': typeof DashboardSalesOrdersNewRoute
+  '/dashboard/sales-returns/$name': typeof DashboardSalesReturnsNameRoute
+  '/dashboard/sales-returns/new': typeof DashboardSalesReturnsNewRoute
+  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
+  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
+  '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/sales-invoices/': typeof DashboardSalesInvoicesIndexRoute
+  '/dashboard/sales-orders/': typeof DashboardSalesOrdersIndexRoute
+  '/dashboard/sales-returns/': typeof DashboardSalesReturnsIndexRoute
+  '/dashboard/stock-movements/': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -324,6 +501,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/dispatches/$name'
+    | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -334,15 +513,31 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/methods'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
+    | '/dashboard/payment-receipts/$name'
+    | '/dashboard/payment-receipts/new'
+    | '/dashboard/sales-invoices/$name'
+    | '/dashboard/sales-invoices/new'
+    | '/dashboard/sales-orders/$name'
+    | '/dashboard/sales-orders/new'
+    | '/dashboard/sales-returns/$name'
+    | '/dashboard/sales-returns/new'
+    | '/dashboard/stock-movements/$name'
+    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/dispatches/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
     | '/dashboard/party/'
+    | '/dashboard/payment-receipts/'
+    | '/dashboard/sales-invoices/'
+    | '/dashboard/sales-orders/'
+    | '/dashboard/sales-returns/'
+    | '/dashboard/stock-movements/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -357,6 +552,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth'
     | '/api/method/$methodPath'
+    | '/dashboard/dispatches/$name'
+    | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -367,15 +564,31 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/methods'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
+    | '/dashboard/payment-receipts/$name'
+    | '/dashboard/payment-receipts/new'
+    | '/dashboard/sales-invoices/$name'
+    | '/dashboard/sales-invoices/new'
+    | '/dashboard/sales-orders/$name'
+    | '/dashboard/sales-orders/new'
+    | '/dashboard/sales-returns/$name'
+    | '/dashboard/sales-returns/new'
+    | '/dashboard/stock-movements/$name'
+    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/dashboard/dispatches'
     | '/dashboard/lot'
     | '/dashboard/orders'
     | '/dashboard/party'
+    | '/dashboard/payment-receipts'
+    | '/dashboard/sales-invoices'
+    | '/dashboard/sales-orders'
+    | '/dashboard/sales-returns'
+    | '/dashboard/stock-movements'
     | '/dashboard/tea-testing'
     | '/dashboard/tea-valuation'
     | '/dashboard/user'
@@ -391,6 +604,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/dispatches/$name'
+    | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -401,15 +616,31 @@ export interface FileRouteTypes {
     | '/dashboard/nodra/methods'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
+    | '/dashboard/payment-receipts/$name'
+    | '/dashboard/payment-receipts/new'
+    | '/dashboard/sales-invoices/$name'
+    | '/dashboard/sales-invoices/new'
+    | '/dashboard/sales-orders/$name'
+    | '/dashboard/sales-orders/new'
+    | '/dashboard/sales-returns/$name'
+    | '/dashboard/sales-returns/new'
+    | '/dashboard/stock-movements/$name'
+    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/dispatches/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
     | '/dashboard/party/'
+    | '/dashboard/payment-receipts/'
+    | '/dashboard/sales-invoices/'
+    | '/dashboard/sales-orders/'
+    | '/dashboard/sales-returns/'
+    | '/dashboard/stock-movements/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -512,6 +743,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpIndexRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/dashboard/dispatches/': {
+      id: '/dashboard/dispatches/'
+      path: '/dispatches'
+      fullPath: '/dashboard/dispatches/'
+      preLoaderRoute: typeof DashboardDispatchesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/dispatches/$name': {
+      id: '/dashboard/dispatches/$name'
+      path: '/dispatches/$name'
+      fullPath: '/dashboard/dispatches/$name'
+      preLoaderRoute: typeof DashboardDispatchesNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/dispatches/new': {
+      id: '/dashboard/dispatches/new'
+      path: '/dispatches/new'
+      fullPath: '/dashboard/dispatches/new'
+      preLoaderRoute: typeof DashboardDispatchesNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/lot/': {
       id: '/dashboard/lot/'
       path: '/lot'
@@ -603,6 +855,111 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPartyNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/payment-receipts/': {
+      id: '/dashboard/payment-receipts/'
+      path: '/payment-receipts'
+      fullPath: '/dashboard/payment-receipts/'
+      preLoaderRoute: typeof DashboardPaymentReceiptsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/payment-receipts/$name': {
+      id: '/dashboard/payment-receipts/$name'
+      path: '/payment-receipts/$name'
+      fullPath: '/dashboard/payment-receipts/$name'
+      preLoaderRoute: typeof DashboardPaymentReceiptsNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/payment-receipts/new': {
+      id: '/dashboard/payment-receipts/new'
+      path: '/payment-receipts/new'
+      fullPath: '/dashboard/payment-receipts/new'
+      preLoaderRoute: typeof DashboardPaymentReceiptsNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-invoices/': {
+      id: '/dashboard/sales-invoices/'
+      path: '/sales-invoices'
+      fullPath: '/dashboard/sales-invoices/'
+      preLoaderRoute: typeof DashboardSalesInvoicesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-invoices/$name': {
+      id: '/dashboard/sales-invoices/$name'
+      path: '/sales-invoices/$name'
+      fullPath: '/dashboard/sales-invoices/$name'
+      preLoaderRoute: typeof DashboardSalesInvoicesNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-invoices/new': {
+      id: '/dashboard/sales-invoices/new'
+      path: '/sales-invoices/new'
+      fullPath: '/dashboard/sales-invoices/new'
+      preLoaderRoute: typeof DashboardSalesInvoicesNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-orders/': {
+      id: '/dashboard/sales-orders/'
+      path: '/sales-orders'
+      fullPath: '/dashboard/sales-orders/'
+      preLoaderRoute: typeof DashboardSalesOrdersIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-orders/$name': {
+      id: '/dashboard/sales-orders/$name'
+      path: '/sales-orders/$name'
+      fullPath: '/dashboard/sales-orders/$name'
+      preLoaderRoute: typeof DashboardSalesOrdersNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-orders/new': {
+      id: '/dashboard/sales-orders/new'
+      path: '/sales-orders/new'
+      fullPath: '/dashboard/sales-orders/new'
+      preLoaderRoute: typeof DashboardSalesOrdersNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-returns/': {
+      id: '/dashboard/sales-returns/'
+      path: '/sales-returns'
+      fullPath: '/dashboard/sales-returns/'
+      preLoaderRoute: typeof DashboardSalesReturnsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-returns/$name': {
+      id: '/dashboard/sales-returns/$name'
+      path: '/sales-returns/$name'
+      fullPath: '/dashboard/sales-returns/$name'
+      preLoaderRoute: typeof DashboardSalesReturnsNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/sales-returns/new': {
+      id: '/dashboard/sales-returns/new'
+      path: '/sales-returns/new'
+      fullPath: '/dashboard/sales-returns/new'
+      preLoaderRoute: typeof DashboardSalesReturnsNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/stock-movements/': {
+      id: '/dashboard/stock-movements/'
+      path: '/stock-movements'
+      fullPath: '/dashboard/stock-movements/'
+      preLoaderRoute: typeof DashboardStockMovementsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/stock-movements/$name': {
+      id: '/dashboard/stock-movements/$name'
+      path: '/stock-movements/$name'
+      fullPath: '/dashboard/stock-movements/$name'
+      preLoaderRoute: typeof DashboardStockMovementsNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/stock-movements/new': {
+      id: '/dashboard/stock-movements/new'
+      path: '/stock-movements/new'
+      fullPath: '/dashboard/stock-movements/new'
+      preLoaderRoute: typeof DashboardStockMovementsNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/tea-testing/': {
       id: '/dashboard/tea-testing/'
       path: '/tea-testing'
@@ -657,6 +1014,8 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardDispatchesNameRoute: typeof DashboardDispatchesNameRoute
+  DashboardDispatchesNewRoute: typeof DashboardDispatchesNewRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
   DashboardMasterBrandsRoute: typeof DashboardMasterBrandsRoute
@@ -667,13 +1026,29 @@ interface DashboardRouteRouteChildren {
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
   DashboardPartyNameRoute: typeof DashboardPartyNameRoute
   DashboardPartyNewRoute: typeof DashboardPartyNewRoute
+  DashboardPaymentReceiptsNameRoute: typeof DashboardPaymentReceiptsNameRoute
+  DashboardPaymentReceiptsNewRoute: typeof DashboardPaymentReceiptsNewRoute
+  DashboardSalesInvoicesNameRoute: typeof DashboardSalesInvoicesNameRoute
+  DashboardSalesInvoicesNewRoute: typeof DashboardSalesInvoicesNewRoute
+  DashboardSalesOrdersNameRoute: typeof DashboardSalesOrdersNameRoute
+  DashboardSalesOrdersNewRoute: typeof DashboardSalesOrdersNewRoute
+  DashboardSalesReturnsNameRoute: typeof DashboardSalesReturnsNameRoute
+  DashboardSalesReturnsNewRoute: typeof DashboardSalesReturnsNewRoute
+  DashboardStockMovementsNameRoute: typeof DashboardStockMovementsNameRoute
+  DashboardStockMovementsNewRoute: typeof DashboardStockMovementsNewRoute
   DashboardTeaTestingNameRoute: typeof DashboardTeaTestingNameRoute
   DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
   DashboardUserNewRoute: typeof DashboardUserNewRoute
+  DashboardDispatchesIndexRoute: typeof DashboardDispatchesIndexRoute
   DashboardLotIndexRoute: typeof DashboardLotIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardPartyIndexRoute: typeof DashboardPartyIndexRoute
+  DashboardPaymentReceiptsIndexRoute: typeof DashboardPaymentReceiptsIndexRoute
+  DashboardSalesInvoicesIndexRoute: typeof DashboardSalesInvoicesIndexRoute
+  DashboardSalesOrdersIndexRoute: typeof DashboardSalesOrdersIndexRoute
+  DashboardSalesReturnsIndexRoute: typeof DashboardSalesReturnsIndexRoute
+  DashboardStockMovementsIndexRoute: typeof DashboardStockMovementsIndexRoute
   DashboardTeaTestingIndexRoute: typeof DashboardTeaTestingIndexRoute
   DashboardTeaValuationIndexRoute: typeof DashboardTeaValuationIndexRoute
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
@@ -681,6 +1056,8 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardDispatchesNameRoute: DashboardDispatchesNameRoute,
+  DashboardDispatchesNewRoute: DashboardDispatchesNewRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
   DashboardMasterBrandsRoute: DashboardMasterBrandsRoute,
@@ -691,13 +1068,29 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
   DashboardPartyNameRoute: DashboardPartyNameRoute,
   DashboardPartyNewRoute: DashboardPartyNewRoute,
+  DashboardPaymentReceiptsNameRoute: DashboardPaymentReceiptsNameRoute,
+  DashboardPaymentReceiptsNewRoute: DashboardPaymentReceiptsNewRoute,
+  DashboardSalesInvoicesNameRoute: DashboardSalesInvoicesNameRoute,
+  DashboardSalesInvoicesNewRoute: DashboardSalesInvoicesNewRoute,
+  DashboardSalesOrdersNameRoute: DashboardSalesOrdersNameRoute,
+  DashboardSalesOrdersNewRoute: DashboardSalesOrdersNewRoute,
+  DashboardSalesReturnsNameRoute: DashboardSalesReturnsNameRoute,
+  DashboardSalesReturnsNewRoute: DashboardSalesReturnsNewRoute,
+  DashboardStockMovementsNameRoute: DashboardStockMovementsNameRoute,
+  DashboardStockMovementsNewRoute: DashboardStockMovementsNewRoute,
   DashboardTeaTestingNameRoute: DashboardTeaTestingNameRoute,
   DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
   DashboardUserNewRoute: DashboardUserNewRoute,
+  DashboardDispatchesIndexRoute: DashboardDispatchesIndexRoute,
   DashboardLotIndexRoute: DashboardLotIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardPartyIndexRoute: DashboardPartyIndexRoute,
+  DashboardPaymentReceiptsIndexRoute: DashboardPaymentReceiptsIndexRoute,
+  DashboardSalesInvoicesIndexRoute: DashboardSalesInvoicesIndexRoute,
+  DashboardSalesOrdersIndexRoute: DashboardSalesOrdersIndexRoute,
+  DashboardSalesReturnsIndexRoute: DashboardSalesReturnsIndexRoute,
+  DashboardStockMovementsIndexRoute: DashboardStockMovementsIndexRoute,
   DashboardTeaTestingIndexRoute: DashboardTeaTestingIndexRoute,
   DashboardTeaValuationIndexRoute: DashboardTeaValuationIndexRoute,
   DashboardUserIndexRoute: DashboardUserIndexRoute,
