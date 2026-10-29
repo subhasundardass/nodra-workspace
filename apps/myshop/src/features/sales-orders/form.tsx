@@ -27,11 +27,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { callMethod } from "@/lib/call-method";
 import { LotSelectPopup } from "./lot-select-popup";
+import { LinkField } from "@/components/doctype/fields/link-field";
+import { Label } from "@/components/ui/label";
 
 export type SalesOrderParty = {
   name: string;
   title?: string;
   is_buyer?: boolean | number | string;
+  is_agent?: boolean | number | string;
+
   is_active?: boolean | number | string;
 };
 
@@ -104,13 +108,7 @@ type LotOption = SalesOrderLot & {
   availableBags: number;
 };
 
-const SALES_CHANNELS = [
-  "Direct Sale",
-  "Auction House",
-  "MNC",
-  "Warehouse Sale",
-  "Other",
-];
+const SALES_CHANNELS = ["Direct Sale", "MNC", "Warehouse Sale", "Other"];
 
 function isEnabled(value: unknown): boolean {
   return value === true || value === 1 || value === "1" || value === "true";
@@ -188,7 +186,9 @@ export function SalesOrderForm({
   const activeParties = useMemo(
     () =>
       parties.filter(
-        (item) => isEnabled(item.is_active) && isEnabled(item.is_buyer),
+        (item) =>
+          isEnabled(item.is_active) &&
+          (isEnabled(item.is_buyer) || isEnabled(item.is_agent)),
       ),
     [parties],
   );
@@ -446,6 +446,32 @@ export function SalesOrderForm({
     });
   }
 
+  const filteredParties = useMemo(
+    () =>
+      activeParties.filter((item) => {
+        switch (salesChannel) {
+          case "Direct Sale":
+            return isEnabled(item.is_buyer) || isEnabled(item.is_agent);
+
+          case "Auction House":
+            return isEnabled(item.is_buyer) || isEnabled(item.is_agent);
+
+          case "MNC":
+            return isEnabled(item.is_buyer);
+
+          case "Warehouse Sale":
+            return isEnabled(item.is_buyer);
+
+          case "Other":
+            return isEnabled(item.is_buyer);
+
+          default:
+            return false;
+        }
+      }),
+    [activeParties, salesChannel],
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -535,72 +561,55 @@ export function SalesOrderForm({
               </label>
 
               {/* Buyer / Party — wider */}
-              <label className="min-w-0 xl:col-span-4">
+              {/* Buyer / Party */}
+              <div className="min-w-0 xl:col-span-4">
                 <FieldLabel required>Buyer / Party</FieldLabel>
-                <select
+
+                <LinkField
+                  doctype="Party"
                   value={party}
-                  onChange={(event) => {
-                    setParty(event.target.value);
+                  onChange={(value) => {
+                    setParty(value);
                     setItems([]);
                     setSelectedLots([]);
                   }}
                   disabled={!salesChannel}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">
-                    {!salesChannel
+                  placeholder={
+                    !salesChannel
                       ? "Select a sales channel first"
                       : salesChannel === "MNC"
                         ? "Select MNC company"
-                        : "Select buyer / party"}
-                  </option>
-
-                  {activeParties
-                    .filter((item) => {
-                      // if (salesChannel === "MNC") {
-                      //   return (
-                      //     item.is_buyer && /mnc/i.test(item.party_type || "")
-                      //   );
-                      // }
-
-                      // if (salesChannel === "Direct") {
-                      //   return item.is_buyer || item.is_agent;
-                      // }
-
-                      // if (salesChannel === "Auction House") {
-                      //   return item.is_buyer || item.is_agent;
-                      // }
-
-                      return item.is_buyer;
-                    })
-                    .map((item) => (
-                      <option key={item.name} value={item.name}>
-                        {item.title || item.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
+                        : salesChannel === "Auction House"
+                          ? "Select buyer"
+                          : "Select buyer / party"
+                  }
+                  filters={{
+                    is_active: true,
+                    ...(salesChannel === "Direct Sale"
+                      ? {}
+                      : { is_buyer: true }),
+                  }}
+                />
+              </div>
 
               {/* Warehouse — wider */}
-              <label className="min-w-0 xl:col-span-4">
+              <div className="min-w-0 xl:col-span-4">
                 <FieldLabel required>Warehouse</FieldLabel>
-                <select
+
+                <LinkField
+                  doctype="Warehouse"
                   value={warehouse}
-                  onChange={(event) => {
-                    setWarehouse(event.target.value);
+                  onChange={(value) => {
+                    setWarehouse(value);
                     setItems([]);
                     setSelectedLots([]);
                   }}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <option value="">Select warehouse</option>
-                  {activeWarehouses.map((item) => (
-                    <option key={item.name} value={item.name}>
-                      {item.title || item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  placeholder="Select warehouse"
+                  filters={{
+                    is_active: true,
+                  }}
+                />
+              </div>
             </div>
           </section>
 
