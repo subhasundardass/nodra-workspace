@@ -36,3 +36,5 @@ cookies.txt
 pnpm-lock.yaml
 apps/myshop/.nitro/types/nitro-imports.d.ts
 apps/myshop/src/routeTree.gen.ts
+docker.zip
+docker.zip
