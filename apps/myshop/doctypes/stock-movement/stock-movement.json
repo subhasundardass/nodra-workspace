@@ -67,11 +67,6 @@
       "in_list_view": true
     },
     {
-      "fieldname": "transport_details",
-      "fieldtype": "Section Break",
-      "label": "Transport Details"
-    },
-    {
       "fieldname": "transporter",
       "fieldtype": "Link",
       "label": "Transporter",
