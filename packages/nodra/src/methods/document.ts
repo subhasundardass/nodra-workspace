@@ -67,13 +67,48 @@ export interface DocumentMethodApp {
   };
 }
 
+// function assertPermission(
+//   meta: DocTypeDefinition,
+//   action: PermissionAction,
+//   user: MethodUser,
+//   owner?: string,
+// ): void {
+//   if (!user || !hasPermission(meta, action, user, owner)) {
+//     throw new PermissionError(
+//       meta.name,
+//       action,
+//       `You do not have permission to ${action} ${meta.name}`,
+//     );
+//   }
+// }
+
 function assertPermission(
   meta: DocTypeDefinition,
   action: PermissionAction,
   user: MethodUser,
   owner?: string,
 ): void {
+  const matchedPermissions =
+    meta.permissions?.filter((perm) => user?.roles.includes(perm.role)) ?? [];
+
+  console.log("[PERMISSION DEBUG]", {
+    doctype: meta.name,
+    action,
+    userEmail: user?.email ?? null,
+    userRoles: user?.roles ?? [],
+    definedRoles: meta.permissions?.map((perm) => perm.role) ?? [],
+    matchedPermissions,
+  });
+
   if (!user || !hasPermission(meta, action, user, owner)) {
+    console.error("[PERMISSION DENIED]", {
+      doctype: meta.name,
+      action,
+      userEmail: user?.email ?? null,
+      userRoles: user?.roles ?? [],
+      matchedPermissions,
+    });
+
     throw new PermissionError(
       meta.name,
       action,

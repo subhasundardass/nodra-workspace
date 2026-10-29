@@ -12,29 +12,15 @@ export function createColumns(): ColumnDef<Brand>[] {
       ),
     },
     {
-      accessorKey: "brand_type",
-      header: "Brand Type",
-      cell: ({ row }) => row.original.brand_type,
+      accessorKey: "factory",
+      header: "Factory",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.factory || "—"}
+        </span>
+      ),
     },
-    {
-      accessorKey: "is_active",
-      header: "Status",
-      cell: ({ row }) => {
-        const isActive = row.original.is_active;
 
-        return (
-          <span
-            className={
-              isActive
-                ? "inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700"
-                : "inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
-            }
-          >
-            {isActive ? "Active" : "Inactive"}
-          </span>
-        );
-      },
-    },
     {
       accessorKey: "description",
       header: "Description",
@@ -43,6 +29,27 @@ export function createColumns(): ColumnDef<Brand>[] {
           {row.original.description || "—"}
         </span>
       ),
+    },
+    {
+      accessorKey: "is_active",
+      header: () => <div className="text-right">Is Active</div>,
+      cell: ({ row }) => {
+        const isActive = row.original.is_active;
+
+        return (
+          <div className="flex justify-end">
+            <span
+              className={
+                isActive
+                  ? "inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700"
+                  : "inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+              }
+            >
+              {isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+        );
+      },
     },
   ];
 }

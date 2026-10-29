@@ -106,6 +106,23 @@ export function LotForm({ form }: LotFormProps) {
         )}
       </form.Field>
 
+      <form.Field name="id">
+        {(field) => (
+          <FieldRow label="ID" htmlFor={field.name}>
+            <Input
+              id={field.name}
+              name={field.name}
+              type="text"
+              value={String(field.state.value ?? "")}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
+              placeholder="Enter ID"
+              className="bg-background text-right shadow-none"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+
       <form.Field name="lot_no">
         {(field) => (
           <FieldRow label="Lot No" htmlFor={field.name} required>
@@ -152,6 +169,48 @@ export function LotForm({ form }: LotFormProps) {
       <form.Field name="bags">
         {(field) => (
           <FieldRow label="Bags" htmlFor={field.name} required>
+            <Input
+              id={field.name}
+              name={field.name}
+              type="number"
+              min={0}
+              value={String(field.state.value ?? 0)}
+              onBlur={field.handleBlur}
+              onChange={(event) =>
+                field.handleChange(
+                  event.target.value === "" ? 0 : Number(event.target.value),
+                )
+              }
+              className="bg-background text-right shadow-none"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+
+      <form.Field name="bag_from_serial_no">
+        {(field) => (
+          <FieldRow label="Bag From Sl. No" htmlFor={field.name}>
+            <Input
+              id={field.name}
+              name={field.name}
+              type="number"
+              min={0}
+              value={String(field.state.value ?? 0)}
+              onBlur={field.handleBlur}
+              onChange={(event) =>
+                field.handleChange(
+                  event.target.value === "" ? 0 : Number(event.target.value),
+                )
+              }
+              className="bg-background text-right shadow-none"
+            />
+          </FieldRow>
+        )}
+      </form.Field>
+
+      <form.Field name="bag_to_serial_no">
+        {(field) => (
+          <FieldRow label="Bag To SL. No" htmlFor={field.name}>
             <Input
               id={field.name}
               name={field.name}

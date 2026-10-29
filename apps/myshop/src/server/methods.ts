@@ -65,7 +65,6 @@ async function resolveMethodIdentity(
   if (!user.get("enabled")) return null;
 
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
-
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
 
   return {

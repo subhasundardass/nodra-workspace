@@ -15,7 +15,7 @@ import BrandFormSheet, { type BrandFormValues } from "./form";
 export interface Brand {
   name: string;
   title: string;
-  brand_type: "Factory" | "Company";
+  factory?: string | null;
   is_active: boolean;
   description?: string | null;
 }
