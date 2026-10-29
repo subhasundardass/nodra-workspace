@@ -161,7 +161,7 @@ export function PartyForm({ form }: PartyFormProps) {
           )}
         </form.Field>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-1">
           <form.Field name="address">
             {(field) => (
               <div className="space-y-2">
@@ -182,7 +182,7 @@ export function PartyForm({ form }: PartyFormProps) {
           </form.Field>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-1">
           <form.Field name="notes">
             {(field) => (
               <div className="space-y-2">

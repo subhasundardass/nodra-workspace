@@ -1,33 +1,48 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@import 'tw-animate-css';
+@import "tw-animate-css";
 
 /* Fontsource font imports */
-@import '@fontsource/geist-sans';
-@import '@fontsource/geist-mono';
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/dm-sans';
-@import '@fontsource-variable/instrument-sans';
-@import '@fontsource-variable/mulish';
-@import '@fontsource-variable/outfit';
-@import '@fontsource-variable/playfair-display';
-@import '@fontsource/merriweather/300.css';
-@import '@fontsource/merriweather/400.css';
-@import '@fontsource/merriweather/700.css';
-@import '@fontsource/architects-daughter/400.css';
-@import '@fontsource-variable/fira-code';
-@import '@fontsource-variable/jetbrains-mono';
-@import '@fontsource-variable/noto-sans-mono';
-@import '@fontsource/space-mono/400.css';
-@import '@fontsource/space-mono/700.css';
+@import "@fontsource/geist-sans";
+@import "@fontsource/geist-mono";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/mulish";
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/playfair-display";
+@import "@fontsource/merriweather/300.css";
+@import "@fontsource/merriweather/400.css";
+@import "@fontsource/merriweather/700.css";
+@import "@fontsource/architects-daughter/400.css";
+@import "@fontsource-variable/fira-code";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/noto-sans-mono";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
-@import './theme.css';
+@import "./theme.css";
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    a,
+    button,
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    summary {
+      cursor: pointer;
+    }
+    button:disabled,
+    [role="button"][aria-disabled="true"],
+    input:disabled,
+    select:disabled {
+      cursor: not-allowed;
+    }
   }
   body {
     @apply bg-background text-foreground;
@@ -99,13 +114,19 @@
     height: 0;
   }
   to {
-    height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
   }
 }
 
 @keyframes accordion-up {
   from {
-    height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
   }
   to {
     height: 0;

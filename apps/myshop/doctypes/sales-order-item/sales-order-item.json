@@ -1,0 +1,90 @@
+{
+  "name": "SalesOrderItem",
+  "module": "App",
+  "description": "A tea lot and its ordered quantity, agreed rate, and line amount within a Sales Order.",
+  "naming_rule": "autoincrement",
+  "is_submittable": false,
+  "is_child": true,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot"
+  ],
+  "fields": [
+    {
+      "fieldname": "lot",
+      "fieldtype": "Link",
+      "label": "Tea Lot",
+      "description": "Eligible lot selected from the chosen warehouse.",
+      "options": "Lots",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "grade",
+      "fieldtype": "Data",
+      "label": "Final Grade",
+      "description": "Final grade fetched from the confirmed tea valuation.",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "available_bags",
+      "fieldtype": "Int",
+      "label": "Available Bags",
+      "description": "Current unreserved bags available for selection. Revalidate on the server when confirming.",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "ordered_bags",
+      "fieldtype": "Int",
+      "label": "Ordered Bags",
+      "description": "Number of bags requested from this lot.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "net_kg_per_bag",
+      "fieldtype": "Float",
+      "label": "Net KG per Bag",
+      "description": "Net weight per bag fetched from lot registration.",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "total_weight_kg",
+      "fieldtype": "Float",
+      "label": "Total Weight (KG)",
+      "description": "Calculated as ordered bags multiplied by net kilograms per bag.",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "rate_per_kg",
+      "fieldtype": "Currency",
+      "label": "Agreed Rate per KG",
+      "description": "Rate agreed for this lot, subject to the applicable party rules.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "total_amount",
+      "fieldtype": "Currency",
+      "label": "Line Amount",
+      "description": "Calculated as total weight multiplied by the agreed rate per kilogram.",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}
