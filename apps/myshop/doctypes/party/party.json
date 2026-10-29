@@ -1,0 +1,213 @@
+{
+  "name": "Party",
+  "module": "App",
+  "description": "Central master for companies and individuals involved in the tea business, including factories, suppliers, buyers, brokers, tea owners and transporters.",
+  "naming_series": "PTYY#####",
+  "naming_rule": "series",
+  "title_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "title",
+    "phone",
+    "email",
+    "gstin",
+    "pan"
+  ],
+  "sort_field": "title",
+  "sort_order": "asc",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Party Name",
+      "description": "Name of the company or individual.",
+      "reqd": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "party_type",
+      "fieldtype": "Select",
+      "label": "Party Type",
+      "description": "Specifies whether the party is a company or an individual.",
+      "options": [
+        "Company",
+        "Individual"
+      ],
+      "default": "Company",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "is_supplier",
+      "fieldtype": "Check",
+      "label": "Supplier",
+      "default": false
+    },
+    {
+      "fieldname": "is_buyer",
+      "fieldtype": "Check",
+      "label": "Buyer",
+      "default": false
+    },
+    {
+      "fieldname": "is_agent",
+      "fieldtype": "Check",
+      "label": "Agent / Broker",
+      "default": false
+    },
+    {
+      "fieldname": "is_tea_owner",
+      "fieldtype": "Check",
+      "label": "Tea Owner",
+      "default": false
+    },
+    {
+      "fieldname": "is_transporter",
+      "fieldtype": "Check",
+      "label": "Transporter",
+      "default": false
+    },
+    {
+      "fieldname": "phone",
+      "fieldtype": "Data",
+      "label": "Phone",
+      "description": "Primary contact number.",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "description": "Primary business or contact email address."
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "SmallText",
+      "label": "Address",
+      "description": "Business or residential address."
+    },
+    {
+      "fieldname": "gstin",
+      "fieldtype": "Data",
+      "label": "GSTIN",
+      "description": "GST registration number, if applicable."
+    },
+    {
+      "fieldname": "pan",
+      "fieldtype": "Data",
+      "label": "PAN",
+      "description": "Permanent Account Number, if applicable."
+    },
+    {
+      "fieldname": "notes",
+      "fieldtype": "SmallText",
+      "label": "Notes",
+      "description": "Additional information about the party."
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Active",
+      "description": "Whether this party can be selected in new transactions.",
+      "default": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Active",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Active",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Activate",
+        "to": "Active",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Active",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

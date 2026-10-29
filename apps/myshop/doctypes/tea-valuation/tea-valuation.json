@@ -131,12 +131,12 @@
       },
       {
         "state": "Confirmed",
-        "doc_status": 1,
+        "doc_status": 51,
         "color": "green"
       },
       {
         "state": "Cancelled",
-        "doc_status": 2,
+        "doc_status": 98,
         "is_final": true,
         "color": "red"
       }
@@ -168,10 +168,30 @@
           "Valuation Manager",
           "System Manager"
         ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Re-Open",
+        "to": "Draft",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
       }
     ]
   },
   "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
     {
       "role": "Valuation Manager",
       "read": true,

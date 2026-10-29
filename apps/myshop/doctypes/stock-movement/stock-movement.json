@@ -1,0 +1,177 @@
+{
+  "name": "StockMovement",
+  "module": "App",
+  "description": "Records stock transfers between warehouses for tea lots.",
+  "naming_series": "SMYYMM-###",
+  "naming_rule": "series",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot",
+    "from_warehouse",
+    "to_warehouse"
+  ],
+  "sort_field": "creation",
+  "sort_order": "desc",
+  "fields": [
+    {
+      "fieldname": "movement_date",
+      "fieldtype": "Date",
+      "label": "Movement Date",
+      "reqd": true,
+      "default": "Today",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot",
+      "fieldtype": "Link",
+      "label": "Lot",
+      "options": "Lot",
+      "description": "Confirmed tea lot being transferred.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "from_warehouse",
+      "fieldtype": "Link",
+      "label": "Source Warehouse",
+      "options": "Warehouse",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "to_warehouse",
+      "fieldtype": "Link",
+      "label": "Destination Warehouse",
+      "options": "Warehouse",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "fieldtype": "Float",
+      "label": "Bags",
+      "description": "Number of bags being transferred.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "net_weight",
+      "fieldtype": "Float",
+      "label": "Net Weight (KG)",
+      "description": "Total net tea weight being transferred.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "transporter",
+      "fieldtype": "Link",
+      "label": "Transporter",
+      "options": "Party"
+    },
+    {
+      "fieldname": "vehicle_number",
+      "fieldtype": "Data",
+      "label": "Vehicle Number",
+      "max_length": 30
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm",
+        "to": "Confirmed",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

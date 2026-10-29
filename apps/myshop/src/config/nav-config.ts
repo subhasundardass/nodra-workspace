@@ -51,24 +51,97 @@ export const navGroups: NavGroup[] = [
 
       {
         title: "Distribution",
-        url: "/dashboard/sales",
+        url: "/dashboard/sales-orders",
         icon: "product",
         isActive: false,
-        items: [],
+        items: [
+          {
+            title: "Sales Orders",
+            url: "/dashboard/sales-orders",
+          },
+          {
+            title: "Stock Movements",
+            url: "/dashboard/stock-movements",
+          },
+          {
+            title: "Dispatches",
+            url: "/dashboard/dispatches",
+          },
+          {
+            title: "Sales Invoices",
+            url: "/dashboard/sales-invoices",
+          },
+          {
+            title: "Payment Receipts",
+            url: "/dashboard/payment-receipts",
+          },
+          {
+            title: "Sales Returns",
+            url: "/dashboard/sales-returns",
+          },
+        ],
       },
+
       {
-        title: "Invoicing",
-        url: "/dashboard/invoicing",
-        icon: "forms",
+        title: "Reports",
+        url: "/dashboard/reports",
+        icon: "kanban",
         isActive: false,
-        items: [],
+        items: [
+          {
+            title: "Lot Registration",
+            url: "/dashboard/reports/lots",
+          },
+          {
+            title: "Tea Testing",
+            url: "/dashboard/reports/tea-testing",
+          },
+          {
+            title: "Tea Valuation",
+            url: "/dashboard/reports/tea-valuation",
+          },
+          {
+            title: "Warehouse Stock",
+            url: "/dashboard/reports/warehouse-stock",
+          },
+          {
+            title: "Stock Movements",
+            url: "/dashboard/reports/stock-movements",
+          },
+          {
+            title: "Sales Orders",
+            url: "/dashboard/reports/sales-orders",
+          },
+          {
+            title: "Dispatches",
+            url: "/dashboard/reports/dispatches",
+          },
+          {
+            title: "Sales Invoices",
+            url: "/dashboard/reports/sales-invoices",
+          },
+          {
+            title: "Payment Receipts",
+            url: "/dashboard/reports/payment-receipts",
+          },
+          {
+            title: "Sales Returns",
+            url: "/dashboard/reports/sales-returns",
+          },
+        ],
       },
+
       {
         title: "Masters",
         url: "#",
         icon: "palette",
         isActive: false,
         items: [
+          {
+            title: "Party",
+            url: "/dashboard/party",
+            icon: "product",
+          },
           {
             title: "Factories",
             url: "/dashboard/master/factories",
@@ -102,13 +175,7 @@ export const navGroups: NavGroup[] = [
           },
         ],
       },
-      {
-        title: "Reports",
-        url: "/dashboard/reports",
-        icon: "kanban",
-        isActive: false,
-        items: [],
-      },
+
       {
         title: "Users",
         url: "/dashboard/user",

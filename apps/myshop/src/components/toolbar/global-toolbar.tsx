@@ -39,7 +39,7 @@ export function GlobalToolbar({
   const visibleActions = actions.filter((action) => !action.hidden);
 
   return (
-    <header className="flex w-full min-w-0 flex-col gap-4 border-b pb-2 sm:flex-row sm:items-center sm:justify-between bg-card">
+    <header className="flex w-full min-w-0 flex-col gap-4 border-none pb-2 sm:flex-row sm:items-center sm:justify-between bg-transparent">
       <div className="flex min-w-0 items-start gap-3">
         {onBack && (
           <Button
