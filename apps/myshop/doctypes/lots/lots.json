@@ -141,6 +141,7 @@
         "from": "Draft",
         "to": "Confirmed",
         "roles": [
+          "System Manager",
           "Administrator"
         ]
       },
@@ -149,7 +150,8 @@
         "from": "Confirmed",
         "to": "Draft",
         "roles": [
-          "Administrator"
+          "Administrator",
+          "System Manager"
         ]
       },
       {
@@ -157,7 +159,8 @@
         "from": "Draft",
         "to": "Cancelled",
         "roles": [
-          "Administrator"
+          "Administrator",
+          "System Manager"
         ]
       },
       {
@@ -165,7 +168,8 @@
         "from": "Confirmed",
         "to": "Cancelled",
         "roles": [
-          "Administrator"
+          "Administrator",
+          "System Manager"
         ]
       }
     ]

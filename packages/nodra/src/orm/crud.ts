@@ -633,20 +633,56 @@ export class ORM {
     const meta = this.registry.get(doctype);
     this.assertNotVirtual(meta, "list");
 
+    // Table fields are stored separately, not as parent-table columns.
+    const childFieldNames = new Set(
+      meta.fields.filter(isTable).map((field) => field.fieldname),
+    );
+
+    const requestedFields = options?.fields;
+
+    const queryFields = requestedFields?.length
+      ? requestedFields.filter((field) => !childFieldNames.has(field))
+      : requestedFields;
+
+    // Ensure parent name is available when child fields are requested.
+    const needsChildren = requestedFields?.some((field) =>
+      childFieldNames.has(field),
+    );
+
+    const fields =
+      queryFields && needsChildren
+        ? [...new Set([...queryFields, "name"])]
+        : queryFields;
+
+    const listOptions = options ? { ...options, fields } : undefined;
+
+    // Load child tables for every document.
+    const toDocuments = async (rows: Row[]): Promise<Document[]> => {
+      return Promise.all(
+        rows.map(async (row) => {
+          const children =
+            this.hasChildren(meta) && typeof row.name === "string"
+              ? await this.loadChildren(this.q, meta, row.name)
+              : {};
+
+          return this.rowToDocument(meta, row, children);
+        }),
+      );
+    };
+
     // New features used, or permissions enforced -> new compiler
     if (isAdvanced(options) || this.options.enforcePermissions) {
-      const rows = await this.queryRows(doctype, options ?? {});
-      return rows.map((row) => this.rowToDocument(meta, row));
+      const rows = await this.queryRows(doctype, listOptions ?? {});
+      return toDocuments(rows);
     }
 
-    // ----- original code path (unchanged) -----
+    // Original query path
     const tableName = toTableName(doctype);
-
     const qb = new QueryBuilder(tableName);
 
     // Select fields
-    if (options?.fields && options.fields.length > 0) {
-      qb.select(...options.fields);
+    if (fields && fields.length > 0) {
+      qb.select(...fields);
     } else {
       qb.select("*");
     }
@@ -674,6 +710,7 @@ export class ORM {
     if (options?.limit !== undefined) {
       qb.limit(options.limit);
     }
+
     if (options?.offset !== undefined) {
       qb.offset(options.offset);
     }
@@ -681,7 +718,7 @@ export class ORM {
     const { sql, params } = qb.build();
     const rows = await this.q.query<Row>(sql, params);
 
-    return rows.map((row) => this.rowToDocument(meta, row));
+    return toDocuments(rows);
   }
 
   /** Plain row objects. Use this for aggregates / group_by / joined columns. */
