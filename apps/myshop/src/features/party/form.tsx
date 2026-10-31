@@ -6,8 +6,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+interface BrokerOption {
+  name: string;
+  title: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+}
+
+interface PartyBrokerRow {
+  broker: string;
+  commission_rate?: number;
+  notes?: string;
+}
+
 interface PartyFormProps {
   form: NodraForm;
+  brokers?: BrokerOption[];
 }
 
 function FieldRow({
@@ -59,9 +74,10 @@ function FormSection({
   );
 }
 
-export function PartyForm({ form }: PartyFormProps) {
+export function PartyForm({ form, brokers = [] }: PartyFormProps) {
   return (
     <div className="space-y-6">
+      {/* Party Information */}
       <FormSection
         title="Party Information"
         description="Enter the basic details of the company or individual."
@@ -129,6 +145,7 @@ export function PartyForm({ form }: PartyFormProps) {
         </form.Field>
       </FormSection>
 
+      {/* Business Details */}
       <FormSection
         title="Business Details"
         description="Add registration details and the party's address where applicable."
@@ -204,39 +221,283 @@ export function PartyForm({ form }: PartyFormProps) {
         </div>
       </FormSection>
 
-      {/* Party Role */}
-      <FormSection
-        title="Party Roles"
-        description="Select all roles that apply to this party."
-      >
-        {[
-          { name: "is_supplier", label: "Supplier" },
-          { name: "is_buyer", label: "Buyer" },
-          { name: "is_agent", label: "Agent / Broker" },
-          { name: "is_tea_owner", label: "Tea Owner" },
-          { name: "is_transporter", label: "Transporter" },
-        ].map((role) => (
-          <form.Field key={role.name} name={role.name}>
-            {(field) => (
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id={field.name}
-                  checked={
-                    field.state.value === true ||
-                    field.state.value === 1 ||
-                    field.state.value === "1"
-                  }
-                  onCheckedChange={(checked) =>
-                    field.handleChange(checked === true)
-                  }
-                />
-                <Label htmlFor={field.name}>{role.label}</Label>
+      {/* Broker Information */}
+      <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold">Broker Information</h3>
+          <p className="text-sm text-muted-foreground">
+            Add one or more brokers associated with this party. At least one
+            broker is required.
+          </p>
+        </div>
+
+        <form.Field name="brokers">
+          {(field) => {
+            const rows = Array.isArray(field.state.value)
+              ? (field.state.value as PartyBrokerRow[])
+              : [];
+
+            return (
+              <div className="space-y-3">
+                {/* Column headings */}
+                <div className="grid grid-cols-[minmax(160px,1.5fr)_minmax(90px,0.8fr)_minmax(90px,0.8fr)_minmax(110px,0.9fr)_110px_36px] gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Broker <span className="text-destructive">*</span>
+                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    City
+                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    State
+                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Phone
+                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Commission (%)
+                  </span>
+                  <span />
+                </div>
+
+                {rows.map((row, index) => {
+                  const selectedBroker = brokers.find(
+                    (broker) => broker.name === row.broker,
+                  );
+
+                  return (
+                    <div
+                      key={index}
+                      className="grid grid-cols-[minmax(160px,1.5fr)_minmax(90px,0.8fr)_minmax(90px,0.8fr)_minmax(110px,0.9fr)_110px_36px] items-center gap-2"
+                    >
+                      {/* Broker */}
+                      <form.Field name={`brokers[${index}].broker`}>
+                        {(brokerField) => (
+                          <select
+                            id={brokerField.name}
+                            name={brokerField.name}
+                            value={String(brokerField.state.value ?? "")}
+                            onBlur={brokerField.handleBlur}
+                            onChange={(event) =>
+                              brokerField.handleChange(event.target.value)
+                            }
+                            required
+                            className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
+                          >
+                            <option value="">Select Broker</option>
+
+                            {brokers.map((broker) => (
+                              <option key={broker.name} value={broker.name}>
+                                {broker.title}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </form.Field>
+
+                      {/* City */}
+                      <div
+                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
+                        title={selectedBroker?.city || ""}
+                      >
+                        {selectedBroker?.city || "-"}
+                      </div>
+
+                      {/* State */}
+                      <div
+                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
+                        title={selectedBroker?.state || ""}
+                      >
+                        {selectedBroker?.state || "-"}
+                      </div>
+
+                      {/* Phone */}
+                      <div
+                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
+                        title={selectedBroker?.phone || ""}
+                      >
+                        {selectedBroker?.phone || "-"}
+                      </div>
+
+                      {/* Commission */}
+                      <form.Field name={`brokers[${index}].commission_rate`}>
+                        {(commissionField) => (
+                          <input
+                            id={commissionField.name}
+                            name={commissionField.name}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={String(commissionField.state.value ?? "")}
+                            onBlur={commissionField.handleBlur}
+                            onChange={(event) => {
+                              const value = event.target.value;
+                              commissionField.handleChange(
+                                value === "" ? undefined : Number(value),
+                              );
+                            }}
+                            placeholder="0.00"
+                            className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm"
+                          />
+                        )}
+                      </form.Field>
+
+                      {/* Remove */}
+                      <button
+                        type="button"
+                        disabled={rows.length <= 1}
+                        onClick={() => {
+                          field.handleChange(
+                            rows.filter((_, rowIndex) => rowIndex !== index),
+                          );
+                        }}
+                        className="flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                        title={
+                          rows.length <= 1
+                            ? "At least one broker is required"
+                            : "Remove Broker"
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {rows.length === 0 && (
+                  <p className="text-sm text-destructive">
+                    At least one broker is required.
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between border-t pt-3">
+                  <span className="text-xs text-muted-foreground">
+                    {rows.length} broker(s) added
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      field.handleChange([
+                        ...rows,
+                        {
+                          broker: "",
+                          commission_rate: undefined,
+                          notes: "",
+                        },
+                      ]);
+                    }}
+                    className="rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
+                  >
+                    + Add Broker
+                  </button>
+                </div>
               </div>
-            )}
-          </form.Field>
-        ))}
+            );
+          }}
+        </form.Field>
+      </section>
+
+      {/* Bank Detail */}
+
+      {/* Bank Details */}
+      <FormSection
+        title="Bank Details"
+        description="Enter the party's bank account information for payments and settlements."
+      >
+        <form.Field name="bank_name">
+          {(field) => (
+            <FieldRow label="Bank Name" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter bank name"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="account_holder_name">
+          {(field) => (
+            <FieldRow label="Account Holder" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter account holder name"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="account_number">
+          {(field) => (
+            <FieldRow label="Account Number" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter account number"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="ifsc">
+          {(field) => (
+            <FieldRow label="IFSC Code" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter IFSC code"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="branch">
+          {(field) => (
+            <FieldRow label="Branch" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter branch name"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="account_type">
+          {(field) => (
+            <FieldRow label="Account Type" htmlFor={field.name}>
+              <select
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onBlur={field.handleBlur}
+                onChange={(event) =>
+                  field.handleChange(event.target.value || undefined)
+                }
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+              >
+                <option value="">Select Account Type</option>
+                <option value="Current">Current</option>
+                <option value="Savings">Savings</option>
+                <option value="Other">Other</option>
+              </select>
+            </FieldRow>
+          )}
+        </form.Field>
       </FormSection>
 
+      {/* Availability */}
       <FormSection
         title="Availability"
         description="Control whether this party is available for new transactions."

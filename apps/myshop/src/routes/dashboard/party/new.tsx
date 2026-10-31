@@ -9,25 +9,82 @@ import { callMethod } from "@/lib/call-method";
 
 type FormValues = Record<string, unknown>;
 
-export const Route = createFileRoute("/dashboard/party/new")({
-  loader: async (): Promise<DocTypeDefinition> => {
-    const result = await callMethod<{ doctype: DocTypeDefinition }>(
-      "nodra.doctype.get",
-      { name: "Party" },
-    );
+type BrokerRecord = {
+  name: string;
+  title: string;
+  is_active: boolean;
+  docstatus?: number;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pin?: string;
+};
 
-    if (!result.doctype) {
+type BrokerOption = {
+  name: string;
+  title: string;
+};
+
+type LoaderData = {
+  doctype: DocTypeDefinition;
+  brokerOptions: BrokerOption[];
+};
+
+export const Route = createFileRoute("/dashboard/party/new")({
+  loader: async (): Promise<LoaderData> => {
+    const [doctypeResult, brokerResult] = await Promise.all([
+      callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
+        name: "Party",
+      }),
+
+      callMethod<{ documents: BrokerRecord[] }>("document.list", {
+        doctype: "Broker",
+        fields: [
+          "name",
+          "title",
+          "is_active",
+          "docstatus",
+          "contact_person",
+          "phone",
+          "email",
+          "address",
+          "city",
+          "state",
+          "pin",
+        ],
+        limit: 100,
+        offset: 0,
+      }),
+    ]);
+
+    if (!doctypeResult.doctype) {
       throw new Error('DocType "Party" is not registered.');
     }
 
-    return result.doctype;
+    const brokerOptions: BrokerOption[] = (brokerResult.documents ?? [])
+      .filter((broker) => broker.is_active === true && broker.docstatus !== 51)
+      .map((broker) => ({
+        name: broker.name,
+        title: broker.title || broker.name,
+        city: broker.city,
+        state: broker.state,
+        phone: broker.phone,
+      }));
+
+    return {
+      doctype: doctypeResult.doctype,
+      brokerOptions,
+    };
   },
 
   component: CreatePartyRoute,
 });
 
 function CreatePartyRoute() {
-  const doctype = Route.useLoaderData();
+  const { doctype, brokerOptions } = Route.useLoaderData();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
@@ -53,19 +110,26 @@ function CreatePartyRoute() {
 
   return (
     <DocTypeFormTemplate
-      title="Create Party"
+      title="Create Party/Buyer"
       doctype={doctype}
       mode="create"
       initialValues={{
         party_type: "Company",
         is_active: true,
         workflow_state: "Draft",
+        brokers: [
+          {
+            broker: "",
+            commission_rate: undefined,
+            notes: "",
+          },
+        ],
       }}
       saving={saving}
       onSubmit={handleSubmit}
       onCancel={() => navigate({ to: "/dashboard/party" })}
     >
-      {(form) => <PartyForm form={form} />}
+      {(form) => <PartyForm form={form} brokers={brokerOptions} />}
     </DocTypeFormTemplate>
   );
 }

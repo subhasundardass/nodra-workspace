@@ -21,6 +21,9 @@ import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overvi
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignUpIndexRouteImport } from './routes/auth/sign-up/index'
+import { Route as DashboardBrokerIndexRouteImport } from './routes/dashboard/broker/index'
+import { Route as DashboardBrokerNameRouteImport } from './routes/dashboard/broker/$name'
+import { Route as DashboardBrokerNewRouteImport } from './routes/dashboard/broker/new'
 import { Route as DashboardDispatchesIndexRouteImport } from './routes/dashboard/dispatches/index'
 import { Route as DashboardDispatchesNameRouteImport } from './routes/dashboard/dispatches/$name'
 import { Route as DashboardDispatchesNewRouteImport } from './routes/dashboard/dispatches/new'
@@ -119,6 +122,21 @@ const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardBrokerIndexRoute = DashboardBrokerIndexRouteImport.update({
+  id: '/broker/',
+  path: '/broker/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardBrokerNameRoute = DashboardBrokerNameRouteImport.update({
+  id: '/broker/$name',
+  path: '/broker/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardBrokerNewRoute = DashboardBrokerNewRouteImport.update({
+  id: '/broker/new',
+  path: '/broker/new',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardDispatchesIndexRoute =
   DashboardDispatchesIndexRouteImport.update({
@@ -343,6 +361,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -371,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
@@ -394,6 +415,8 @@ export interface FileRoutesByTo {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -422,6 +445,7 @@ export interface FileRoutesByTo {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
+  '/dashboard/broker': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot': typeof DashboardLotIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
@@ -447,6 +471,8 @@ export interface FileRoutesById {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -475,6 +501,7 @@ export interface FileRoutesById {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
@@ -501,6 +528,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -529,6 +558,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/broker/'
     | '/dashboard/dispatches/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
@@ -552,6 +582,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -580,6 +612,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/dashboard/broker'
     | '/dashboard/dispatches'
     | '/dashboard/lot'
     | '/dashboard/orders'
@@ -604,6 +637,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -632,6 +667,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/broker/'
     | '/dashboard/dispatches/'
     | '/dashboard/lot/'
     | '/dashboard/orders/'
@@ -742,6 +778,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-up/'
       preLoaderRoute: typeof AuthSignUpIndexRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/dashboard/broker/': {
+      id: '/dashboard/broker/'
+      path: '/broker'
+      fullPath: '/dashboard/broker/'
+      preLoaderRoute: typeof DashboardBrokerIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/broker/$name': {
+      id: '/dashboard/broker/$name'
+      path: '/broker/$name'
+      fullPath: '/dashboard/broker/$name'
+      preLoaderRoute: typeof DashboardBrokerNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/broker/new': {
+      id: '/dashboard/broker/new'
+      path: '/broker/new'
+      fullPath: '/dashboard/broker/new'
+      preLoaderRoute: typeof DashboardBrokerNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/dispatches/': {
       id: '/dashboard/dispatches/'
@@ -1014,6 +1071,8 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardBrokerNameRoute: typeof DashboardBrokerNameRoute
+  DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
   DashboardDispatchesNameRoute: typeof DashboardDispatchesNameRoute
   DashboardDispatchesNewRoute: typeof DashboardDispatchesNewRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
@@ -1040,6 +1099,7 @@ interface DashboardRouteRouteChildren {
   DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
   DashboardUserNewRoute: typeof DashboardUserNewRoute
+  DashboardBrokerIndexRoute: typeof DashboardBrokerIndexRoute
   DashboardDispatchesIndexRoute: typeof DashboardDispatchesIndexRoute
   DashboardLotIndexRoute: typeof DashboardLotIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
@@ -1056,6 +1116,8 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardBrokerNameRoute: DashboardBrokerNameRoute,
+  DashboardBrokerNewRoute: DashboardBrokerNewRoute,
   DashboardDispatchesNameRoute: DashboardDispatchesNameRoute,
   DashboardDispatchesNewRoute: DashboardDispatchesNewRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
@@ -1082,6 +1144,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
   DashboardUserNewRoute: DashboardUserNewRoute,
+  DashboardBrokerIndexRoute: DashboardBrokerIndexRoute,
   DashboardDispatchesIndexRoute: DashboardDispatchesIndexRoute,
   DashboardLotIndexRoute: DashboardLotIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,

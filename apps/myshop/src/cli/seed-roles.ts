@@ -62,6 +62,12 @@ const BUILT_IN_ROLES = [
     is_custom: true,
   },
   {
+    role_name: "Factory Manager",
+    disabled: false,
+    desk_access: true,
+    is_custom: true,
+  },
+  {
     role_name: "Warehouse Manager",
     disabled: false,
     desk_access: true,

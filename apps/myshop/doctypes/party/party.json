@@ -30,6 +30,12 @@
       "in_list_view": true
     },
     {
+      "fieldname": "brokers",
+      "fieldtype": "Table",
+      "label": "Attached Brokers",
+      "options": "Party Broker"
+    },
+    {
       "fieldname": "party_type",
       "fieldtype": "Select",
       "label": "Party Type",
@@ -42,36 +48,6 @@
       "reqd": true,
       "in_list_view": true,
       "in_standard_filter": true
-    },
-    {
-      "fieldname": "is_supplier",
-      "fieldtype": "Check",
-      "label": "Supplier",
-      "default": false
-    },
-    {
-      "fieldname": "is_buyer",
-      "fieldtype": "Check",
-      "label": "Buyer",
-      "default": false
-    },
-    {
-      "fieldname": "is_agent",
-      "fieldtype": "Check",
-      "label": "Agent / Broker",
-      "default": false
-    },
-    {
-      "fieldname": "is_tea_owner",
-      "fieldtype": "Check",
-      "label": "Tea Owner",
-      "default": false
-    },
-    {
-      "fieldname": "is_transporter",
-      "fieldtype": "Check",
-      "label": "Transporter",
-      "default": false
     },
     {
       "fieldname": "phone",
@@ -109,6 +85,43 @@
       "fieldtype": "SmallText",
       "label": "Notes",
       "description": "Additional information about the party."
+    },
+    {
+      "fieldname": "bank_name",
+      "fieldtype": "Data",
+      "label": "Bank Name",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_holder_name",
+      "fieldtype": "Data",
+      "label": "Account Holder Name",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_number",
+      "fieldtype": "Data",
+      "label": "Account Number"
+    },
+    {
+      "fieldname": "ifsc",
+      "fieldtype": "Data",
+      "label": "IFSC Code"
+    },
+    {
+      "fieldname": "branch",
+      "fieldtype": "Data",
+      "label": "Branch"
+    },
+    {
+      "fieldname": "account_type",
+      "fieldtype": "Select",
+      "label": "Account Type",
+      "options": [
+        "Current",
+        "Savings",
+        "Other"
+      ]
     },
     {
       "fieldname": "is_active",

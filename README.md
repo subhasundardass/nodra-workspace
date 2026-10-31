@@ -66,7 +66,9 @@ pnpm --filter <app-name> install/add <package-name>
 pnpm run new:doctype -- <DocType>         # doctypes/loan/{loan.json,loan.ts}
 pnpm run new:method -- <DocType>
 pnpm run migrate --verbose
+pnpm --filter <DocType> cli seed:roles
 pnpm run console
+
 
 # Any other app, or the full command set: go through its own workspace
 # pnpm run cli --workspace=my-shop -- new:doctype Invoice
