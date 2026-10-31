@@ -437,7 +437,11 @@ export function DocTypeFormTemplate({
     ],
   );
 
-  const actions = [...(toolbarActions ?? defaultActions), ...workflowActions];
+  const actions = [
+    ...defaultActions,
+    ...(toolbarActions ?? []),
+    ...workflowActions,
+  ];
 
   const description =
     mode === "create"

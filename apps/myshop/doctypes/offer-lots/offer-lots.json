@@ -1,0 +1,93 @@
+{
+  "name": "OfferLots",
+  "module": "App",
+  "is_submittable": false,
+  "is_child": true,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "fields": [
+    {
+      "fieldname": "lot",
+      "fieldtype": "Link",
+      "label": "Lot",
+      "options": "Lot",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot_no",
+      "fieldtype": "Data",
+      "label": "Lot No",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "grade",
+      "fieldtype": "Link",
+      "label": "Grade",
+      "options": "Grades",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "original_brand",
+      "fieldtype": "Link",
+      "label": "Original Brand",
+      "options": "Brand",
+      "read_only": true
+    },
+    {
+      "fieldname": "warehouse",
+      "fieldtype": "Link",
+      "label": "Warehouse",
+      "options": "Warehouse",
+      "read_only": true
+    },
+    {
+      "fieldname": "bags",
+      "fieldtype": "Int",
+      "label": "Bags",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bag_from_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag From Sl. No",
+      "read_only": true
+    },
+    {
+      "fieldname": "bag_to_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag To Sl. No",
+      "read_only": true
+    },
+    {
+      "fieldname": "net_kg_per_bag",
+      "fieldtype": "Float",
+      "label": "Net KG Per Bag",
+      "read_only": true
+    },
+    {
+      "fieldname": "total_kg",
+      "fieldtype": "Float",
+      "label": "Total KG",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    }
+  ]
+}

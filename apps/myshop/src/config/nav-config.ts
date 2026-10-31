@@ -56,8 +56,8 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Sales Orders",
-            url: "/dashboard/sales-orders",
+            title: "Offerings",
+            url: "/dashboard/offers",
           },
           {
             title: "Stock Movements",
