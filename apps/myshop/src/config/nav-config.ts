@@ -56,8 +56,8 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Sales Orders",
-            url: "/dashboard/sales-orders",
+            title: "Offerings",
+            url: "/dashboard/offers",
           },
           {
             title: "Stock Movements",
@@ -143,6 +143,11 @@ export const navGroups: NavGroup[] = [
             icon: "product",
           },
           {
+            title: "Broker",
+            url: "/dashboard/broker",
+            icon: "product",
+          },
+          {
             title: "Factories",
             url: "/dashboard/master/factories",
             icon: "product",
@@ -161,17 +166,6 @@ export const navGroups: NavGroup[] = [
             title: "Brands",
             url: "/dashboard/master/brands",
             icon: "product",
-          },
-
-          {
-            title: "Buyers",
-            url: "/dashboard/master/buyers",
-            icon: "teams",
-          },
-          {
-            title: "Brokers",
-            url: "/dashboard/master/brokers",
-            icon: "teams",
           },
         ],
       },

@@ -46,30 +46,35 @@
       "fieldtype": "Link",
       "options": "Grades",
       "description": "Grade identified by the tester after evaluating the tea sample.",
-      "in_list_view": true
+      "in_list_view": true,
+      "reqd": true
     },
     {
       "fieldname": "appearance",
       "label": "Dry Leaf Appearance",
       "fieldtype": "SmallText",
+      "reqd": true,
       "description": "Observations about dry tea leaf size, colour, shape, tips, and overall appearance."
     },
     {
       "fieldname": "infusion",
       "label": "Infusion (Wet Leaf)",
       "fieldtype": "SmallText",
+      "reqd": true,
       "description": "Observations about the infused wet leaf, including colour, evenness, brightness, and leaf condition."
     },
     {
       "fieldname": "liquor",
       "label": "Liquor",
       "fieldtype": "SmallText",
+      "reqd": true,
       "description": "Observations about brewed tea liquor, including colour, brightness, clarity, and strength."
     },
     {
       "fieldname": "taste",
       "label": "Taste and Flavour",
       "fieldtype": "SmallText",
+      "reqd": true,
       "description": "Assessment of briskness, body, aroma, flavour, astringency, and aftertaste."
     },
     {

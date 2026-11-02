@@ -28,6 +28,7 @@ export const Route = createFileRoute("/dashboard/lot/")({
         doctype: "Lots",
         fields: [
           "name",
+          "id",
           "lot_no",
           "factory",
           "factory.factory_name",
@@ -82,6 +83,7 @@ function LotListRoute() {
 
   return (
     <DocTypeListTemplate
+      title="Lot Management"
       doctype={doctype}
       records={lots}
       table={table}

@@ -142,6 +142,13 @@
       "write": true,
       "create": true,
       "delete": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
     }
   ]
 }

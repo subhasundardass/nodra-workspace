@@ -1,0 +1,151 @@
+{
+  "name": "OfferSheet",
+  "module": "App",
+  "naming_series": "OFYY#####",
+  "naming_rule": "series",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "broker_type"
+  ],
+  "fields": [
+    {
+      "fieldname": "offer_date",
+      "fieldtype": "Date",
+      "label": "Offer Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "broker_type",
+      "fieldtype": "Select",
+      "label": "Broker Type",
+      "options": [
+        "PRIVATE",
+        "TATA",
+        "HUL"
+      ],
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "offer_lots",
+      "fieldtype": "Table",
+      "label": "Lots",
+      "options": "OfferLots",
+      "reqd": true
+    },
+    {
+      "fieldname": "total_bags",
+      "fieldtype": "Int",
+      "label": "Total Bags",
+      "default": 0,
+      "read_only": true
+    },
+    {
+      "fieldname": "total_kg",
+      "fieldtype": "Float",
+      "label": "Total KG",
+      "default": 0,
+      "read_only": true
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Active",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Active",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Activate",
+        "to": "Active",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Active",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

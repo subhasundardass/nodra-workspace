@@ -16,6 +16,13 @@
   ],
   "fields": [
     {
+      "fieldname": "id",
+      "fieldtype": "Data",
+      "label": "ID",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
       "fieldname": "factory",
       "fieldtype": "Link",
       "label": "Factory",
@@ -71,6 +78,22 @@
       "in_list_view": true
     },
     {
+      "fieldname": "bag_from_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag From Serial No",
+      "reqd": false,
+      "default": 0,
+      "in_list_view": false
+    },
+    {
+      "fieldname": "bag_to_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag To Serial No",
+      "reqd": false,
+      "default": 0,
+      "in_list_view": false
+    },
+    {
       "fieldname": "warehouse",
       "fieldtype": "Link",
       "label": "Warehouse/Godown",
@@ -118,7 +141,8 @@
         "from": "Draft",
         "to": "Confirmed",
         "roles": [
-          "System Manager"
+          "System Manager",
+          "Administrator"
         ]
       },
       {
@@ -126,6 +150,7 @@
         "from": "Confirmed",
         "to": "Draft",
         "roles": [
+          "Administrator",
           "System Manager"
         ]
       },
@@ -134,6 +159,7 @@
         "from": "Draft",
         "to": "Cancelled",
         "roles": [
+          "Administrator",
           "System Manager"
         ]
       },
@@ -142,6 +168,7 @@
         "from": "Confirmed",
         "to": "Cancelled",
         "roles": [
+          "Administrator",
           "System Manager"
         ]
       }
@@ -154,8 +181,23 @@
       "write": true,
       "create": true,
       "delete": true,
-      "submit": true,
       "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
     }
   ]
 }

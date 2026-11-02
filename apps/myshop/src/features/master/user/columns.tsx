@@ -9,8 +9,9 @@ export interface TableColumns {
   enabled: boolean;
   last_login?: string | null;
   last_ip?: string | null;
-  user_type: string;
-  // roles: string[] | string;
+  roles: {
+    role: string;
+  }[];
 }
 
 const displayValue = (value: unknown) =>
@@ -51,12 +52,21 @@ export function createColumns(
       ),
     },
     {
-      accessorKey: "user_type",
+      accessorKey: "roles",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Type" />
+        <DataTableColumnHeader column={column} title="Roles" />
       ),
-      enableSorting: true,
-      cell: ({ row }) => displayValue(row.original.user_type),
+      enableSorting: false,
+      cell: ({ row }) => {
+        const roles = row.original.roles;
+
+        return Array.isArray(roles)
+          ? roles
+              .map((item) => item.role)
+              .filter(Boolean)
+              .join(", ") || "-"
+          : roles || "-";
+      },
     },
 
     {

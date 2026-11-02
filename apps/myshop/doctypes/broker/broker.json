@@ -1,0 +1,174 @@
+{
+  "name": "Broker",
+  "module": "App",
+  "naming_series": "BR#####",
+  "naming_rule": "series",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "title",
+  "search_fields": [
+    "title",
+    "contact_person",
+    "phone",
+    "email"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Broker Name",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "contact_person",
+      "fieldtype": "Data",
+      "label": "Contact Person",
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "phone",
+      "fieldtype": "Data",
+      "label": "Phone",
+      "max_length": 20,
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "SmallText",
+      "label": "Address"
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": true,
+      "max_length": 100
+    },
+    {
+      "fieldname": "state",
+      "fieldtype": "Data",
+      "label": "State",
+      "reqd": true,
+      "max_length": 100
+    },
+    {
+      "fieldname": "pin",
+      "fieldtype": "Data",
+      "label": "PIN Code",
+      "max_length": 10
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Active",
+      "description": "Whether this party can be selected in new transactions.",
+      "default": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "commission_rate",
+      "fieldtype": "Float",
+      "label": "Commission (%)",
+      "precision": 2,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bank_name",
+      "fieldtype": "Data",
+      "label": "Bank Name",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_holder_name",
+      "fieldtype": "Data",
+      "label": "Account Holder Name",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_number",
+      "fieldtype": "Data",
+      "label": "Account Number",
+      "reqd": false
+    },
+    {
+      "fieldname": "ifsc",
+      "fieldtype": "Data",
+      "label": "IFSC Code",
+      "reqd": false
+    },
+    {
+      "fieldname": "branch",
+      "fieldtype": "Data",
+      "label": "Branch",
+      "reqd": false
+    },
+    {
+      "fieldname": "account_type",
+      "fieldtype": "Select",
+      "label": "Account Type",
+      "options": [
+        "Current",
+        "Savings",
+        "Other"
+      ],
+      "reqd": false
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Active",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

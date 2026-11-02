@@ -7,6 +7,12 @@ export type PdfColumn<T> = {
   format?: (value: unknown, row: T) => string;
 };
 
+export type PdfGroup<T> = {
+  heading: string;
+  rows: T[];
+  total?: Partial<Record<keyof T, string | number>>;
+};
+
 export type PdfCompanyDetails = {
   name?: string;
   logo?: string;
@@ -20,15 +26,20 @@ export type PdfCompanyDetails = {
 export type PdfHeaderOptions = {
   company?: PdfCompanyDetails;
   title: string;
+  documentNo?: string;
+  documentDate?: string;
   subtitle?: string;
 };
 
 export type PdfOptions<T> = {
   title: string;
   subtitle?: string;
+  documentNo?: string;
+  documentDate?: string;
   company?: PdfCompanyDetails;
   columns: PdfColumn<T>[];
-  rows: T[];
+  rows?: T[];
+  groups?: PdfGroup<T>[];
   filename?: string;
   footerText?: string;
   orientation?: "portrait" | "landscape";

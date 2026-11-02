@@ -21,6 +21,9 @@ import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overvi
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignUpIndexRouteImport } from './routes/auth/sign-up/index'
+import { Route as DashboardBrokerIndexRouteImport } from './routes/dashboard/broker/index'
+import { Route as DashboardBrokerNameRouteImport } from './routes/dashboard/broker/$name'
+import { Route as DashboardBrokerNewRouteImport } from './routes/dashboard/broker/new'
 import { Route as DashboardDispatchesIndexRouteImport } from './routes/dashboard/dispatches/index'
 import { Route as DashboardDispatchesNameRouteImport } from './routes/dashboard/dispatches/$name'
 import { Route as DashboardDispatchesNewRouteImport } from './routes/dashboard/dispatches/new'
@@ -33,6 +36,9 @@ import { Route as DashboardMasterTeaGradesRouteImport } from './routes/dashboard
 import { Route as DashboardMasterWarehousesRouteImport } from './routes/dashboard/master/warehouses'
 import { Route as DashboardNodraDoctypesRouteImport } from './routes/dashboard/nodra/doctypes'
 import { Route as DashboardNodraMethodsRouteImport } from './routes/dashboard/nodra/methods'
+import { Route as DashboardOffersIndexRouteImport } from './routes/dashboard/offers/index'
+import { Route as DashboardOffersNameRouteImport } from './routes/dashboard/offers/$name'
+import { Route as DashboardOffersNewRouteImport } from './routes/dashboard/offers/new'
 import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard/orders/index'
 import { Route as DashboardPartyIndexRouteImport } from './routes/dashboard/party/index'
 import { Route as DashboardPartyNameRouteImport } from './routes/dashboard/party/$name'
@@ -120,6 +126,21 @@ const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
   path: '/sign-up/',
   getParentRoute: () => AuthRoute,
 } as any)
+const DashboardBrokerIndexRoute = DashboardBrokerIndexRouteImport.update({
+  id: '/broker/',
+  path: '/broker/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardBrokerNameRoute = DashboardBrokerNameRouteImport.update({
+  id: '/broker/$name',
+  path: '/broker/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardBrokerNewRoute = DashboardBrokerNewRouteImport.update({
+  id: '/broker/new',
+  path: '/broker/new',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardDispatchesIndexRoute =
   DashboardDispatchesIndexRouteImport.update({
     id: '/dispatches/',
@@ -182,6 +203,21 @@ const DashboardNodraDoctypesRoute = DashboardNodraDoctypesRouteImport.update({
 const DashboardNodraMethodsRoute = DashboardNodraMethodsRouteImport.update({
   id: '/nodra/methods',
   path: '/nodra/methods',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardOffersIndexRoute = DashboardOffersIndexRouteImport.update({
+  id: '/offers/',
+  path: '/offers/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardOffersNameRoute = DashboardOffersNameRouteImport.update({
+  id: '/offers/$name',
+  path: '/offers/$name',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardOffersNewRoute = DashboardOffersNewRouteImport.update({
+  id: '/offers/new',
+  path: '/offers/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardOrdersIndexRoute = DashboardOrdersIndexRouteImport.update({
@@ -343,6 +379,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -353,6 +391,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/offers/$name': typeof DashboardOffersNameRoute
+  '/dashboard/offers/new': typeof DashboardOffersNewRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
@@ -371,8 +411,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
+  '/dashboard/offers/': typeof DashboardOffersIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
@@ -394,6 +436,8 @@ export interface FileRoutesByTo {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -404,6 +448,8 @@ export interface FileRoutesByTo {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/offers/$name': typeof DashboardOffersNameRoute
+  '/dashboard/offers/new': typeof DashboardOffersNewRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
@@ -422,8 +468,10 @@ export interface FileRoutesByTo {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
+  '/dashboard/broker': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot': typeof DashboardLotIndexRoute
+  '/dashboard/offers': typeof DashboardOffersIndexRoute
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/party': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts': typeof DashboardPaymentReceiptsIndexRoute
@@ -447,6 +495,8 @@ export interface FileRoutesById {
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
+  '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
+  '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatches/$name': typeof DashboardDispatchesNameRoute
   '/dashboard/dispatches/new': typeof DashboardDispatchesNewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
@@ -457,6 +507,8 @@ export interface FileRoutesById {
   '/dashboard/master/warehouses': typeof DashboardMasterWarehousesRoute
   '/dashboard/nodra/doctypes': typeof DashboardNodraDoctypesRoute
   '/dashboard/nodra/methods': typeof DashboardNodraMethodsRoute
+  '/dashboard/offers/$name': typeof DashboardOffersNameRoute
+  '/dashboard/offers/new': typeof DashboardOffersNewRoute
   '/dashboard/party/$name': typeof DashboardPartyNameRoute
   '/dashboard/party/new': typeof DashboardPartyNewRoute
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
@@ -475,8 +527,10 @@ export interface FileRoutesById {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatches/': typeof DashboardDispatchesIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
+  '/dashboard/offers/': typeof DashboardOffersIndexRoute
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
@@ -501,6 +555,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -511,6 +567,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/offers/$name'
+    | '/dashboard/offers/new'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
     | '/dashboard/payment-receipts/$name'
@@ -529,8 +587,10 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/broker/'
     | '/dashboard/dispatches/'
     | '/dashboard/lot/'
+    | '/dashboard/offers/'
     | '/dashboard/orders/'
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
@@ -552,6 +612,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -562,6 +624,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/offers/$name'
+    | '/dashboard/offers/new'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
     | '/dashboard/payment-receipts/$name'
@@ -580,8 +644,10 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/dashboard/broker'
     | '/dashboard/dispatches'
     | '/dashboard/lot'
+    | '/dashboard/offers'
     | '/dashboard/orders'
     | '/dashboard/party'
     | '/dashboard/payment-receipts'
@@ -604,6 +670,8 @@ export interface FileRouteTypes {
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
+    | '/dashboard/broker/$name'
+    | '/dashboard/broker/new'
     | '/dashboard/dispatches/$name'
     | '/dashboard/dispatches/new'
     | '/dashboard/lot/$name'
@@ -614,6 +682,8 @@ export interface FileRouteTypes {
     | '/dashboard/master/warehouses'
     | '/dashboard/nodra/doctypes'
     | '/dashboard/nodra/methods'
+    | '/dashboard/offers/$name'
+    | '/dashboard/offers/new'
     | '/dashboard/party/$name'
     | '/dashboard/party/new'
     | '/dashboard/payment-receipts/$name'
@@ -632,8 +702,10 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/broker/'
     | '/dashboard/dispatches/'
     | '/dashboard/lot/'
+    | '/dashboard/offers/'
     | '/dashboard/orders/'
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
@@ -743,6 +815,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpIndexRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/dashboard/broker/': {
+      id: '/dashboard/broker/'
+      path: '/broker'
+      fullPath: '/dashboard/broker/'
+      preLoaderRoute: typeof DashboardBrokerIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/broker/$name': {
+      id: '/dashboard/broker/$name'
+      path: '/broker/$name'
+      fullPath: '/dashboard/broker/$name'
+      preLoaderRoute: typeof DashboardBrokerNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/broker/new': {
+      id: '/dashboard/broker/new'
+      path: '/broker/new'
+      fullPath: '/dashboard/broker/new'
+      preLoaderRoute: typeof DashboardBrokerNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/dispatches/': {
       id: '/dashboard/dispatches/'
       path: '/dispatches'
@@ -825,6 +918,27 @@ declare module '@tanstack/react-router' {
       path: '/nodra/methods'
       fullPath: '/dashboard/nodra/methods'
       preLoaderRoute: typeof DashboardNodraMethodsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/offers/': {
+      id: '/dashboard/offers/'
+      path: '/offers'
+      fullPath: '/dashboard/offers/'
+      preLoaderRoute: typeof DashboardOffersIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/offers/$name': {
+      id: '/dashboard/offers/$name'
+      path: '/offers/$name'
+      fullPath: '/dashboard/offers/$name'
+      preLoaderRoute: typeof DashboardOffersNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/offers/new': {
+      id: '/dashboard/offers/new'
+      path: '/offers/new'
+      fullPath: '/dashboard/offers/new'
+      preLoaderRoute: typeof DashboardOffersNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/orders/': {
@@ -1014,6 +1128,8 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardBrokerNameRoute: typeof DashboardBrokerNameRoute
+  DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
   DashboardDispatchesNameRoute: typeof DashboardDispatchesNameRoute
   DashboardDispatchesNewRoute: typeof DashboardDispatchesNewRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
@@ -1024,6 +1140,8 @@ interface DashboardRouteRouteChildren {
   DashboardMasterWarehousesRoute: typeof DashboardMasterWarehousesRoute
   DashboardNodraDoctypesRoute: typeof DashboardNodraDoctypesRoute
   DashboardNodraMethodsRoute: typeof DashboardNodraMethodsRoute
+  DashboardOffersNameRoute: typeof DashboardOffersNameRoute
+  DashboardOffersNewRoute: typeof DashboardOffersNewRoute
   DashboardPartyNameRoute: typeof DashboardPartyNameRoute
   DashboardPartyNewRoute: typeof DashboardPartyNewRoute
   DashboardPaymentReceiptsNameRoute: typeof DashboardPaymentReceiptsNameRoute
@@ -1040,8 +1158,10 @@ interface DashboardRouteRouteChildren {
   DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
   DashboardUserNewRoute: typeof DashboardUserNewRoute
+  DashboardBrokerIndexRoute: typeof DashboardBrokerIndexRoute
   DashboardDispatchesIndexRoute: typeof DashboardDispatchesIndexRoute
   DashboardLotIndexRoute: typeof DashboardLotIndexRoute
+  DashboardOffersIndexRoute: typeof DashboardOffersIndexRoute
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardPartyIndexRoute: typeof DashboardPartyIndexRoute
   DashboardPaymentReceiptsIndexRoute: typeof DashboardPaymentReceiptsIndexRoute
@@ -1056,6 +1176,8 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardBrokerNameRoute: DashboardBrokerNameRoute,
+  DashboardBrokerNewRoute: DashboardBrokerNewRoute,
   DashboardDispatchesNameRoute: DashboardDispatchesNameRoute,
   DashboardDispatchesNewRoute: DashboardDispatchesNewRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
@@ -1066,6 +1188,8 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardMasterWarehousesRoute: DashboardMasterWarehousesRoute,
   DashboardNodraDoctypesRoute: DashboardNodraDoctypesRoute,
   DashboardNodraMethodsRoute: DashboardNodraMethodsRoute,
+  DashboardOffersNameRoute: DashboardOffersNameRoute,
+  DashboardOffersNewRoute: DashboardOffersNewRoute,
   DashboardPartyNameRoute: DashboardPartyNameRoute,
   DashboardPartyNewRoute: DashboardPartyNewRoute,
   DashboardPaymentReceiptsNameRoute: DashboardPaymentReceiptsNameRoute,
@@ -1082,8 +1206,10 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
   DashboardUserNewRoute: DashboardUserNewRoute,
+  DashboardBrokerIndexRoute: DashboardBrokerIndexRoute,
   DashboardDispatchesIndexRoute: DashboardDispatchesIndexRoute,
   DashboardLotIndexRoute: DashboardLotIndexRoute,
+  DashboardOffersIndexRoute: DashboardOffersIndexRoute,
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardPartyIndexRoute: DashboardPartyIndexRoute,
   DashboardPaymentReceiptsIndexRoute: DashboardPaymentReceiptsIndexRoute,

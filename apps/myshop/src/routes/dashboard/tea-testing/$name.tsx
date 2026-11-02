@@ -105,6 +105,22 @@ function TeaTestingRoute() {
       };
 
   async function handleSubmit(values: FormValues) {
+    const lotName = String(lot.name ?? "").trim();
+
+    if (!lotName) {
+      toast.error("Lot ID is missing. Cannot save Tea Testing.");
+      console.error("TeaTesting: missing lot.name", lot);
+      return;
+    }
+
+    const doc: FormValues = {
+      ...values,
+      lot: lotName,
+      incoming_grade: lot.grade ?? "",
+    };
+
+    console.log("TeaTesting save payload:", doc);
+
     setSaving(true);
 
     try {
@@ -112,25 +128,27 @@ function TeaTestingRoute() {
         await callMethod("document.update", {
           doctype: "TeaTesting",
           name: String(document.name),
-          doc: values,
+          doc,
         });
 
         toast.success("Testing record updated.");
       } else {
         await callMethod("document.create", {
           doctype: "TeaTesting",
-          doc: {
-            ...values,
-            lot: lot.name,
-            incoming_grade: lot.grade ?? "",
-          },
+          doc,
         });
 
         toast.success("Testing record created.");
       }
 
-      // Reload so the route resolves the saved testing document.
       await router.invalidate();
+    } catch (error) {
+      console.error("TeaTesting save failed:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to save testing record.",
+      );
     } finally {
       setSaving(false);
     }

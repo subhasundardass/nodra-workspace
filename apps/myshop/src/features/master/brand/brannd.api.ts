@@ -1,8 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-
-// Adjust these imports to match your existing Nodra API utilities.
-
 import { callMethod } from "@/lib/call-method";
 import { Brand } from ".";
 import { BrandFormValues } from "./form";
@@ -28,7 +25,10 @@ export const brandsQueryOptions = () =>
 export async function createBrand(values: BrandFormValues) {
   const result = await callMethod("document.create", {
     doctype: "Brand",
-    doc: values,
+    doc: {
+      ...values,
+      factory: values.factory || null,
+    },
   });
 
   await getQueryClient().invalidateQueries({

@@ -121,7 +121,7 @@ function TeaLandscapeBackground() {
 
 export default function SignInViewPage() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden lg:grid lg:max-w-none lg:grid-cols-[3fr_2fr] lg:px-0">
+    <div className="relative grid min-h-svh w-full grid-cols-1 overflow-x-hidden lg:grid-cols-[3fr_2fr]">
       {/* <Link
         to="/auth/sign-up"
         className={cn(
