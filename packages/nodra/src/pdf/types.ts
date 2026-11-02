@@ -23,19 +23,9 @@ export type PdfCompanyDetails = {
   gstin?: string;
 };
 
-export type PdfHeaderOptions = {
-  company?: PdfCompanyDetails;
-  title: string;
-  documentNo?: string;
-  documentDate?: string;
-  subtitle?: string;
-};
-
 export type PdfOptions<T> = {
   title: string;
   subtitle?: string;
-  documentNo?: string;
-  documentDate?: string;
   company?: PdfCompanyDetails;
   columns: PdfColumn<T>[];
   rows?: T[];
@@ -44,6 +34,12 @@ export type PdfOptions<T> = {
   footerText?: string;
   orientation?: "portrait" | "landscape";
   format?: string | number[];
+};
+
+export type PdfRenderOptions = {
+  orientation?: "portrait" | "landscape";
+  format?: string | number[];
+  render: (pdf: jsPDF) => void;
 };
 
 export type PdfDocument = jsPDF;
