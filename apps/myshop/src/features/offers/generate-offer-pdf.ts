@@ -1,6 +1,9 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+import type { PdfColumn } from "nodra/pdf";
+import { addPdfHeader } from "@/lib/pdf/pdf-header";
+
 export type OfferPdfRow = {
   factory: string;
   lotNo: string;
@@ -10,6 +13,7 @@ export type OfferPdfRow = {
   kgs: number;
   totalKg: number;
   askingRate: number;
+  remarks: string;
 };
 
 type GenerateOfferPdfOptions = {
@@ -18,137 +22,292 @@ type GenerateOfferPdfOptions = {
   rows: OfferPdfRow[];
 };
 
+type AutoTableDocument = jsPDF & {
+  lastAutoTable?: {
+    finalY: number;
+  };
+};
+
+const PAGE_MARGIN = 7;
+const PAGE_BOTTOM_MARGIN = 12;
+
+const TABLE_COLUMN_WIDTHS = [20, 40, 16, 12, 14, 18, 22, 54];
+const TABLE_WIDTH = TABLE_COLUMN_WIDTHS.reduce(
+  (total, width) => total + width,
+  0,
+);
+
+const formatNumber = (value: unknown) => {
+  const number = Number(value ?? 0);
+
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(Number.isFinite(number) ? number : 0);
+};
+
+const offerPdfColumns: PdfColumn<OfferPdfRow>[] = [
+  { header: "INVOICE NO.", key: "lotNo" },
+  { header: "MARK", key: "brand" },
+  { header: "GRADE", key: "grade" },
+  { header: "BAGS", key: "bags", format: formatNumber },
+  { header: "KGS", key: "kgs", format: formatNumber },
+  { header: "TOTAL KGS", key: "totalKg", format: formatNumber },
+  { header: "ASK.RATE", key: "askingRate", format: formatNumber },
+  { header: "Remarks", key: "remarks" },
+];
+
 export function generateOfferPdf({
   offerName,
   offerDate,
   rows,
 }: GenerateOfferPdfOptions) {
   const pdf = new jsPDF({
-    orientation: "landscape",
+    orientation: "portrait",
     unit: "mm",
     format: "a4",
   });
 
-  const formatNumber = (value: number) =>
-    new Intl.NumberFormat("en-IN", {
-      maximumFractionDigits: 2,
-    }).format(value);
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const tableWidth = pageWidth - PAGE_MARGIN * 2;
 
-  const factories = new Map<string, OfferPdfRow[]>();
-
-  // Group offer rows by factory.
-  for (const row of rows) {
-    const factory = row.factory || "Unassigned Factory";
-
-    if (!factories.has(factory)) {
-      factories.set(factory, []);
-    }
-
-    factories.get(factory)!.push(row);
+  // Company header
+  function addCompanyHeader() {
+    return addPdfHeader(pdf, {
+      title: "OFFER SHEET",
+      documentNo: offerName,
+      documentDate: offerDate,
+    });
   }
 
-  // Document heading.
-  pdf.setFontSize(18);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("TEA OFFER SHEET", 148.5, 15, { align: "center" });
+  // Sales contact banner
+  function addSalesContact(y: number) {
+    pdf.setFillColor(232, 242, 232);
+    pdf.rect(PAGE_MARGIN, y - 4, tableWidth, 8, "F");
 
-  // Offer details.
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "normal");
-
-  pdf.text(`Offer No: ${offerName}`, 14, 25);
-  pdf.text(`Offer Date: ${offerDate || "-"}`, 14, 31);
-
-  let currentY = 40;
-
-  for (const [factory, factoryRows] of factories) {
-    const totalBags = factoryRows.reduce((sum, row) => sum + row.bags, 0);
-
-    const totalKg = factoryRows.reduce((sum, row) => sum + row.totalKg, 0);
-
-    pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(46, 95, 55);
 
-    if (currentY > 175) {
-      pdf.addPage();
-      currentY = 25;
+    pdf.text(
+      "Sales Queries: +91 99334 78888 (Sourav Sanghai) | +91 99338 62222 (Bidhan Barman)",
+      pageWidth / 2,
+      y + 1,
+      { align: "center" },
+    );
+
+    return y + 6;
+  }
+
+  // Page decoration
+  const decoratedPages = new Set<number>();
+  let pageContentTop = 0;
+
+  function decorateCurrentPage() {
+    const pageNumber = pdf.getNumberOfPages();
+
+    if (decoratedPages.has(pageNumber)) {
+      return pageContentTop;
     }
 
-    pdf.text(`${factory}`, 14, currentY);
-    currentY += 2;
+    const headerBottom = addCompanyHeader();
+    const contactBottom = addSalesContact(headerBottom);
+
+    decoratedPages.add(pageNumber);
+
+    return contactBottom + 4;
+  }
+
+  // Initial page
+  let currentY = decorateCurrentPage();
+  pageContentTop = currentY;
+
+  // Group rows by factory
+  const factories = new Map<string, OfferPdfRow[]>();
+
+  for (const row of rows) {
+    const factory = row.factory?.trim() || "Unassigned Factory";
+    const factoryRows = factories.get(factory) ?? [];
+
+    factoryRows.push(row);
+    factories.set(factory, factoryRows);
+  }
+
+  const sortedFactories = [...factories.entries()].sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
+
+  // Render factory-wise sections
+  for (const [factory, factoryRows] of sortedFactories) {
+    // Prepare factory title
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+
+    const titleLines = pdf.splitTextToSize(
+      factory.toUpperCase(),
+      tableWidth - 6,
+    );
+
+    const titleHeight = Math.max(8, titleLines.length * 4 + 2);
+
+    // Reserve space for title, table header and first data row.
+    const requiredSpace = titleHeight + 1 + 18;
+
+    if (currentY + requiredSpace > pageHeight - PAGE_BOTTOM_MARGIN) {
+      pdf.addPage();
+      currentY = decorateCurrentPage();
+    }
+
+    const PDF_BORDER_COLOR: [number, number, number] = [0, 0, 0];
+    const PDF_BORDER_WIDTH = 0.25;
+
+    // Factory title block — rendered BEFORE the table header
+    pdf.setFillColor(255, 225, 225);
+    pdf.setFillColor(255, 225, 225);
+    pdf.setDrawColor(...PDF_BORDER_COLOR);
+    pdf.setLineWidth(PDF_BORDER_WIDTH);
+
+    pdf.rect(PAGE_MARGIN, currentY, tableWidth, titleHeight, "FD");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+
+    pdf.text(titleLines, pageWidth / 2, currentY + 4, {
+      align: "center",
+      lineHeightFactor: 1.1,
+    });
+
+    // Main table starts below the factory title
+    const tableStartY = currentY + titleHeight + 1;
 
     autoTable(pdf, {
-      startY: currentY + 4,
-      head: [
-        [
-          "Lot No.",
-          "Brand",
-          "Grade",
-          "Bags",
-          "Kgs",
-          "Total Kg",
-          "Asking Price",
-        ],
-      ],
-      body: factoryRows.map((row) => [
-        row.lotNo,
-        row.brand,
-        row.grade,
-        formatNumber(row.bags),
-        formatNumber(row.kgs),
-        formatNumber(row.totalKg),
-        formatNumber(row.askingRate),
-      ]),
-      foot: [
-        [
-          "Factory Total",
-          "",
-          "",
-          formatNumber(totalBags),
-          "",
-          formatNumber(totalKg),
-          "",
-        ],
-      ],
+      head: [offerPdfColumns.map((column) => column.header)],
+
+      body: factoryRows.map((row) =>
+        offerPdfColumns.map((column) => {
+          const value = row[column.key];
+
+          if (column.format) {
+            return column.format(value, row);
+          }
+
+          if (column.key === "brand") {
+            return String(value ?? "").toUpperCase();
+          }
+
+          return String(value ?? "");
+        }),
+      ),
+
+      startY: tableStartY,
+      tableWidth,
+
       theme: "grid",
+
       styles: {
-        fontSize: 9,
-        cellPadding: 3,
+        font: "helvetica",
+        fontSize: 8,
+        cellPadding: 1.8,
         textColor: 0,
-        lineColor: [190, 190, 190],
-        lineWidth: 0.15,
+        lineColor: PDF_BORDER_COLOR,
+        lineWidth: PDF_BORDER_WIDTH,
+        halign: "center",
+        valign: "middle",
+        overflow: "linebreak",
       },
+
       headStyles: {
-        fillColor: [235, 235, 235],
-        textColor: 0,
+        fillColor: [221, 235, 247],
+        textColor: [31, 78, 121],
         fontStyle: "bold",
-        lineColor: [190, 190, 190],
-        lineWidth: 0.15,
+        fontSize: 8,
+        halign: "center",
+        valign: "middle",
       },
-      footStyles: {
-        fillColor: 255,
-        textColor: 0,
-        fontStyle: "bold",
-        lineColor: [190, 190, 190],
-        lineWidth: 0.15,
+
+      columnStyles: {
+        0: { cellWidth: TABLE_COLUMN_WIDTHS[0] },
+        1: {
+          cellWidth: TABLE_COLUMN_WIDTHS[1],
+          fontStyle: "bold",
+        },
+        2: { cellWidth: TABLE_COLUMN_WIDTHS[2] },
+        3: { cellWidth: TABLE_COLUMN_WIDTHS[3] },
+        4: { cellWidth: TABLE_COLUMN_WIDTHS[4] },
+        5: { cellWidth: TABLE_COLUMN_WIDTHS[5] },
+        6: { cellWidth: TABLE_COLUMN_WIDTHS[6] },
+        7: { cellWidth: TABLE_COLUMN_WIDTHS[7] },
       },
+
+      // Highlight asking rate cells without changing the blue header.
+      didParseCell: (data) => {
+        if (data.section === "body" && data.column.index === 6) {
+          data.cell.styles.fillColor = [255, 249, 219];
+          data.cell.styles.textColor = [120, 90, 20];
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.halign = "center";
+        }
+      },
+
       margin: {
-        top: 7,
-        right: 7,
-        bottom: 7,
-        left: 7,
+        top: pageContentTop,
+        right: PAGE_MARGIN,
+        bottom: PAGE_BOTTOM_MARGIN,
+        left: PAGE_MARGIN,
+      },
+
+      showHead: "everyPage",
+      rowPageBreak: "avoid",
+
+      // Add company header and contact banner to automatic pages.
+      didDrawPage: () => {
+        decorateCurrentPage();
+
+        const table = (pdf as AutoTableDocument).lastAutoTable;
+
+        if (!table) return;
+
+        pdf.setDrawColor(...PDF_BORDER_COLOR);
+        pdf.setLineWidth(PDF_BORDER_WIDTH);
+
+        // Outer table border
+        pdf.rect(
+          PAGE_MARGIN,
+          tableStartY,
+          tableWidth,
+          table.finalY - tableStartY,
+        );
       },
     });
 
-    const table = (
-      pdf as jsPDF & {
-        lastAutoTable?: { finalY: number };
-      }
-    ).lastAutoTable;
+    const table = (pdf as AutoTableDocument).lastAutoTable;
 
-    currentY = (table?.finalY ?? currentY + 20) + 12;
+    currentY = (table?.finalY ?? tableStartY) + 7;
   }
 
-  // Download the PDF.
-  pdf.save(`${offerName}-Offer.pdf`);
+  // Page numbers
+  const totalPages = pdf.getNumberOfPages();
+
+  for (let page = 1; page <= totalPages; page++) {
+    pdf.setPage(page);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+
+    pdf.text(
+      `Page ${page} of ${totalPages}`,
+      pageWidth - PAGE_MARGIN,
+      pageHeight - 5,
+      { align: "right" },
+    );
+  }
+
+  // Download PDF
+  const safeFilename = offerName.replace(/[^a-zA-Z0-9-_]/g, "_") || "Offer";
+
+  pdf.save(`${safeFilename}-Offer.pdf`);
+
+  return pdf;
 }

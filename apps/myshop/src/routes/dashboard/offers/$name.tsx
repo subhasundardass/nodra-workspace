@@ -4,14 +4,10 @@ import type { DocTypeDefinition } from "nodra";
 import { toast } from "sonner";
 
 import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
-import { callMethod } from "@/lib/call-method";
-import { OfferForm } from "@/features/offers/form";
-
-import {
-  generateOfferPdf,
-  type OfferPdfRow,
-} from "@/features/offers/generate-offer-pdf";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
+import { OfferForm } from "@/features/offers/form";
+import { generateOfferPdf } from "@/features/offers/generate-offer-pdf";
+import { callMethod } from "@/lib/call-method";
 
 type FormValues = Record<string, unknown>;
 type DocumentRecord = Record<string, unknown>;
@@ -25,7 +21,10 @@ type LotRecord = {
   warehouse?: string;
   bags?: number;
   total_kg?: number;
+  remarks: string;
 };
+
+type OfferItem = Record<string, unknown>;
 
 type LoaderData = {
   doctype: DocTypeDefinition;
@@ -82,12 +81,10 @@ function OfferDetailRoute() {
       const { name, owner, creation, modified, modified_by, ...updatedDoc } =
         values;
 
-      console.log("OFFER UPDATE VALUES:", updatedDoc);
-
-      // Remove empty objects recursively.
+      // Remove empty objects recursively before updating the document.
       function cleanDocument(value: unknown): unknown {
         if (Array.isArray(value)) {
-          return value.map(cleanDocument);
+          return value.map(cleanDocument).filter((item) => item !== undefined);
         }
 
         if (value && typeof value === "object") {
@@ -97,7 +94,7 @@ function OfferDetailRoute() {
 
           return Object.fromEntries(
             entries
-              .map(([key, item]) => [key, cleanDocument(item)])
+              .map(([key, item]) => [key, cleanDocument(item)] as const)
               .filter(([, item]) => item !== undefined),
           );
         }
@@ -123,45 +120,47 @@ function OfferDetailRoute() {
     }
   }
 
-  function handleGenerateOffer() {
+  function getOfferPdfRows() {
+    const items = Array.isArray(doc.offer_lots)
+      ? (doc.offer_lots as OfferItem[])
+      : [];
+
+    return items.map((item) => {
+      const lot = lots.find((entry) => entry.name === String(item.lot ?? ""));
+
+      const bags = Number(item.bags ?? lot?.bags ?? 0);
+      const kgs = Number(item.net_kg_per_bag ?? 0);
+      const totalKg = Number(item.total_kg ?? 0);
+
+      return {
+        factory:
+          String(item.factory ?? lot?.factory ?? "").trim() ||
+          "Unspecified Factory",
+        lotNo: String(item.lot_no ?? lot?.lot_no ?? ""),
+        brand: String(item.original_brand ?? lot?.original_brand ?? ""),
+        grade: String(item.grade ?? lot?.grade ?? ""),
+        bags,
+        kgs,
+        totalKg,
+        askingRate: 0,
+        remarks: String(item.remarks ?? ""),
+      };
+    });
+  }
+
+  function handleGenerateOffer(): void {
     try {
-      const items = Array.isArray(doc.offer_lots)
-        ? (doc.offer_lots as Record<string, unknown>[])
-        : [];
-
-      console.log("OFFER LOT ROW:", items[0]);
-
-      Object.entries(doc).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          console.log(`CHILD TABLE: ${key}`, value);
-        }
-      });
-
-      const rows: OfferPdfRow[] = items.map((item) => {
-        const lot = lots.find((entry) => entry.name === String(item.lot ?? ""));
-
-        const bags = Number(item.bags ?? lot?.bags ?? 0);
-        const kgs = Number(item.kgs ?? 0);
-
-        return {
-          factory: String(lot?.factory ?? ""),
-          lotNo: String(lot?.lot_no ?? ""),
-          brand: String(lot?.original_brand ?? ""),
-          grade: String(item.grade ?? lot?.grade ?? ""),
-          bags,
-          kgs,
-          totalKg: bags * kgs,
-          askingRate: Number(item.asking_rate ?? 0),
-        };
-      });
+      const rows = getOfferPdfRows();
 
       if (rows.length === 0) {
         toast.error("No offer items found.");
         return;
       }
 
+      const offerName = String(doc.name ?? "Offer");
+
       generateOfferPdf({
-        offerName: String(doc.name ?? "Offer"),
+        offerName,
         offerDate: String(doc.offer_date ?? ""),
         rows,
       });
