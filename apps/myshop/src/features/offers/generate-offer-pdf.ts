@@ -2,7 +2,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import type { PdfColumn } from "nodra/pdf";
-import { addPdfHeader } from "@/lib/pdf/pdf-header";
+import { addPdfHeader } from "@/lib/pdf/offer-header";
+import footerImage from "@/assets/offer-trust.png?inline";
 
 export type OfferPdfRow = {
   factory: string;
@@ -29,13 +30,11 @@ type AutoTableDocument = jsPDF & {
 };
 
 const PAGE_MARGIN = 7;
-const PAGE_BOTTOM_MARGIN = 12;
-
+const PAGE_BOTTOM_MARGIN = 34;
+const FOOTER_IMAGE_HEIGHT = 24;
 const TABLE_COLUMN_WIDTHS = [20, 40, 16, 12, 14, 18, 22, 54];
-const TABLE_WIDTH = TABLE_COLUMN_WIDTHS.reduce(
-  (total, width) => total + width,
-  0,
-);
+const PDF_BORDER_COLOR: [number, number, number] = [0, 0, 0];
+const PDF_BORDER_WIDTH = 0.25;
 
 const formatNumber = (value: unknown) => {
   const number = Number(value ?? 0);
@@ -99,6 +98,31 @@ export function generateOfferPdf({
     return y + 6;
   }
 
+  // Footer image and page number
+  function addPdfFooter(pageNumber: number, totalPages: number) {
+    const imageY = pageHeight - FOOTER_IMAGE_HEIGHT - 8;
+
+    pdf.addImage(
+      footerImage,
+      "JPEG",
+      PAGE_MARGIN,
+      imageY,
+      tableWidth,
+      FOOTER_IMAGE_HEIGHT,
+    );
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+
+    pdf.text(
+      `Page ${pageNumber} of ${totalPages}`,
+      pageWidth - PAGE_MARGIN,
+      pageHeight - 4,
+      { align: "right" },
+    );
+  }
+
   // Page decoration
   const decoratedPages = new Set<number>();
   let pageContentTop = 0;
@@ -138,7 +162,16 @@ export function generateOfferPdf({
   );
 
   // Render factory-wise sections
+
   for (const [factory, factoryRows] of sortedFactories) {
+    // Sort lots in ascending natural order
+    const sortedRows = [...factoryRows].sort((a, b) =>
+      a.lotNo.localeCompare(b.lotNo, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
+    );
+
     // Prepare factory title
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(10);
@@ -158,11 +191,7 @@ export function generateOfferPdf({
       currentY = decorateCurrentPage();
     }
 
-    const PDF_BORDER_COLOR: [number, number, number] = [0, 0, 0];
-    const PDF_BORDER_WIDTH = 0.25;
-
-    // Factory title block — rendered BEFORE the table header
-    pdf.setFillColor(255, 225, 225);
+    // Factory title block
     pdf.setFillColor(255, 225, 225);
     pdf.setDrawColor(...PDF_BORDER_COLOR);
     pdf.setLineWidth(PDF_BORDER_WIDTH);
@@ -181,11 +210,30 @@ export function generateOfferPdf({
     // Main table starts below the factory title
     const tableStartY = currentY + titleHeight + 1;
 
+    //--Blank row Index
+    const blankRowIndexes = new Set<number>();
+    let bodyRowIndex = 0;
+
+    for (let i = 0; i < sortedRows.length; i++) {
+      bodyRowIndex++;
+
+      const nextRow = sortedRows[i + 1];
+
+      if (
+        nextRow &&
+        (sortedRows[i]?.brand ?? "").trim().toLowerCase() !==
+          (nextRow?.brand ?? "").trim().toLowerCase()
+      ) {
+        blankRowIndexes.add(bodyRowIndex);
+        bodyRowIndex++;
+      }
+    }
+
     autoTable(pdf, {
       head: [offerPdfColumns.map((column) => column.header)],
 
-      body: factoryRows.map((row) =>
-        offerPdfColumns.map((column) => {
+      body: sortedRows.flatMap((row, index) => {
+        const currentRow = offerPdfColumns.map((column) => {
           const value = row[column.key];
 
           if (column.format) {
@@ -197,8 +245,20 @@ export function generateOfferPdf({
           }
 
           return String(value ?? "");
-        }),
-      ),
+        });
+
+        const nextRow = sortedRows[index + 1];
+
+        // Add one blank row when the brand changes.
+        if (
+          nextRow &&
+          row.brand.trim().toLowerCase() !== nextRow.brand.trim().toLowerCase()
+        ) {
+          return [currentRow, offerPdfColumns.map(() => "")];
+        }
+
+        return [currentRow];
+      }),
 
       startY: tableStartY,
       tableWidth,
@@ -240,12 +300,21 @@ export function generateOfferPdf({
         7: { cellWidth: TABLE_COLUMN_WIDTHS[7] },
       },
 
-      // Highlight asking rate cells without changing the blue header.
+      // Highlight asking rate cells
       didParseCell: (data) => {
-        if (data.section === "body" && data.column.index === 6) {
+        // Blank separator row takes priority.
+        if (data.section === "body" && blankRowIndexes.has(data.row.index)) {
+          data.cell.styles.minCellHeight = 0.8;
+          data.cell.styles.cellPadding = 0;
+          data.cell.styles.lineWidth = 0.15;
+          data.cell.styles.fillColor = [225, 240, 250];
+        }
+        // Asking Rate column styling.
+        else if (data.section === "body" && data.column.index === 6) {
           data.cell.styles.fillColor = [255, 249, 219];
           data.cell.styles.textColor = [120, 90, 20];
           data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fontSize = 9;
           data.cell.styles.halign = "center";
         }
       },
@@ -286,22 +355,12 @@ export function generateOfferPdf({
     currentY = (table?.finalY ?? tableStartY) + 7;
   }
 
-  // Page numbers
+  // Footer image and page numbers on every page
   const totalPages = pdf.getNumberOfPages();
 
   for (let page = 1; page <= totalPages; page++) {
     pdf.setPage(page);
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-
-    pdf.text(
-      `Page ${page} of ${totalPages}`,
-      pageWidth - PAGE_MARGIN,
-      pageHeight - 5,
-      { align: "right" },
-    );
+    addPdfFooter(page, totalPages);
   }
 
   // Download PDF

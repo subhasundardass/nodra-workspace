@@ -4,7 +4,8 @@ import { company as defaultCompany } from "@/config/company";
 export type PdfCompanyDetails = {
   name?: string;
   logo?: string;
-  address?: string;
+  address1?: string;
+  address2?: string;
   phone?: string;
   email?: string;
   website?: string;
@@ -21,89 +22,101 @@ export type PdfHeaderOptions = {
 const LEFT = 7;
 const RIGHT = 7;
 const TOP = 6;
+
 const LOGO_WIDTH = 50;
 const LOGO_HEIGHT = 9;
+
 const DETAIL_FONT_SIZE = 7;
+const TITLE_FONT_SIZE = 13;
+const DATE_FONT_SIZE = 8;
+
+// Vertical spacing (mm)
+const HEADER_DIVIDER_GAP = 2;
+const TITLE_GAP = 4;
+const DATE_GAP = 3;
+const BOTTOM_DIVIDER_GAP = 2;
+const CONTENT_GAP = 3;
+
+function formatPdfDate(value: string): string {
+  // Preserve date-only values without timezone conversion.
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return [
+    String(date.getDate()).padStart(2, "0"),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    date.getFullYear(),
+  ].join("/");
+}
 
 export function addPdfHeader(pdf: jsPDF, options: PdfHeaderOptions): number {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const rightX = pageWidth - RIGHT;
 
-  // Use global MyShop company details by default.
   const company = options.company ?? defaultCompany;
 
   // --------------------------------------------------
-  // Logo - left side
+  // Logo
   // --------------------------------------------------
+
+  let logoHeight = LOGO_HEIGHT;
 
   if (company.logo) {
     const imageProperties = pdf.getImageProperties(company.logo);
     const aspectRatio = imageProperties.width / imageProperties.height;
 
-    const logoWidth = LOGO_WIDTH;
-    const logoHeight = logoWidth / aspectRatio;
+    logoHeight = LOGO_WIDTH / aspectRatio;
 
-    pdf.addImage(company.logo, "PNG", LEFT, TOP, logoWidth, logoHeight);
+    pdf.addImage(company.logo, "PNG", LEFT, TOP, LOGO_WIDTH, logoHeight);
   }
 
   // --------------------------------------------------
-  // Company details - right side
+  // Company details
   // --------------------------------------------------
 
-  const detailsX = rightX;
   const detailsWidth = pageWidth - LEFT - RIGHT - LOGO_WIDTH - 10;
 
   let companyY = TOP + 1;
-
-  // Enable if Company Name show in PDF
-  // if (company.name) {
-  //   pdf.setFont("helvetica", "bold");
-  //   pdf.setFontSize(11);
-  //   pdf.setTextColor(25, 45, 65);
-
-  //   pdf.text(company.name, detailsX, companyY, {
-  //     align: "right",
-  //   });
-
-  //   companyY += 4.5;
-  // }
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(DETAIL_FONT_SIZE);
   pdf.setTextColor(75, 75, 75);
 
-  if (company.address) {
-    const addressLines = pdf.splitTextToSize(company.address, detailsWidth);
+  const addressLines = [company.address1, company.address2].filter(
+    (value): value is string => Boolean(value?.trim()),
+  );
 
-    pdf.text(addressLines, detailsX, companyY, {
+  if (addressLines.length > 0) {
+    pdf.text(addressLines, rightX, companyY, {
       align: "right",
+      lineHeightFactor: 1.15,
     });
 
     companyY += addressLines.length * 3;
   }
 
-  const contactDetails = [
-    company.phone ? `Phone: ${company.phone}` : undefined,
-    // company.email ? `Email: ${company.email}` : undefined,
-    // company.website ? `Web: ${company.website}` : undefined,
-    // company.gstin ? `GSTIN: ${company.gstin}` : undefined,
-  ].filter((value): value is string => Boolean(value));
+  // if (company.phone) {
+  //   pdf.text(`Phone: ${company.phone}`, rightX, companyY, {
+  //     align: "right",
+  //   });
 
-  for (const detail of contactDetails) {
-    const lines = pdf.splitTextToSize(detail, detailsWidth);
-
-    pdf.text(lines, detailsX, companyY, {
-      align: "right",
-    });
-
-    companyY += lines.length * 3;
-  }
+  //   companyY += 3;
+  // }
 
   // --------------------------------------------------
   // Header divider
   // --------------------------------------------------
 
-  const dividerY = Math.max(TOP + LOGO_HEIGHT, companyY) + 1;
+  const dividerY = Math.max(TOP + logoHeight, companyY) + HEADER_DIVIDER_GAP;
 
   pdf.setDrawColor(175, 185, 195);
   pdf.setLineWidth(0.3);
@@ -113,10 +126,10 @@ export function addPdfHeader(pdf: jsPDF, options: PdfHeaderOptions): number {
   // Document title
   // --------------------------------------------------
 
-  const titleY = dividerY + 5;
+  const titleY = dividerY + TITLE_GAP;
 
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(13);
+  pdf.setFontSize(TITLE_FONT_SIZE);
   pdf.setTextColor(25, 45, 65);
 
   pdf.text(options.title.toUpperCase(), pageWidth / 2, titleY, {
@@ -124,34 +137,37 @@ export function addPdfHeader(pdf: jsPDF, options: PdfHeaderOptions): number {
   });
 
   // --------------------------------------------------
-  // Document number and date
+  // Document date
   // --------------------------------------------------
 
-  const infoY = titleY + 5;
+  const hasDate = Boolean(options.documentDate);
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
-  pdf.setTextColor(65, 65, 65);
-
-  if (options.documentNo) {
-    pdf.text(`No: ${options.documentNo}`, LEFT, infoY);
-  }
+  let bottomY = titleY + BOTTOM_DIVIDER_GAP;
 
   if (options.documentDate) {
-    pdf.text(`Date: ${options.documentDate}`, rightX, infoY, {
+    const formattedDate = formatPdfDate(options.documentDate);
+
+    const dateY = titleY + DATE_GAP;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(DATE_FONT_SIZE);
+    pdf.setTextColor(65, 65, 65);
+
+    pdf.text(`Date: ${formattedDate}`, rightX, dateY, {
       align: "right",
     });
+
+    bottomY = dateY + BOTTOM_DIVIDER_GAP;
   }
 
   // --------------------------------------------------
   // Bottom divider
   // --------------------------------------------------
 
-  const bottomY = infoY + 2;
-
   pdf.setDrawColor(175, 185, 195);
   pdf.setLineWidth(0.25);
   pdf.line(LEFT, bottomY, rightX, bottomY);
 
-  return bottomY + 5;
+  // Starting position for the next PDF section
+  return bottomY + CONTENT_GAP;
 }

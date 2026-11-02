@@ -142,7 +142,7 @@ function OfferDetailRoute() {
         bags,
         kgs,
         totalKg,
-        askingRate: 0,
+        askingRate: Number(item.asking_rate ?? 0),
         remarks: String(item.remarks ?? ""),
       };
     });

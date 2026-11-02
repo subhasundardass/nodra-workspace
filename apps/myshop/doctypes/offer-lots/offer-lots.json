@@ -85,6 +85,13 @@
       "in_list_view": true
     },
     {
+      "fieldname": "asking_rate",
+      "fieldtype": "Currency",
+      "label": "Asking Rate",
+      "default": 0,
+      "in_list_view": true
+    },
+    {
       "fieldname": "remarks",
       "fieldtype": "SmallText",
       "label": "Remarks"

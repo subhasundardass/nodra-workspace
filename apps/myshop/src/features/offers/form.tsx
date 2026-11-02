@@ -4,6 +4,7 @@ import DateField from "@/components/doctype/fields/date-field";
 import type { NodraForm } from "@/components/doctype/templates/doctype-form-template";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from "lucide-react";
 
 interface LotOption {
   name: string;
@@ -224,7 +225,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                   bag_to_serial_no: lot.bag_to_serial_no,
                   net_kg_per_bag: lot.net_kg_per_bag ?? 0,
                   total_kg: getLotTotalKg(lot),
-                  asking_rate: undefined,
+                  asking_rate: 0,
                   remarks: "",
                 });
               }
@@ -272,6 +273,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                           <th className="px-2 py-2 font-medium">Bags</th>
                           <th className="px-2 py-2 font-medium">Total KG</th>
                           <th className="px-2 py-2 font-medium">Asking Rate</th>
+                          <th className="px-2 py-2 font-medium">Remarks</th>
                           <th className="px-2 py-2 font-medium">Action</th>
                         </tr>
                       </thead>
@@ -302,19 +304,43 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                     name={rateField.name}
                                     type="number"
                                     min="0"
-                                    step="0.01"
-                                    value={String(rateField.state.value ?? "")}
+                                    step="1"
+                                    value={String(
+                                      Math.round(
+                                        Number(rateField.state.value ?? 0),
+                                      ),
+                                    )}
                                     onBlur={rateField.handleBlur}
                                     onChange={(event) => {
                                       const value = event.target.value;
                                       rateField.handleChange(
-                                        value === ""
-                                          ? undefined
-                                          : Number(value),
+                                        value === "" ? 0 : Number(value),
                                       );
                                     }}
                                     placeholder="Rate"
                                     className="h-8 w-28 rounded-md border border-input bg-background px-2 text-sm"
+                                  />
+                                )}
+                              </form.Field>
+                            </td>
+                            <td className="px-2 py-2">
+                              <form.Field name={`offer_lots[${index}].remarks`}>
+                                {(remarksField) => (
+                                  <Textarea
+                                    id={remarksField.name}
+                                    name={remarksField.name}
+                                    value={String(
+                                      remarksField.state.value ?? "",
+                                    )}
+                                    onBlur={remarksField.handleBlur}
+                                    onChange={(event) =>
+                                      remarksField.handleChange(
+                                        event.target.value,
+                                      )
+                                    }
+                                    placeholder="Enter remarks"
+                                    className="min-h-8 min-w-[180px] resize-y"
+                                    rows={1}
                                   />
                                 )}
                               </form.Field>
@@ -325,9 +351,11 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                 onClick={() =>
                                   updateRows(rows.filter((_, i) => i !== index))
                                 }
-                                className="text-sm font-medium text-destructive hover:underline"
+                                title="Remove lot"
+                                aria-label="Remove lot"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
                               >
-                                Remove
+                                <Trash2 className="h-4 w-4" />
                               </button>
                             </td>
                           </tr>

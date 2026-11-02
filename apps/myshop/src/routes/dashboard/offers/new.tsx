@@ -28,6 +28,8 @@ interface OfferLotRecord {
   bags?: number;
   net_kg_per_bag?: number;
   total_kg?: number;
+  asking_rate?: number;
+  remarks?: string;
 }
 
 interface OfferFormValues extends Record<string, unknown> {
