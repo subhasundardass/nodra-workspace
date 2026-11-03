@@ -46,6 +46,7 @@ import { Route as DashboardPartyNewRouteImport } from './routes/dashboard/party/
 import { Route as DashboardPaymentReceiptsIndexRouteImport } from './routes/dashboard/payment-receipts/index'
 import { Route as DashboardPaymentReceiptsNameRouteImport } from './routes/dashboard/payment-receipts/$name'
 import { Route as DashboardPaymentReceiptsNewRouteImport } from './routes/dashboard/payment-receipts/new'
+import { Route as DashboardSalebookIndexRouteImport } from './routes/dashboard/salebook/index'
 import { Route as DashboardSalesInvoicesIndexRouteImport } from './routes/dashboard/sales-invoices/index'
 import { Route as DashboardSalesInvoicesNameRouteImport } from './routes/dashboard/sales-invoices/$name'
 import { Route as DashboardSalesInvoicesNewRouteImport } from './routes/dashboard/sales-invoices/new'
@@ -258,6 +259,11 @@ const DashboardPaymentReceiptsNewRoute =
     path: '/payment-receipts/new',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardSalebookIndexRoute = DashboardSalebookIndexRouteImport.update({
+  id: '/salebook/',
+  path: '/salebook/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardSalesInvoicesIndexRoute =
   DashboardSalesInvoicesIndexRouteImport.update({
     id: '/sales-invoices/',
@@ -418,6 +424,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/salebook/': typeof DashboardSalebookIndexRoute
   '/dashboard/sales-invoices/': typeof DashboardSalesInvoicesIndexRoute
   '/dashboard/sales-orders/': typeof DashboardSalesOrdersIndexRoute
   '/dashboard/sales-returns/': typeof DashboardSalesReturnsIndexRoute
@@ -475,6 +482,7 @@ export interface FileRoutesByTo {
   '/dashboard/orders': typeof DashboardOrdersIndexRoute
   '/dashboard/party': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/salebook': typeof DashboardSalebookIndexRoute
   '/dashboard/sales-invoices': typeof DashboardSalesInvoicesIndexRoute
   '/dashboard/sales-orders': typeof DashboardSalesOrdersIndexRoute
   '/dashboard/sales-returns': typeof DashboardSalesReturnsIndexRoute
@@ -534,6 +542,7 @@ export interface FileRoutesById {
   '/dashboard/orders/': typeof DashboardOrdersIndexRoute
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
+  '/dashboard/salebook/': typeof DashboardSalebookIndexRoute
   '/dashboard/sales-invoices/': typeof DashboardSalesInvoicesIndexRoute
   '/dashboard/sales-orders/': typeof DashboardSalesOrdersIndexRoute
   '/dashboard/sales-returns/': typeof DashboardSalesReturnsIndexRoute
@@ -594,6 +603,7 @@ export interface FileRouteTypes {
     | '/dashboard/orders/'
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
+    | '/dashboard/salebook/'
     | '/dashboard/sales-invoices/'
     | '/dashboard/sales-orders/'
     | '/dashboard/sales-returns/'
@@ -651,6 +661,7 @@ export interface FileRouteTypes {
     | '/dashboard/orders'
     | '/dashboard/party'
     | '/dashboard/payment-receipts'
+    | '/dashboard/salebook'
     | '/dashboard/sales-invoices'
     | '/dashboard/sales-orders'
     | '/dashboard/sales-returns'
@@ -709,6 +720,7 @@ export interface FileRouteTypes {
     | '/dashboard/orders/'
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
+    | '/dashboard/salebook/'
     | '/dashboard/sales-invoices/'
     | '/dashboard/sales-orders/'
     | '/dashboard/sales-returns/'
@@ -990,6 +1002,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPaymentReceiptsNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/salebook/': {
+      id: '/dashboard/salebook/'
+      path: '/salebook'
+      fullPath: '/dashboard/salebook/'
+      preLoaderRoute: typeof DashboardSalebookIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/sales-invoices/': {
       id: '/dashboard/sales-invoices/'
       path: '/sales-invoices'
@@ -1165,6 +1184,7 @@ interface DashboardRouteRouteChildren {
   DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
   DashboardPartyIndexRoute: typeof DashboardPartyIndexRoute
   DashboardPaymentReceiptsIndexRoute: typeof DashboardPaymentReceiptsIndexRoute
+  DashboardSalebookIndexRoute: typeof DashboardSalebookIndexRoute
   DashboardSalesInvoicesIndexRoute: typeof DashboardSalesInvoicesIndexRoute
   DashboardSalesOrdersIndexRoute: typeof DashboardSalesOrdersIndexRoute
   DashboardSalesReturnsIndexRoute: typeof DashboardSalesReturnsIndexRoute
@@ -1213,6 +1233,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
   DashboardPartyIndexRoute: DashboardPartyIndexRoute,
   DashboardPaymentReceiptsIndexRoute: DashboardPaymentReceiptsIndexRoute,
+  DashboardSalebookIndexRoute: DashboardSalebookIndexRoute,
   DashboardSalesInvoicesIndexRoute: DashboardSalesInvoicesIndexRoute,
   DashboardSalesOrdersIndexRoute: DashboardSalesOrdersIndexRoute,
   DashboardSalesReturnsIndexRoute: DashboardSalesReturnsIndexRoute,

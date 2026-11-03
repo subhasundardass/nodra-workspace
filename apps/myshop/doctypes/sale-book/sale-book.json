@@ -1,0 +1,266 @@
+{
+  "name": "SaleBook",
+  "module": "App",
+  "naming_series": "SBYY#####",
+  "naming_rule": "series",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "lot_no",
+  "search_fields": [
+    "lot_no",
+    "brand",
+    "broker"
+  ],
+  "fields": [
+    {
+      "fieldname": "sale_date",
+      "fieldtype": "Date",
+      "label": "Sale Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot",
+      "fieldtype": "Link",
+      "label": "Lot",
+      "options": "Lots",
+      "reqd": true
+    },
+    {
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot_no",
+      "fieldtype": "Data",
+      "label": "Lot No",
+      "reqd": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "original_brand",
+      "fieldtype": "Link",
+      "label": "Original Brand",
+      "options": "Brand",
+      "read_only": true
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "label": "Mark / Brand",
+      "options": "Brand",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "original_grade",
+      "fieldtype": "Link",
+      "label": "Original Grade",
+      "options": "Grades",
+      "read_only": true
+    },
+    {
+      "fieldname": "grade",
+      "fieldtype": "Link",
+      "label": "Grade",
+      "options": "Grades",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "fieldtype": "Int",
+      "label": "Bags",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "net_kg_per_bag",
+      "fieldtype": "Float",
+      "label": "KG Per Bag",
+      "read_only": true
+    },
+    {
+      "fieldname": "total_kg",
+      "fieldtype": "Float",
+      "label": "Total KGs",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "arrival_date",
+      "fieldtype": "Date",
+      "label": "Arrival Date",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "tea_testing",
+      "fieldtype": "Link",
+      "label": "Tea Testing",
+      "options": "TeaTesting",
+      "read_only": true
+    },
+    {
+      "fieldname": "test_information",
+      "fieldtype": "Small Text",
+      "label": "Test Information",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "tf",
+      "fieldtype": "Data",
+      "label": "T/F",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sale_type",
+      "fieldtype": "Select",
+      "label": "Type",
+      "options": [
+        "Bid",
+        "Advance"
+      ],
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "offer",
+      "fieldtype": "Link",
+      "label": "Offer",
+      "options": "OfferSheet",
+      "read_only": true
+    },
+    {
+      "fieldname": "asking_price",
+      "fieldtype": "Float",
+      "label": "Asking Price",
+      "default": 0,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "rate",
+      "fieldtype": "Float",
+      "label": "Rate",
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "broker",
+      "fieldtype": "Link",
+      "label": "Broker",
+      "options": "Broker",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "Small Text",
+      "label": "Remarks",
+      "reqd": false
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Data",
+      "label": "Status",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Reopen",
+        "to": "Draft",
+        "roles": [
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
+    }
+  ]
+}

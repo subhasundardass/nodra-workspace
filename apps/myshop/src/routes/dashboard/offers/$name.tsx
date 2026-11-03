@@ -172,7 +172,7 @@ function OfferDetailRoute() {
     }
   }
 
-  const isConfirmed = doc.workflow_state === "Draft";
+  const isConfirmed = doc.workflow_state === "Confirmed";
 
   const offerActions: GlobalToolbarAction[] = isConfirmed
     ? [

@@ -108,11 +108,7 @@ type LotOption = SalesOrderLot & {
   availableBags: number;
 };
 
-<<<<<<< HEAD
-const SALES_CHANNELS = ["Direct Sale", "MNC", "Warehouse Sale", "Other"];
-=======
 const SALES_CHANNELS = ["Direct Sale", "Auction House", "MNC"];
->>>>>>> origin/offer
 
 function isEnabled(value: unknown): boolean {
   return value === true || value === 1 || value === "1" || value === "true";

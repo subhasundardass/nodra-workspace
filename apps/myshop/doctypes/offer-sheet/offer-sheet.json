@@ -63,7 +63,7 @@
       "label": "Workflow State",
       "options": [
         "Draft",
-        "Active",
+        "Confirmed",
         "Cancelled"
       ],
       "default": "Draft",
@@ -83,7 +83,7 @@
         "color": "gray"
       },
       {
-        "state": "Active",
+        "state": "Confirmed",
         "doc_status": 51,
         "color": "green"
       },
@@ -97,8 +97,8 @@
     "transitions": [
       {
         "from": "Draft",
-        "action": "Activate",
-        "to": "Active",
+        "action": "Confirm",
+        "to": "Confirmed",
         "roles": [
           "Administrator",
           "System Manager"
@@ -106,15 +106,15 @@
       },
       {
         "from": "Draft",
-        "action": "Cancel",
         "to": "Cancelled",
+        "action": "Cancel",
         "roles": [
           "Administrator",
           "System Manager"
         ]
       },
       {
-        "from": "Active",
+        "from": "Confirmed",
         "action": "Cancel",
         "to": "Cancelled",
         "roles": [
