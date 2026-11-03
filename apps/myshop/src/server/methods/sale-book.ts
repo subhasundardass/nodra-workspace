@@ -11,6 +11,13 @@ import type { Filters, ListOptions } from "nodra/orm/crud";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
+type DocumentData = Record<string, unknown>;
+
+function toNumber(value: unknown): number {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
 export function registerSaleBookMethods(registry: MethodRegistry): void {
   registry.register(
     "salebook.get_list",
@@ -28,56 +35,131 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         ? Math.max(0, Math.trunc(requestedOffset))
         : 0;
 
-      // Only confirmed lots should appear.
-      const filters: Filters = {
+      // All confirmed Lots remain visible.
+      const lotFilters: Filters = {
         docstatus: 51,
       };
 
-      const options: ListOptions = {
+      const lotOptions: ListOptions = {
         limit,
         offset,
         orderBy: "arrival_date desc",
       };
 
-      const [lots, totalCount] = await Promise.all([
-        app.orm.getList("Lots", {
-          ...options,
-          filters,
-        }),
-        app.orm.getCount("Lots", filters),
-      ]);
+      const [lots, totalCount, saleEntries, offerSheets, brokers] =
+        await Promise.all([
+          app.orm.getList("Lots", {
+            ...lotOptions,
+            filters: lotFilters,
+          }),
+          app.orm.getCount("Lots", lotFilters),
+          app.orm.getList("SaleBook", {
+            limit: 1000,
+            offset: 0,
+          }),
+          app.orm.getList("OfferSheet", {
+            limit: 1000,
+            offset: 0,
+            filters: {
+              workflow_state: ["!=", "Cancelled"],
+            },
+          }),
+          app.orm.getList("Broker", {
+            limit: 1000,
+            offset: 0,
+          }),
+        ]);
 
+      // Map SaleBook entries by Lot.
+      const salesByLot = new Map<string, DocumentData>();
+
+      for (const sale of saleEntries) {
+        const data = serialise(sale) as DocumentData;
+
+        if (Number(data.docstatus) === 98) continue;
+
+        const lotName = String(data.lot ?? "");
+
+        if (lotName) {
+          salesByLot.set(lotName, data);
+        }
+      }
+
+      // Map Broker IDs to Broker titles.
+      const brokerMap = new Map<string, string>();
+
+      for (const broker of brokers) {
+        const data = serialise(broker) as DocumentData;
+        const brokerId = String(data.name ?? "");
+
+        if (brokerId) {
+          brokerMap.set(brokerId, String(data.title || brokerId));
+        }
+      }
+
+      // Map Asking Rates from OfferLots by Lot.
+      const askingPriceByLot = new Map<string, number>();
+
+      for (const offer of offerSheets) {
+        const offerData = serialise(offer) as DocumentData;
+
+        const offerLots = Array.isArray(offerData.offer_lots)
+          ? offerData.offer_lots
+          : [];
+
+        for (const row of offerLots) {
+          const offerLot = row as DocumentData;
+          const lotName = String(offerLot.lot ?? "");
+
+          if (lotName) {
+            askingPriceByLot.set(lotName, toNumber(offerLot.asking_rate));
+          }
+        }
+      }
+
+      // Merge Lot, SaleBook and Offer data.
       const documents = lots.map((lot) => {
-        const data = serialise(lot) as Record<string, unknown>;
+        const data = serialise(lot) as DocumentData;
+        const lotName = String(data.name ?? "");
+
+        const sale = salesByLot.get(lotName);
+
+        const bags = toNumber(data.bags);
+        const netKgPerBag = toNumber(data.net_kg_per_bag);
 
         return {
-          lot: data.name,
-          lot_no: data.lot_no,
+          name: lotName,
+          lot: lotName,
+          lot_no: String(data.lot_no ?? ""),
+
           factory: data.factory ?? null,
 
           original_brand: data.original_brand ?? null,
-          brand: data.original_brand ?? null,
+          brand: sale?.brand ?? data.original_brand ?? null,
 
           original_grade: data.grade ?? null,
-          grade: data.grade ?? null,
+          grade: sale?.grade ?? data.grade ?? null,
 
-          bags: Number(data.bags ?? 0),
-          net_kg_per_bag: Number(data.net_kg_per_bag ?? 0),
-          total_kg: Number(data.bags ?? 0) * Number(data.net_kg_per_bag ?? 0),
+          bags: Math.trunc(bags),
+          net_kg_per_bag: netKgPerBag,
+          total_kg: bags * netKgPerBag,
 
-          arrival_date: data.arrival_date ?? null,
+          arrival_date: data.arrival_date || null,
 
-          tea_testing: null,
-          tested_grade: null,
-          test_information: null,
-          tf: null,
+          tea_testing: sale?.tea_testing ?? null,
+          test_information: sale?.test_information ?? null,
+          tf: sale?.tf ?? null,
 
-          offer: null,
-          asking_price: 0,
+          offer: sale?.offer ?? null,
+          asking_price: askingPriceByLot.get(lotName) ?? 0,
 
-          sale_type: null,
-          rate: 0,
-          broker: null,
+          sale_type: sale?.sale_type ?? null,
+          rate: toNumber(sale?.rate),
+          broker: sale?.broker ?? null,
+          broker_name: brokerMap.get(String(sale?.broker ?? "")) ?? "",
+
+          sale_date: sale?.sale_date ?? null,
+          workflow_state: sale?.workflow_state ?? null,
         };
       });
 

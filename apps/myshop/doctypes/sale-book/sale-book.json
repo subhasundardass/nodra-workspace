@@ -8,10 +8,9 @@
   "is_single": false,
   "is_tree": false,
   "is_virtual": false,
-  "title_field": "lot_no",
+  "title_field": "lot",
   "search_fields": [
-    "lot_no",
-    "brand",
+    "lot",
     "broker"
   ],
   "fields": [
@@ -27,100 +26,7 @@
       "fieldtype": "Link",
       "label": "Lot",
       "options": "Lots",
-      "reqd": true
-    },
-    {
-      "fieldname": "factory",
-      "fieldtype": "Link",
-      "label": "Factory",
-      "options": "Factory",
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "lot_no",
-      "fieldtype": "Data",
-      "label": "Lot No",
       "reqd": true,
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "original_brand",
-      "fieldtype": "Link",
-      "label": "Original Brand",
-      "options": "Brand",
-      "read_only": true
-    },
-    {
-      "fieldname": "brand",
-      "fieldtype": "Link",
-      "label": "Mark / Brand",
-      "options": "Brand",
-      "reqd": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "original_grade",
-      "fieldtype": "Link",
-      "label": "Original Grade",
-      "options": "Grades",
-      "read_only": true
-    },
-    {
-      "fieldname": "grade",
-      "fieldtype": "Link",
-      "label": "Grade",
-      "options": "Grades",
-      "reqd": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "bags",
-      "fieldtype": "Int",
-      "label": "Bags",
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "net_kg_per_bag",
-      "fieldtype": "Float",
-      "label": "KG Per Bag",
-      "read_only": true
-    },
-    {
-      "fieldname": "total_kg",
-      "fieldtype": "Float",
-      "label": "Total KGs",
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "arrival_date",
-      "fieldtype": "Date",
-      "label": "Arrival Date",
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "tea_testing",
-      "fieldtype": "Link",
-      "label": "Tea Testing",
-      "options": "TeaTesting",
-      "read_only": true
-    },
-    {
-      "fieldname": "test_information",
-      "fieldtype": "Small Text",
-      "label": "Test Information",
-      "read_only": true,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "tf",
-      "fieldtype": "Data",
-      "label": "T/F",
-      "read_only": true,
       "in_list_view": true
     },
     {
@@ -131,29 +37,14 @@
         "Bid",
         "Advance"
       ],
-      "reqd": false,
-      "in_list_view": true
-    },
-    {
-      "fieldname": "offer",
-      "fieldtype": "Link",
-      "label": "Offer",
-      "options": "OfferSheet",
-      "read_only": true
-    },
-    {
-      "fieldname": "asking_price",
-      "fieldtype": "Float",
-      "label": "Asking Price",
-      "default": 0,
-      "read_only": true,
       "in_list_view": true
     },
     {
       "fieldname": "rate",
-      "fieldtype": "Float",
-      "label": "Rate",
+      "fieldtype": "Currency",
+      "label": "Selling Rate",
       "default": 0,
+      "reqd": true,
       "in_list_view": true
     },
     {
@@ -161,14 +52,13 @@
       "fieldtype": "Link",
       "label": "Broker",
       "options": "Broker",
-      "reqd": false,
+      "reqd": true,
       "in_list_view": true
     },
     {
       "fieldname": "remarks",
-      "fieldtype": "Small Text",
-      "label": "Remarks",
-      "reqd": false
+      "fieldtype": "SmallText",
+      "label": "Remarks"
     },
     {
       "fieldname": "workflow_state",

@@ -1,21 +1,52 @@
-/**
- * SaleBook DocType Controller
- *
- * Override the lifecycle hooks below for custom validation/behavior.
- * ORM operations (app.orm.insert/update/deleteDoc) call these automatically
- * — see the ORM's insert()/update() for the exact order they run in.
- */
-import { Document } from 'nodra/core/document/document';
+import { Document } from "nodra/core/document/document";
 
 export class SaleBook extends Document {
   title!: string;
 
-  // async beforeValidate(): Promise<void> {
-  //   // throw a ValidationError here to reject bad input before it's saved
-  // }
+  async beforeValidate(): Promise<void> {
+    const doc = (this as any)._data as Record<string, unknown>;
 
-  // async beforeInsert(): Promise<void> {}
-  // async afterInsert(): Promise<void> {}
-  // async beforeSave(): Promise<void> {}
-  // async afterSave(): Promise<void> {}
+    // Required fields
+    if (!doc.lot) {
+      throw new Error("Lot is required.");
+    }
+
+    if (!doc.sale_date) {
+      throw new Error("Sale Date is required.");
+    }
+
+    if (!doc.sale_type) {
+      throw new Error("Sale Type is required.");
+    }
+
+    if (!doc.broker) {
+      throw new Error("Broker is required.");
+    }
+
+    // Sale date
+    const saleDate = new Date(String(doc.sale_date));
+
+    if (Number.isNaN(saleDate.getTime())) {
+      throw new Error("Please enter a valid Sale Date.");
+    }
+
+    // Sale type
+    const allowedSaleTypes = ["Bid", "Advance"];
+
+    if (!allowedSaleTypes.includes(String(doc.sale_type))) {
+      throw new Error("Invalid Sale Type.");
+    }
+
+    // Selling rate
+    const rate = Number(doc.rate);
+
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error("Selling Rate must be greater than zero.");
+    }
+
+    // Remarks
+    if (doc.remarks != null && typeof doc.remarks !== "string") {
+      throw new Error("Remarks must be valid text.");
+    }
+  }
 }
