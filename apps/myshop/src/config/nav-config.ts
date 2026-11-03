@@ -64,6 +64,10 @@ export const navGroups: NavGroup[] = [
             url: "/dashboard/salebook",
           },
           {
+            title: "Dispatches",
+            url: "/dashboard/salebook",
+          },
+          {
             title: "Stock Movements",
             url: "/dashboard/stock-movements",
           },
