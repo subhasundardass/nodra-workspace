@@ -5,175 +5,88 @@
  *
  * Register this module from the app's method bootstrap.
  */
+
 import type { MethodRegistry } from "nodra";
-import { Filters, ListOptions } from "nodra/orm/crud";
-import { SaleBook } from "../../../doctypes/sale-book/sale-book";
+import type { Filters, ListOptions } from "nodra/orm/crud";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
-type RecordData = Record<string, unknown>;
-
-function isRecord(value: unknown): value is RecordData {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    !Array.isArray(value)
-  );
-}
-
-function getRequiredName(value: unknown): string {
-  const name = String(value ?? "").trim();
-
-  if (!name) {
-    throw new Error("SaleBook name is required");
-  }
-
-  return name;
-}
-
-export function registerSaleBookMethods(
-  registry: MethodRegistry,
-): void {
+export function registerSaleBookMethods(registry: MethodRegistry): void {
   registry.register(
-    "sale-book.get",
-    async (ctx) => {
-      const name = getRequiredName(ctx.args.name);
-      const app = await getNodra();
-
-      const doc = await app.orm.getDoc("SaleBook", name);
-
-      return serialise(doc);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "sale-book.list",
+    "salebook.get_list",
     async (ctx) => {
       const app = await getNodra();
-      const args = ctx.args;
 
-      const requestedLimit = Number(args.limit);
-      const requestedOffset = Number(args.offset);
+      const requestedLimit = Number(ctx.args.limit);
+      const requestedOffset = Number(ctx.args.offset);
 
       const limit = Number.isFinite(requestedLimit)
         ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 20;
+        : 100;
 
       const offset = Number.isFinite(requestedOffset)
         ? Math.max(0, Math.trunc(requestedOffset))
         : 0;
 
-      const fields = Array.isArray(args.fields)
-        ? args.fields.filter(
-            (field): field is string =>
-              typeof field === "string",
-          )
-        : undefined;
-
-      let filters: Filters | undefined;
-
-      if (args.filters !== undefined) {
-        if (!isRecord(args.filters)) {
-          throw new Error("SaleBook filters must be an object");
-        }
-
-        // The cast bridges the generic request payload and Nodra's
-        // Filters type. Validate supported filter operators and fields
-        // before passing client-provided filters to the ORM.
-        filters = args.filters as Filters;
-      }
+      // Only confirmed lots should appear.
+      const filters: Filters = {
+        docstatus: 51,
+      };
 
       const options: ListOptions = {
         limit,
         offset,
-        ...(fields ? { fields } : {}),
-        ...(filters ? { filters } : {}),
-        ...(typeof args.orderBy === "string"
-          ? { orderBy: args.orderBy }
-          : {}),
+        orderBy: "arrival_date desc",
       };
 
-      const [docs, totalCount] = await Promise.all([
-        app.orm.getList("SaleBook", options),
-        app.orm.getCount("SaleBook", filters),
+      const [lots, totalCount] = await Promise.all([
+        app.orm.getList("Lots", {
+          ...options,
+          filters,
+        }),
+        app.orm.getCount("Lots", filters),
       ]);
 
+      const documents = lots.map((lot) => {
+        const data = serialise(lot) as Record<string, unknown>;
+
+        return {
+          lot: data.name,
+          lot_no: data.lot_no,
+          factory: data.factory ?? null,
+
+          original_brand: data.original_brand ?? null,
+          brand: data.original_brand ?? null,
+
+          original_grade: data.grade ?? null,
+          grade: data.grade ?? null,
+
+          bags: Number(data.bags ?? 0),
+          net_kg_per_bag: Number(data.net_kg_per_bag ?? 0),
+          total_kg: Number(data.bags ?? 0) * Number(data.net_kg_per_bag ?? 0),
+
+          arrival_date: data.arrival_date ?? null,
+
+          tea_testing: null,
+          tested_grade: null,
+          test_information: null,
+          tf: null,
+
+          offer: null,
+          asking_price: 0,
+
+          sale_type: null,
+          rate: 0,
+          broker: null,
+        };
+      });
+
       return {
-        data: docs.map((doc) => serialise(doc)),
-        meta: {
-          total_count: totalCount,
-          limit,
-          offset,
-        },
+        documents,
+        limit,
+        offset,
+        total_count: totalCount,
       };
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "sale-book.create",
-    async (ctx) => {
-      const data: unknown = ctx.args.data;
-
-      if (!isRecord(data)) {
-        throw new Error("SaleBook data must be an object");
-      }
-
-      const app = await getNodra();
-      const meta = app.registry.get("SaleBook");
-      const doc = new SaleBook(
-        meta,
-        data,
-      );
-
-      const inserted = await app.orm.insert(doc);
-
-      return serialise(inserted);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "sale-book.update",
-    async (ctx) => {
-      const name = getRequiredName(ctx.args.name);
-      const data: unknown = ctx.args.data;
-
-      if (!isRecord(data)) {
-        throw new Error("SaleBook data must be an object");
-      }
-
-      const app = await getNodra();
-      const meta = app.registry.get("SaleBook");
-
-      // Load the current document using the ORM.
-      const existing = await app.orm.getDoc("SaleBook", name);
-
-      // Do not assume the Document has a data property.
-      // Read existing values using the Document API supported by Nodra.
-      const doc = new SaleBook(meta, { name });
-
-      for (const [key, value] of Object.entries(data)) {
-        doc.set(key, value);
-      }
-
-      const updated = await app.orm.update(doc);
-
-      return serialise(updated);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "sale-book.delete",
-    async (ctx) => {
-      const name = getRequiredName(ctx.args.name);
-      const app = await getNodra();
-
-      await app.orm.deleteDoc("SaleBook", name);
-
-      return { message: "ok" as const };
     },
     { requireAuth: true },
   );
