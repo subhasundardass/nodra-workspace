@@ -16,7 +16,6 @@
     "console": "pnpm --filter myshop cli console",
     "typecheck": "pnpm --filter '*' typecheck",
     "lint": "pnpm --filter '*' lint",
-    "new:server-fn": "pnpm --filter myshop cli new:server-fn",
     "test": "pnpm --filter '*' test"
   },
   "devDependencies": {

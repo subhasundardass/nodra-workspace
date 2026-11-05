@@ -81,7 +81,7 @@ export function BrokerForm({ form }: BrokerFormProps) {
           )}
         </form.Field>
 
-        {/* <form.Field name="broker_type">
+        <form.Field name="broker_type">
           {(field) => (
             <FieldRow label="Broker Type" htmlFor={field.name} required>
               <select
@@ -101,7 +101,7 @@ export function BrokerForm({ form }: BrokerFormProps) {
               </select>
             </FieldRow>
           )}
-        </form.Field> */}
+        </form.Field>
       </FormSection>
 
       <FormSection

@@ -63,7 +63,11 @@ function RouteComponent() {
 
   return (
     <DocTypeListTemplate
+<<<<<<< HEAD
       title="Dispatch"
+=======
+      title="Dispatch Book"
+>>>>>>> origin/broker
       doctype={doctype}
       records={records}
       table={table}

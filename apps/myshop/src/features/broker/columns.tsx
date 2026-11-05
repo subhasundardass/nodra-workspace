@@ -5,31 +5,13 @@ import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-h
 export interface TableColumns {
   name: string;
   title: string;
-  party_type: string;
-  is_supplier?: boolean | string | number;
-  is_buyer?: boolean | string | number;
-  is_agent?: boolean | string | number;
-  is_tea_owner?: boolean | string | number;
-  is_transporter?: boolean | string | number;
-  is_mnc?: boolean | string | number;
+  broker_type: string;
+
   phone?: string;
   email?: string;
   is_active: boolean | string | number;
   workflow_state: string;
   docstatus?: number;
-}
-
-function getRoles(party: TableColumns): string[] {
-  const roles = [
-    { field: party.is_supplier, label: "Supplier" },
-    { field: party.is_buyer, label: "Buyer" },
-    { field: party.is_agent, label: "Agent / Broker" },
-    { field: party.is_tea_owner, label: "Tea Owner" },
-    { field: party.is_transporter, label: "Transporter" },
-    { field: party.is_mnc, label: "MNC" },
-  ];
-
-  return roles.filter(({ field }) => isActive(field)).map(({ label }) => label);
 }
 
 function displayValue(value: unknown): string {
@@ -71,39 +53,13 @@ export function createColumns(
       ),
     },
     {
-      accessorKey: "party_type",
+      accessorKey: "broker_type",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Type" />
       ),
       enableSorting: true,
     },
-    {
-      id: "roles",
-      accessorFn: (row) => getRoles(row).join(", "),
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Roles" />
-      ),
-      enableSorting: true,
-      cell: ({ row }) => {
-        const roles = getRoles(row.original);
-        console.log("Roles:", JSON.stringify(roles, null, 2));
 
-        return roles.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {roles.map((role) => (
-              <span
-                key={role}
-                className="inline-flex rounded-md bg-muted px-2 py-1  font-medium text-muted-foreground"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-        ) : (
-          "—"
-        );
-      },
-    },
     {
       accessorKey: "phone",
       header: ({ column }) => (

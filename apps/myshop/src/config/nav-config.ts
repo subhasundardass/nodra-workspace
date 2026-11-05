@@ -50,6 +50,23 @@ export const navGroups: NavGroup[] = [
       },
 
       {
+        title: "Dispatch Management",
+        url: "#",
+        icon: "kanban",
+        isActive: false,
+        items: [
+          {
+            title: "Dispatch Book",
+            url: "/dashboard/dispatch",
+          },
+          {
+            title: "Pending Dispatch",
+            url: "/dashboard/dispatch/pending-dispatch",
+          },
+        ],
+      },
+
+      {
         title: "Distribution",
         url: "/dashboard/sales-orders",
         icon: "product",
@@ -64,8 +81,8 @@ export const navGroups: NavGroup[] = [
             url: "/dashboard/salebook",
           },
           {
-            title: "Dispatches",
-            url: "/dashboard/salebook",
+            title: "Dispatch Management",
+            url: "/dashboard/dispatch",
           },
           {
             title: "Stock Movements",
@@ -173,6 +190,11 @@ export const navGroups: NavGroup[] = [
           {
             title: "Brands",
             url: "/dashboard/master/brands",
+            icon: "product",
+          },
+          {
+            title: "Transporter",
+            url: "/dashboard/master/transporter",
             icon: "product",
           },
         ],

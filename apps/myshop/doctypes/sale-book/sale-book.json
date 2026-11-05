@@ -40,6 +40,20 @@
       "in_list_view": true
     },
     {
+      "fieldname": "sold_bags",
+      "fieldtype": "Int",
+      "label": "Sold Bags",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sold_quantity",
+      "fieldtype": "Int",
+      "label": "Sold Quantity",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
       "fieldname": "rate",
       "fieldtype": "Currency",
       "label": "Selling Rate",

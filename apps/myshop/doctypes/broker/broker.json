@@ -26,6 +26,17 @@
       "in_list_view": true
     },
     {
+      "fieldname": "broker_type",
+      "fieldtype": "Select",
+      "label": "Broker Type",
+      "options": [
+        "PRIVATE",
+        "TATA",
+        "HUL"
+      ],
+      "reqd": false
+    },
+    {
       "fieldname": "contact_person",
       "fieldtype": "Data",
       "label": "Contact Person",
@@ -86,6 +97,7 @@
       "fieldtype": "Float",
       "label": "Commission (%)",
       "precision": 2,
+      "default": 0.00,
       "in_list_view": true
     },
     {
@@ -133,42 +145,93 @@
     },
     {
       "fieldname": "workflow_state",
-      "fieldtype": "Select",
-      "label": "Workflow State",
-      "options": [
-        "Draft",
-        "Active",
-        "Cancelled"
-      ],
-      "default": "Draft",
+      "fieldtype": "Data",
+      "label": "Status",
       "read_only": true,
-      "reqd": true,
-      "in_list_view": true,
-      "in_standard_filter": true
+      "in_list_view": true
     }
   ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Active",
+        "doc_status": 51
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Activate",
+        "from": "Draft",
+        "to": "Active",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "action": "Deactivate",
+        "from": "Active",
+        "to": "Draft",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Active",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
   "permissions": [
-    {
-      "role": "Administrator",
-      "read": true,
-      "write": true,
-      "create": true,
-      "delete": false,
-      "submit": false,
-      "cancel": false,
-      "amend": false,
-      "if_owner": false
-    },
     {
       "role": "System Manager",
       "read": true,
       "write": true,
       "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
       "delete": false,
-      "submit": false,
-      "cancel": false,
-      "amend": false,
-      "if_owner": false
+      "cancel": false
     }
   ]
 }

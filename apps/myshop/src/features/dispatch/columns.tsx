@@ -1,24 +1,20 @@
-import { formatDate, formatMoney } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export type DispatchRecord = {
+  name: string;
   sale_book: string;
   sale_date: string | null;
-  buyer: string | null;
-  lot: string;
-  lot_no: string;
-  factory: string | null;
-  original_brand: string | null;
-  brand: string | null;
-  original_grade: string | null;
-  grade: string | null;
-  bags: number;
-  net_kg_per_bag: number;
-  total_kg: number;
-  sale_type: "Bid" | "Advance" | null;
-  rate: number;
+  dispatch_date: string | null;
+  party: string | null;
   broker: string | null;
   broker_name: string | null;
+  transporter: string | null;
+  lr_number: string | null;
+  challan_number: string | null;
+  total_bags: number;
+  total_kgs: number;
+  workflow_state: "Draft" | "Confirmed" | "Cancelled";
 };
 
 export function createColumns(
@@ -26,80 +22,82 @@ export function createColumns(
 ): ColumnDef<DispatchRecord>[] {
   return [
     {
-      accessorKey: "sale_book",
-      header: "Sale Book",
-      size: 110,
+      accessorKey: "name",
+      header: "Sale ID",
+      size: 150,
       cell: ({ row }) => (
         <button
           className="font-medium text-primary hover:underline"
-          onClick={() => onOpen(row.original.sale_book)}
+          onClick={() => onOpen(row.original.name)}
         >
-          {row.original.sale_book}
+          {row.original.name}
         </button>
       ),
     },
     {
-      accessorKey: "lot_no",
-      header: "Lot No.",
-      size: 90,
-    },
-    {
-      accessorKey: "brand",
-      header: "Mark / Brand",
-    },
-    {
-      accessorKey: "grade",
-      header: "Grade",
-      size: 70,
-    },
-    {
-      accessorKey: "buyer",
-      header: "Buyer",
-      size: 150,
-      cell: ({ row }) => row.original.buyer || "-",
-    },
-    {
-      accessorKey: "bags",
-      header: "Bags",
-      size: 65,
-    },
-    {
-      accessorKey: "net_kg_per_bag",
-      header: "Kgs",
-      size: 70,
-    },
-    {
-      accessorKey: "total_kg",
-      header: "Total Kg",
-      size: 90,
-      cell: ({ row }) => Number(row.original.total_kg).toLocaleString("en-IN"),
-    },
-    {
       accessorKey: "sale_date",
       header: "Sale Date",
-      size: 100,
+      size: 120,
       cell: ({ row }) => formatDate(row.original.sale_date),
     },
-    {
-      accessorKey: "sale_type",
-      header: "Type",
-      size: 80,
-    },
-    {
-      accessorKey: "rate",
-      header: "Rate",
-      size: 100,
-      cell: ({ row }) => (
-        <div className="text-right font-semibold">
-          {formatMoney(row.original.rate)}
-        </div>
-      ),
-    },
+
     {
       accessorKey: "broker_name",
       header: "Broker",
       size: 130,
       cell: ({ row }) => row.original.broker_name || "-",
+    },
+    {
+      accessorKey: "total_bags",
+      header: "Bags",
+      size: 90,
+      cell: ({ row }) =>
+        Number(row.original.total_bags ?? 0).toLocaleString("en-IN"),
+    },
+    {
+      accessorKey: "total_kgs",
+      header: "Total Kg",
+      size: 110,
+      cell: ({ row }) =>
+        Number(row.original.total_kgs ?? 0).toLocaleString("en-IN", {
+          maximumFractionDigits: 3,
+        }),
+    },
+    {
+      accessorKey: "dispatch_date",
+      header: "Dispatch Date",
+      cell: ({ row }) => formatDate(row.original.dispatch_date),
+      size: 100,
+    },
+    {
+      accessorKey: "party",
+      header: "Party",
+      size: 160,
+      cell: ({ row }) => row.original.party || "-",
+    },
+    {
+      accessorKey: "transporter",
+      header: "Transporter",
+      size: 140,
+      cell: ({ row }) => row.original.transporter || "-",
+    },
+    {
+      accessorKey: "lr_number",
+      header: "LR Number",
+      size: 110,
+      cell: ({ row }) => row.original.lr_number || "-",
+    },
+    {
+      accessorKey: "challan_number",
+      header: "Challan No.",
+      size: 110,
+      cell: ({ row }) => row.original.challan_number || "-",
+    },
+
+    {
+      accessorKey: "workflow_state",
+      header: "Status",
+      size: 100,
     },
   ];
 }
