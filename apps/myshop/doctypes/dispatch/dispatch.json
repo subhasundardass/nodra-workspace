@@ -1,8 +1,8 @@
 {
   "name": "Dispatch",
   "module": "App",
-  "naming_rule": "hash",
-  "naming_field": "title",
+  "naming_series": "DPYY#####",
+  "naming_rule": "series",
   "is_submittable": false,
   "is_child": false,
   "is_single": false,
@@ -14,22 +14,48 @@
   ],
   "fields": [
     {
-      "fieldname": "title",
-      "fieldtype": "Data",
-      "label": "Title",
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
       "reqd": true,
-      "unique": true,
-      "max_length": 140,
-      "in_list_view": true
-    }
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
   ],
   "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
     {
       "role": "System Manager",
       "read": true,
       "write": true,
       "create": true,
-      "delete": true
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
     }
   ]
 }

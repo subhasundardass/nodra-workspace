@@ -61,7 +61,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
             limit: 1000,
             offset: 0,
             filters: {
-              workflow_state: ["!=", "Cancelled"],
+              docstatus: 51,
             },
           }),
           app.orm.getList("Broker", {
