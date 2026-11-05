@@ -39,6 +39,14 @@ function CreateBrokerRoute() {
         doctype: doctype.name,
         doc: {
           ...values,
+
+          broker_type: values.broker_type || null,
+          commission_rate:
+            values.commission_rate === "" || values.commission_rate == null
+              ? null
+              : Number(values.commission_rate),
+          account_type: values.account_type || null,
+
           is_active: values.is_active ?? true,
           workflow_state: "Draft",
         },
@@ -57,7 +65,9 @@ function CreateBrokerRoute() {
       doctype={doctype}
       mode="create"
       initialValues={{
-        broker_type: "",
+        broker_type: null,
+        commission_rate: null,
+        account_type: null,
         is_active: true,
         workflow_state: "Draft",
       }}
