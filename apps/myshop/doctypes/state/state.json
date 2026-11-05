@@ -1,0 +1,41 @@
+{
+  "name": "State",
+  "module": "App",
+  "naming_rule": "field",
+  "autoname": "state_code",
+  "title_field": "state_name",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "state_name",
+    "state_code"
+  ],
+  "fields": [
+    {
+      "fieldname": "state_name",
+      "label": "State Name",
+      "fieldtype": "Data",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "iso_code",
+      "label": "ISO Code",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "is_union_territory",
+      "label": "Union Territory",
+      "fieldtype": "Check"
+    },
+    {
+      "fieldname": "is_active",
+      "label": "Active",
+      "fieldtype": "Check",
+      "default": "1"
+    }
+  ]
+}

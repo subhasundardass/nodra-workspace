@@ -53,7 +53,7 @@ function FormSection({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
         {children}
       </div>
     </section>
@@ -105,12 +105,6 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
         />
 
         <ReadOnlyField label="Grade" name="grade" value={lot.grade} />
-
-        <ReadOnlyField
-          label="Warehouse"
-          name="warehouse"
-          value={lot.warehouse}
-        />
 
         <ReadOnlyField label="Total Bags" name="total_bags" value={bags} />
 
