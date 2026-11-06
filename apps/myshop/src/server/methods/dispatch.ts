@@ -257,4 +257,41 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
     },
     { requireAuth: true },
   );
+
+  // Find an existing Dispatch document using its linked SaleBook.
+  registry.register(
+    "dispatch.get_by_sale_book",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const saleBookName = String(ctx.args.sale_book ?? "");
+
+      if (!saleBookName) {
+        throw new Error("Sale Book is required.");
+      }
+
+      const entries = await app.orm.getList("Dispatch", {
+        limit: 10,
+        offset: 0,
+        filters: {
+          sale_book: saleBookName,
+        },
+      });
+
+      const documents = entries
+        .map((entry) => serialise(entry) as DocumentData)
+        .filter((entry) => Number(entry.docstatus) !== 98);
+
+      if (documents.length > 1) {
+        throw new Error(
+          `Multiple Dispatch entries exist for SaleBook "${saleBookName}". Please resolve the duplicates.`,
+        );
+      }
+
+      return {
+        document: documents[0] ?? null,
+      };
+    },
+    { requireAuth: true },
+  );
 }

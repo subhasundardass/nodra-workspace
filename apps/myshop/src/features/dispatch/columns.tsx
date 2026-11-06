@@ -49,14 +49,14 @@ export function createColumns(
     },
     {
       accessorKey: "total_bags",
-      header: "Bags",
+      header: "Sold Bags",
       size: 90,
       cell: ({ row }) =>
         Number(row.original.total_bags ?? 0).toLocaleString("en-IN"),
     },
     {
       accessorKey: "total_kgs",
-      header: "Total Kg",
+      header: "Sold Qty",
       size: 110,
       cell: ({ row }) =>
         Number(row.original.total_kgs ?? 0).toLocaleString("en-IN", {

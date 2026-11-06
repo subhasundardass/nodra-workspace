@@ -105,16 +105,7 @@ export function createColumns(
       header: "Type",
       size: 30,
     },
-    // {
-    //   accessorKey: "asking_price",
-    //   header: "Asking Price",
-    //   size: 30,
-    //   cell: ({ row }) => (
-    //     <div className="text-right">
-    //       {formatMoney(row.original.asking_price)}
-    //     </div>
-    //   ),
-    // },
+
     {
       accessorKey: "rate",
       header: "Rate",

@@ -64,6 +64,7 @@ function RouteComponent() {
   return (
     <DocTypeListTemplate
       title="Dispatch Book"
+      showCreateButton={false}
       doctype={doctype}
       records={records}
       table={table}
