@@ -23,10 +23,10 @@ export function DispatchForm({ form }: DispatchFormProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-1 md:grid-cols-2">
           <form.Field name="sale_book">
             {(field: any) => (
-              <FieldRow label="Sale Book" htmlFor={field.name}>
+              <FieldRow label="Sale ID" htmlFor={field.name}>
                 <LinkField
                   value={String(field.state.value ?? "")}
                   onChange={() => {}}
