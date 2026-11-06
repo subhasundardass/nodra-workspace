@@ -60,7 +60,7 @@ export const navGroups: NavGroup[] = [
           },
           {
             title: "Pending Sale",
-            url: "/dashboard/dispatch/pending-dispatch",
+            url: "/dashboard/salebook/pending-sale",
           },
         ],
       },
