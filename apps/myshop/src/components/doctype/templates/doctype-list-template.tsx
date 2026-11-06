@@ -34,7 +34,7 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   title?: string;
   description?: string;
   actions?: GlobalToolbarAction[];
-
+  showCreateButton?: boolean;
   loading?: boolean;
   error?: string | null;
   onCreate?: () => void;
@@ -83,6 +83,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   description,
   actions,
   loading = false,
+  showCreateButton = true,
   error = null,
   onCreate,
   onOpen,
@@ -101,7 +102,7 @@ export function DocTypeListTemplate<TRecord extends object>({
     }));
   }, [customColumns, doctype]);
 
-  const canCreate = !doctype.is_single && !doctype.is_child;
+  const canCreate = showCreateButton && !doctype.is_single && !doctype.is_child;
 
   const tableColumns = useMemo<ColumnDef<TRecord>[]>(
     () =>
