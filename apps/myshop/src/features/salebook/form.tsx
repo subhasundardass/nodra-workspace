@@ -53,7 +53,7 @@ function FormSection({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
         {children}
       </div>
     </section>
@@ -94,7 +94,7 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
         title="Lot Details"
         description="Selected lot information. These details cannot be changed from Sale Entry."
       >
-        <ReadOnlyField label="Lot No" name="lot_no" value={lot.lot_no} />
+        <ReadOnlyField label="Lot No" name="lot_no" value={lot.name} />
 
         <ReadOnlyField label="Factory" name="factory" value={lot.factory} />
 
@@ -185,11 +185,11 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
                 max={bags}
                 value={String(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
-                onChange={(event) =>
-                  field.handleChange(
-                    event.target.value === "" ? 0 : Number(event.target.value),
-                  )
-                }
+                onChange={(event) => {
+                  const soldBags = Number(event.target.value || 0);
+                  field.handleChange(soldBags);
+                  form.setFieldValue("sold_quantity", soldBags * kgPerBag);
+                }}
                 className="bg-background text-right shadow-none"
               />
             </FieldRow>
@@ -219,16 +219,16 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
           )}
         </form.Field>
 
-        <form.Field name="sale_rate">
+        <form.Field name="rate">
           {(field) => (
-            <FieldRow label="Sale Rate" htmlFor={field.name} required>
+            <FieldRow label="Selling Rate" htmlFor={field.name} required>
               <Input
                 id={field.name}
                 name={field.name}
                 type="number"
-                min={0}
+                min={1}
                 step="any"
-                value={String(field.state.value ?? 0)}
+                value={String(field.state.value ?? "")}
                 onBlur={field.handleBlur}
                 onChange={(event) =>
                   field.handleChange(

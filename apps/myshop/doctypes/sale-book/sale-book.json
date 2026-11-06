@@ -48,6 +48,22 @@
       "in_list_view": true
     },
     {
+      "fieldname": "sold_bags",
+      "fieldtype": "Int",
+      "label": "Sold Bags",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sold_quantity",
+      "fieldtype": "Float",
+      "label": "Sold KG",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
       "fieldname": "broker",
       "fieldtype": "Link",
       "label": "Broker",
