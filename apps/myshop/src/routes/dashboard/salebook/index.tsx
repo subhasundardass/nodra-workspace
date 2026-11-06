@@ -64,6 +64,7 @@ function RouteComponent() {
   return (
     <DocTypeListTemplate
       title="Sale Book"
+      showCreateButton={false}
       doctype={doctype}
       records={records}
       table={table}

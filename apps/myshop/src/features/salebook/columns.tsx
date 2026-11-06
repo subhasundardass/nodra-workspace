@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { formatDate, formatMoney } from "@/lib/format";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -141,6 +142,28 @@ export function createColumns(
       size: 130,
 
       cell: ({ row }) => row.original.remarks || "-",
+    },
+    {
+      accessorKey: "workflow_state",
+      header: "Status",
+      size: 110,
+      cell: ({ row }) => {
+        const status = row.original.workflow_state || "Draft";
+
+        return (
+          <Badge
+            variant={
+              status === "Confirmed"
+                ? "default"
+                : status === "Cancelled"
+                  ? "destructive"
+                  : "secondary"
+            }
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
   ];
 }

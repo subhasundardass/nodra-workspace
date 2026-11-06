@@ -52,6 +52,8 @@ export const Route = createFileRoute("/dashboard/salebook/$name")({
       saleBook,
     });
 
+    console.log("SaleBook loaded:", saleBook);
+
     return {
       doctype: doctypeResult.doctype,
       saleBook,
@@ -141,8 +143,11 @@ function SaleEntryRoute() {
     <DocTypeFormTemplate
       title={saleBook ? "Edit Sale Entry" : "Create Sale Entry"}
       doctype={doctype}
+
       mode={saleBook ? "edit" : "create"}
       initialValues={{
+        name: String(saleBook?.name ?? ""),
+        workflow_state: String(saleBook?.workflow_state ?? "Draft"),
         lot: String(lot.name),
         sale_date: saleBook?.sale_date ?? new Date().toISOString().slice(0, 10),
         sale_type: saleBook?.sale_type ?? "Bid",

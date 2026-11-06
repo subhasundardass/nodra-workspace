@@ -48,9 +48,24 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [],
       },
-
       {
-        title: "Dispatch Management",
+        title: "Sale",
+        url: "#",
+        icon: "kanban",
+        isActive: false,
+        items: [
+          {
+            title: "Sale Book",
+            url: "/dashboard/salebook",
+          },
+          {
+            title: "Pending Sale",
+            url: "/dashboard/salebook/pending-sale",
+          },
+        ],
+      },
+      {
+        title: "Dispatch",
         url: "#",
         icon: "kanban",
         isActive: false,
