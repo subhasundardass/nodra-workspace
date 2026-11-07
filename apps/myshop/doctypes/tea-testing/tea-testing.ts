@@ -23,7 +23,7 @@ export class TeaTesting extends Document {
    * Validate TeaTesting data before insert or update.
    */
   async beforeValidate(): Promise<void> {
-    const lot = this.get("lots");
+    const lot = this.get("lot");
     const sampleDate = this.get("sample_date");
     const qualityScore = this.get("quality_score");
 
@@ -42,8 +42,8 @@ export class TeaTesting extends Document {
     ) {
       const score = Number(qualityScore);
 
-      if (!Number.isFinite(score) || score < 1 || score > 10) {
-        throw new Error("Quality Score must be between 1 and 10.");
+      if (!Number.isFinite(score) || score < 0 || score > 10) {
+        throw new Error("Quality Score must be between 0 and 10.");
       }
     }
   }

@@ -48,6 +48,38 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [],
       },
+      {
+        title: "Sale",
+        url: "#",
+        icon: "kanban",
+        isActive: false,
+        items: [
+          {
+            title: "Sale Book",
+            url: "/dashboard/salebook",
+          },
+          {
+            title: "Pending Sale",
+            url: "/dashboard/salebook/pending-sale",
+          },
+        ],
+      },
+      {
+        title: "Dispatch",
+        url: "#",
+        icon: "kanban",
+        isActive: false,
+        items: [
+          {
+            title: "Dispatch Book",
+            url: "/dashboard/dispatch",
+          },
+          {
+            title: "Pending Dispatch",
+            url: "/dashboard/dispatch/pending-dispatch",
+          },
+        ],
+      },
 
       {
         title: "Distribution",
@@ -56,8 +88,16 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Sales Orders",
-            url: "/dashboard/sales-orders",
+            title: "Offerings",
+            url: "/dashboard/offers",
+          },
+          {
+            title: "Sale Book",
+            url: "/dashboard/salebook",
+          },
+          {
+            title: "Dispatch Management",
+            url: "/dashboard/dispatch",
           },
           {
             title: "Stock Movements",
@@ -143,6 +183,11 @@ export const navGroups: NavGroup[] = [
             icon: "product",
           },
           {
+            title: "Broker",
+            url: "/dashboard/broker",
+            icon: "product",
+          },
+          {
             title: "Factories",
             url: "/dashboard/master/factories",
             icon: "product",
@@ -162,16 +207,10 @@ export const navGroups: NavGroup[] = [
             url: "/dashboard/master/brands",
             icon: "product",
           },
-
           {
-            title: "Buyers",
-            url: "/dashboard/master/buyers",
-            icon: "teams",
-          },
-          {
-            title: "Brokers",
-            url: "/dashboard/master/brokers",
-            icon: "teams",
+            title: "Transporter",
+            url: "/dashboard/master/transporter",
+            icon: "product",
           },
         ],
       },

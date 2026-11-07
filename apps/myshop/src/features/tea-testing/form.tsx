@@ -97,6 +97,18 @@ export function TeaTestingForm({ form, lot }: TeaTestingFormProps) {
   const workflowState = String(form.getFieldValue("workflow_state") ?? "Draft");
   const readOnly = workflowState === "Completed";
 
+  // Set the actual form value, not just the displayed value.
+  // useEffect(() => {
+  //   console.log("Selected Lot:", lotName);
+  //   console.log("Form Lot Value:", form.getFieldValue("lot"));
+
+  //   if (lotName && form.getFieldValue("lot") !== lotName) {
+  //     form.setFieldValue("lot", lotName);
+  //   }
+
+  //   console.log("Assigned Lot:", form.getFieldValue("lot"));
+  // }, [form, lotName]);
+
   useEffect(() => {
     let cancelled = false;
 

@@ -1,0 +1,117 @@
+{
+  "name": "Transporter",
+  "module": "App",
+  "naming_rule": "series",
+  "naming_series": "TR#####",
+  "title_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "title",
+    "phone",
+    "contact_person"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "label": "Transporter Name",
+      "fieldtype": "Data",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "phone",
+      "label": "Phone",
+      "fieldtype": "Data",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "contact_person",
+      "label": "Contact Person",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "address",
+      "label": "Address",
+      "fieldtype": "SmallText"
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Data",
+      "description": "Current state of the transporter record, managed by the workflow.",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "is_final": false
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Confirm",
+        "from": "Draft",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Confirmed",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    }
+  ]
+}

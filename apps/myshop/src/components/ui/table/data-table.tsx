@@ -13,19 +13,30 @@ import {
 import { getCommonPinningStyles } from "@/lib/data-table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
+export type DataTableTotal = {
+  fieldname: string;
+  value: string;
+  label?: string;
+};
+
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
+  totals?: DataTableTotal[];
 }
 
 export function DataTable<TData>({
   table,
   actionBar,
   children,
+  totals,
 }: DataTableProps<TData>) {
+  const visibleColumns = table.getVisibleLeafColumns();
+
   return (
     <div className="flex flex-1 flex-col space-y-4">
       {children}
+
       <div className="relative flex flex-1">
         <div className="absolute inset-0 flex overflow-hidden rounded-lg border">
           <ScrollArea className="h-full w-full">
@@ -39,7 +50,9 @@ export function DataTable<TData>({
                         colSpan={header.colSpan}
                         className="font-bold text-foreground"
                         style={{
-                          ...getCommonPinningStyles({ column: header.column }),
+                          ...getCommonPinningStyles({
+                            column: header.column,
+                          }),
                         }}
                       >
                         {header.isPlaceholder
@@ -53,6 +66,7 @@ export function DataTable<TData>({
                   </TableRow>
                 ))}
               </TableHeader>
+
               <TableBody>
                 {table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row, index) => (
@@ -90,7 +104,7 @@ export function DataTable<TData>({
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={table.getVisibleLeafColumns().length}
+                      colSpan={visibleColumns.length}
                       className="h-24 text-center"
                     >
                       {table.getState().columnFilters.length > 0
@@ -99,14 +113,49 @@ export function DataTable<TData>({
                     </TableCell>
                   </TableRow>
                 )}
+
+                {/* Optional totals row */}
+                {/* Optional totals row */}
+                {totals &&
+                  totals.length > 0 &&
+                  table.getRowModel().rows.length > 0 && (
+                    <TableRow className="border-t-2 bg-muted/70 font-bold">
+                      {visibleColumns.map((column, index) => {
+                        const total = totals.find(
+                          (item) => item.fieldname === column.id,
+                        );
+
+                        const columnClass =
+                          (
+                            column.columnDef.meta as
+                              { className?: string } | undefined
+                          )?.className ?? "";
+
+                        return (
+                          <TableCell
+                            key={column.id}
+                            className={`bg-muted/70 font-bold ${
+                              column.columnDef.meta?.className ?? ""
+                            }`}
+                            style={getCommonPinningStyles({ column })}
+                          >
+                            {total ? total.value : index === 0 ? "Total" : ""}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  )}
               </TableBody>
             </Table>
+
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
       </div>
+
       <div className="flex flex-col gap-2.5">
         <DataTablePagination table={table} />
+
         {actionBar &&
           table.getFilteredSelectedRowModel().rows.length > 0 &&
           actionBar}

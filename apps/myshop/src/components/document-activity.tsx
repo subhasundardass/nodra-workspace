@@ -77,30 +77,30 @@ function asRecord(value: unknown): RecordValue | null {
   return value as RecordValue;
 }
 
-function formatFieldValue(value: unknown): string {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return new Intl.NumberFormat("en-IN", {
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
+// function formatFieldValue(value: unknown): string {
+//   if (typeof value === "number" && Number.isFinite(value)) {
+//     return new Intl.NumberFormat("en-IN", {
+//       maximumFractionDigits: 2,
+//     }).format(value);
+//   }
 
-  if (typeof value === "string" && value.trim() !== "") {
-    const normalized = value.trim();
+//   if (typeof value === "string" && value.trim() !== "") {
+//     const normalized = value.trim();
 
-    // Format numeric strings only; leave IDs and ordinary text unchanged.
-    if (/^-?\d+(?:\.\d+)?$/.test(normalized)) {
-      const number = Number(normalized);
+//     // Format numeric strings only; leave IDs and ordinary text unchanged.
+//     if (/^-?\d+(?:\.\d+)?$/.test(normalized)) {
+//       const number = Number(normalized);
 
-      if (Number.isFinite(number)) {
-        return new Intl.NumberFormat("en-IN", {
-          maximumFractionDigits: 2,
-        }).format(number);
-      }
-    }
-  }
+//       if (Number.isFinite(number)) {
+//         return new Intl.NumberFormat("en-IN", {
+//           maximumFractionDigits: 2,
+//         }).format(number);
+//       }
+//     }
+//   }
 
-  return asText(value);
-}
+//   return asText(value);
+// }
 
 function asText(value: unknown): string {
   if (value == null || value === "") return "—";
@@ -153,12 +153,27 @@ function getTimestamp(record: RecordValue): unknown {
   const changes = asRecord(record.changes);
   const after = asRecord(record.after_data ?? record.afterData);
 
+  const candidates = [
+    record.modified,
+    record.modified_at,
+    record.modifiedAt,
+    record.creation,
+    record.created_at,
+    record.createdAt,
+    record.timestamp,
+    asRecord(changes?.modified)?.after,
+    asRecord(changes?.creation)?.after,
+    after?.modified,
+    after?.creation,
+  ];
+
   return (
-    record.created_at ??
-    record.createdAt ??
-    record.timestamp ??
-    asRecord(changes?.creation)?.after ??
-    after?.creation
+    candidates.find(
+      (value) =>
+        (typeof value === "string" && value.trim() !== "") ||
+        (typeof value === "number" && Number.isFinite(value)) ||
+        value instanceof Date,
+    ) ?? null
   );
 }
 

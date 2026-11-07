@@ -1,16 +1,23 @@
 export function formatDate(
-  date: Date | string | number | undefined,
+  date: Date | string | number | null | undefined,
   opts: Intl.DateTimeFormatOptions = {},
 ) {
-  if (!date) return "";
+  if (date == null || date === "") return "";
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: opts.month ?? "long",
-      day: opts.day ?? "numeric",
-      year: opts.year ?? "numeric",
+    const parsed =
+      typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)
+        ? new Date(`${date}T00:00:00`)
+        : new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) return "";
+
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
       ...opts,
-    }).format(new Date(date));
+    }).format(parsed);
   } catch {
     return "";
   }
@@ -42,4 +49,23 @@ export function formatTimestamp(
   } catch {
     return "";
   }
+}
+
+// --- Money Format
+//formatMoney(1250, { style: "currency", currency: "INR" });
+export function formatMoney(
+  value: number | string | null | undefined,
+  opts: Intl.NumberFormatOptions = {},
+) {
+  if (value == null || value === "") return "";
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) return "";
+
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    ...opts,
+  }).format(parsed);
 }

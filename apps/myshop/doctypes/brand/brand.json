@@ -23,15 +23,11 @@
       "in_list_view": true
     },
     {
-      "fieldname": "brand_type",
-      "fieldtype": "Select",
-      "label": "Brand Type",
-      "options": [
-        "Factory",
-        "Company"
-      ],
-      "default": "Factory",
-      "reqd": true,
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "reqd": false,
       "in_list_view": true
     },
     {

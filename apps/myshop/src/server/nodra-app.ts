@@ -1,6 +1,11 @@
+import dotenv from "dotenv";
+import { resolve } from "node:path";
 import { createGetNodra } from "nodra/app";
 import { loadConfig } from "nodra/core/config";
 
+dotenv.config({
+  path: resolve(process.cwd(), "apps/myshop/.env"),
+});
 // Discover application DocType controllers.
 const controllerModules = import.meta.glob<Record<string, unknown>>(
   "../../doctypes/*/*.ts",

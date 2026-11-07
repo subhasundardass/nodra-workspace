@@ -20,10 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LinkField } from "@/components/doctype/fields/link-field";
 
 export interface BrandFormValues {
   title: string;
-  brand_type: "Factory" | "Company";
+  factory: string;
   is_active: boolean;
   description: string;
 }
@@ -37,7 +38,7 @@ interface BrandFormSheetProps {
 
 const defaultValues: BrandFormValues = {
   title: "",
-  brand_type: "Factory",
+  factory: "",
   is_active: true,
   description: "",
 };
@@ -61,7 +62,10 @@ export default function BrandFormSheet({
       setSubmitting(true);
 
       try {
-        await onSubmit(value);
+        await onSubmit({
+          ...value,
+          factory: value.factory || "",
+        });
         onOpenChange(false);
       } finally {
         setSubmitting(false);
@@ -131,24 +135,19 @@ export default function BrandFormSheet({
             )}
           </form.Field>
 
-          <form.Field name="brand_type">
+          <form.Field name="factory">
             {(field) => (
               <div className="space-y-2">
-                <Label>Brand Type</Label>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(value) =>
-                    field.handleChange(value as "Factory" | "Company")
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select brand type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Factory">Factory</SelectItem>
-                    <SelectItem value="Company">Company</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Factory</Label>
+                <LinkField
+                  value={String(field.state.value ?? "")}
+                  onChange={(value) => field.handleChange(value)}
+                  doctype="Factory"
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Link this brand to its associated factory.
+                </p>
               </div>
             )}
           </form.Field>

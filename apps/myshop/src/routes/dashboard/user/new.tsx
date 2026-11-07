@@ -152,7 +152,7 @@ function RouteComponent() {
                 <SelectValue placeholder="Select user type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="System Manager">System User</SelectItem>
+                <SelectItem value="System User">System User</SelectItem>
                 <SelectItem value="Website User">Website User</SelectItem>
               </SelectContent>
             </Select>

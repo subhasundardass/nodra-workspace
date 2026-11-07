@@ -1,0 +1,172 @@
+{
+  "name": "SaleBook",
+  "module": "App",
+  "naming_series": "SBYY#####",
+  "naming_rule": "series",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "lot",
+  "search_fields": [
+    "lot",
+    "broker"
+  ],
+  "fields": [
+    {
+      "fieldname": "sale_date",
+      "fieldtype": "Date",
+      "label": "Sale Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot",
+      "fieldtype": "Link",
+      "label": "Lot",
+      "options": "Lots",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sale_type",
+      "fieldtype": "Select",
+      "label": "Type",
+      "options": [
+        "Bid",
+        "Advance"
+      ],
+      "in_list_view": true
+    },
+    {
+      "fieldname": "rate",
+      "fieldtype": "Currency",
+      "label": "Selling Rate",
+      "default": 0,
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sold_bags",
+      "fieldtype": "Int",
+      "label": "Sold Bags",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sold_quantity",
+      "fieldtype": "Float",
+      "label": "Sold KG",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "broker",
+      "fieldtype": "Link",
+      "label": "Broker",
+      "options": "Broker",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Data",
+      "label": "Status",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Reopen",
+        "to": "Draft",
+        "roles": [
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
+    }
+  ]
+}

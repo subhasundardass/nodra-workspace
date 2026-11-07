@@ -29,11 +29,7 @@ export const Route = createFileRoute("/dashboard/party/")({
           "name",
           "title",
           "party_type",
-          "is_supplier",
-          "is_buyer",
-          "is_agent",
-          "is_tea_owner",
-          "is_transporter",
+
           "phone",
           "email",
           "is_active",

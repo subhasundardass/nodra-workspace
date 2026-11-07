@@ -10,20 +10,59 @@ import { callMethod } from "@/lib/call-method";
 type FormValues = Record<string, unknown>;
 type DocumentRecord = Record<string, unknown>;
 
+type BrokerRecord = {
+  name: string;
+  title?: string;
+  is_active?: boolean;
+  docstatus?: number;
+  city?: string;
+  state?: string;
+  phone?: string;
+};
+
+type BrokerOption = {
+  name: string;
+  title: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+};
+
+type PartyBrokerRow = {
+  broker?: string;
+};
+
+type LoaderData = {
+  doctype: DocTypeDefinition;
+  doc: DocumentRecord;
+  brokerOptions: BrokerOption[];
+};
+
 export const Route = createFileRoute("/dashboard/party/$name")({
-  loader: async ({
-    params,
-  }): Promise<{
-    doctype: DocTypeDefinition;
-    doc: DocumentRecord;
-  }> => {
-    const [doctypeResult, docResult] = await Promise.all([
+  loader: async ({ params }): Promise<LoaderData> => {
+    const [doctypeResult, docResult, brokerResult] = await Promise.all([
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "Party",
       }),
+
       callMethod<{ document: DocumentRecord }>("document.get", {
         doctype: "Party",
         name: params.name,
+      }),
+
+      callMethod<{ documents: BrokerRecord[] }>("document.list", {
+        doctype: "Broker",
+        fields: [
+          "name",
+          "title",
+          "is_active",
+          "docstatus",
+          "city",
+          "state",
+          "phone",
+        ],
+        limit: 100,
+        offset: 0,
       }),
     ]);
 
@@ -35,9 +74,36 @@ export const Route = createFileRoute("/dashboard/party/$name")({
       throw new Error(`Party "${params.name}" was not found.`);
     }
 
+    const doc = docResult.document;
+
+    const existingRows = Array.isArray(doc.brokers)
+      ? (doc.brokers as PartyBrokerRow[])
+      : [];
+
+    const existingBrokerNames = new Set(
+      existingRows
+        .map((row) => row.broker)
+        .filter((name): name is string => Boolean(name)),
+    );
+
+    const brokerOptions: BrokerOption[] = (brokerResult.documents ?? [])
+      .filter(
+        (broker) =>
+          (broker.is_active === true && broker.docstatus !== 2) ||
+          existingBrokerNames.has(broker.name),
+      )
+      .map((broker) => ({
+        name: broker.name,
+        title: broker.title || broker.name,
+        city: broker.city,
+        state: broker.state,
+        phone: broker.phone,
+      }));
+
     return {
       doctype: doctypeResult.doctype,
-      doc: docResult.document,
+      doc,
+      brokerOptions,
     };
   },
 
@@ -45,7 +111,7 @@ export const Route = createFileRoute("/dashboard/party/$name")({
 });
 
 function PartyDetailRoute() {
-  const { doctype, doc } = Route.useLoaderData();
+  const { doctype, doc, brokerOptions } = Route.useLoaderData();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
@@ -53,10 +119,26 @@ function PartyDetailRoute() {
     setSaving(true);
 
     try {
+      const { name, owner, creation, modified, modified_by, ...doc } = values;
+
+      const cleanedBrokers = Array.isArray(doc.brokers)
+        ? doc.brokers.map((row) => {
+            if (!row || typeof row !== "object") return row;
+
+            const { creation, modified, owner, modified_by, ...broker } =
+              row as Record<string, unknown>;
+
+            return broker;
+          })
+        : doc.brokers;
+
       await callMethod("document.update", {
         doctype: doctype.name,
-        name: doc.name,
-        doc: values,
+        name: String(name ?? doc.name ?? ""),
+        doc: {
+          ...doc,
+          brokers: cleanedBrokers,
+        },
       });
 
       toast.success("Party updated successfully.");
@@ -76,7 +158,7 @@ function PartyDetailRoute() {
       onSubmit={handleSubmit}
       onCancel={() => navigate({ to: "/dashboard/party" })}
     >
-      {(form) => <PartyForm form={form} />}
+      {(form) => <PartyForm form={form} brokers={brokerOptions} />}
     </DocTypeFormTemplate>
   );
 }

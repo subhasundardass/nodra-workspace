@@ -1,35 +1,155 @@
 {
   "name": "Dispatch",
   "module": "App",
-  "naming_rule": "hash",
-  "naming_field": "title",
+  "naming_series": "DPYY#####",
+  "naming_rule": "series",
   "is_submittable": false,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
   "is_virtual": false,
-  "title_field": "title",
   "search_fields": [
-    "title"
+    "sale_book",
+    "party",
+    "broker",
+    "transporter"
   ],
   "fields": [
     {
-      "fieldname": "title",
-      "fieldtype": "Data",
-      "label": "Title",
+      "fieldname": "sale_book",
+      "fieldtype": "Link",
+      "label": "Sale Book",
+      "options": "SaleBook",
       "reqd": true,
-      "unique": true,
-      "max_length": 140,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "dispatch_date",
+      "fieldtype": "Date",
+      "label": "Dispatch Date",
+      "reqd": true,
+      "default": "Today",
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "received_date",
+      "fieldtype": "Date",
+      "label": "Received Date",
+      "reqd": true,
+      "default": "Today",
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "party",
+      "fieldtype": "Link",
+      "label": "Party",
+      "options": "Party",
+      "reqd": true,
       "in_list_view": true
+    },
+    {
+      "fieldname": "payment_type",
+      "fieldtype": "Select",
+      "label": "Payment Type",
+      "options": [
+        "DUE",
+        "DISCOUNT"
+      ],
+      "default": "DUE",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "discount_percentage",
+      "fieldtype": "Float",
+      "label": "Discount Percentage",
+      "precision": 2
+    },
+    {
+      "fieldname": "broker",
+      "fieldtype": "Link",
+      "label": "Broker",
+      "options": "Broker",
+      "read_only": true
+    },
+    {
+      "fieldname": "transporter",
+      "fieldtype": "Link",
+      "label": "Transporter",
+      "options": "Transporter"
+    },
+    {
+      "fieldname": "lr_number",
+      "fieldtype": "Data",
+      "label": "LR Number"
+    },
+    {
+      "fieldname": "challan_number",
+      "fieldtype": "Data",
+      "label": "Challan Number"
+    },
+    {
+      "fieldname": "total_bags",
+      "fieldtype": "Int",
+      "label": "Total Bags",
+      "default": 0,
+      "read_only": true
+    },
+    {
+      "fieldname": "total_kgs",
+      "fieldtype": "Float",
+      "label": "Total Kgs",
+      "default": 0,
+      "read_only": true,
+      "precision": 3
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "SmallText",
+      "label": "Remarks"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
     }
   ],
   "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
     {
       "role": "System Manager",
       "read": true,
       "write": true,
       "create": true,
-      "delete": true
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
     }
   ]
 }
