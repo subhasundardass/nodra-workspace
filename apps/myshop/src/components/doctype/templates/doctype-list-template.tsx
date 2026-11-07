@@ -23,6 +23,13 @@ export type DocTypeListColumn = {
   render?: (record: DocumentRow) => ReactNode;
 };
 
+export type DocTypeListTotal = {
+  fieldname: string;
+  label?: string;
+  decimals?: number;
+  currency?: boolean;
+};
+
 export type DocTypeListTemplateProps<TRecord extends object> = {
   doctype: DocTypeDefinition;
   records?: TRecord[];
@@ -30,6 +37,7 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   /** Pass this when rendering a custom DataTable so the global toolbar controls it. */
   table?: Table<TRecord>;
   children?: ReactNode;
+  totals?: DocTypeListTotal[];
 
   title?: string;
   description?: string;
@@ -82,6 +90,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   title,
   description,
   actions,
+  totals,
   loading = false,
   showCreateButton = true,
   error = null,
@@ -121,6 +130,7 @@ export function DocTypeListTemplate<TRecord extends object>({
           if (field.render) return field.render(document);
 
           const value = field.fieldname ? document[field.fieldname] : undefined;
+
           if (field.fieldname === "name" && document.name != null) {
             return onOpen ? (
               <button
@@ -152,8 +162,47 @@ export function DocTypeListTemplate<TRecord extends object>({
       pagination: { pageIndex: 0, pageSize },
     },
   });
+
   const table = suppliedTable ?? internalTableResult.table;
-  const visibleRecordCount = table.getFilteredRowModel().rows.length;
+
+  const filteredRows = table.getFilteredRowModel().rows;
+  const visibleRecordCount = filteredRows.length;
+
+  // Calculate totals across all filtered rows, not only the current page.
+  const totalValues = useMemo(() => {
+    if (!totals?.length) return [];
+
+    return totals.map((item) => {
+      const total = filteredRows.reduce((sum, row) => {
+        const value = row.getValue(item.fieldname);
+
+        if (value === null || value === undefined || value === "") {
+          return sum;
+        }
+
+        const number = Number(value);
+
+        return Number.isFinite(number) ? sum + number : sum;
+      }, 0);
+
+      const value = item.currency
+        ? new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(total)
+        : new Intl.NumberFormat("en-IN", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: item.decimals ?? 2,
+          }).format(total);
+
+      return {
+        ...item,
+        value,
+      };
+    });
+  }, [totals, filteredRows]);
 
   const toolbarActions = useMemo<GlobalToolbarAction[]>(() => {
     if (actions !== undefined) return actions;
@@ -177,7 +226,9 @@ export function DocTypeListTemplate<TRecord extends object>({
           title={title ?? doctype.name}
           description={
             description ??
-            `${visibleRecordCount} ${visibleRecordCount === 1 ? "record" : "records"}`
+            `${visibleRecordCount} ${
+              visibleRecordCount === 1 ? "record" : "records"
+            }`
           }
           actions={toolbarActions}
         />
@@ -224,7 +275,7 @@ export function DocTypeListTemplate<TRecord extends object>({
         ) : children !== undefined ? (
           children
         ) : (
-          <DataTable table={table} />
+          <DataTable table={table} totals={totalValues} />
         )}
       </div>
     </PageContainer>

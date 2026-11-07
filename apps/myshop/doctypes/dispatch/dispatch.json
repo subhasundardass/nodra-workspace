@@ -34,13 +34,40 @@
       "in_standard_filter": true
     },
     {
+      "fieldname": "received_date",
+      "fieldtype": "Date",
+      "label": "Received Date",
+      "reqd": true,
+      "default": "Today",
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
       "fieldname": "party",
       "fieldtype": "Link",
       "label": "Party",
       "options": "Party",
-      "read_only": true,
       "reqd": true,
       "in_list_view": true
+    },
+    {
+      "fieldname": "payment_type",
+      "fieldtype": "Select",
+      "label": "Payment Type",
+      "options": [
+        "DUE",
+        "DISCOUNT"
+      ],
+      "default": "DUE",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "discount_percentage",
+      "fieldtype": "Float",
+      "label": "Discount Percentage",
+      "precision": 2
     },
     {
       "fieldname": "broker",

@@ -27,7 +27,6 @@ import { Route as DashboardBrokerNewRouteImport } from './routes/dashboard/broke
 import { Route as DashboardDispatchIndexRouteImport } from './routes/dashboard/dispatch/index'
 import { Route as DashboardDispatchNameRouteImport } from './routes/dashboard/dispatch/$name'
 import { Route as DashboardDispatchNewRouteImport } from './routes/dashboard/dispatch/new'
-import { Route as DashboardDispatchPendingDispatchRouteImport } from './routes/dashboard/dispatch/pending-dispatch'
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
 import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
@@ -153,12 +152,6 @@ const DashboardDispatchNewRoute = DashboardDispatchNewRouteImport.update({
   path: '/dispatch/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
-const DashboardDispatchPendingDispatchRoute =
-  DashboardDispatchPendingDispatchRouteImport.update({
-    id: '/dispatch/pending-dispatch',
-    path: '/dispatch/pending-dispatch',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
 const DashboardLotIndexRoute = DashboardLotIndexRouteImport.update({
   id: '/lot/',
   path: '/lot/',
@@ -359,7 +352,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/new': typeof DashboardDispatchNewRoute
-  '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -413,7 +405,6 @@ export interface FileRoutesByTo {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/new': typeof DashboardDispatchNewRoute
-  '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -469,7 +460,6 @@ export interface FileRoutesById {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/new': typeof DashboardDispatchNewRoute
-  '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -526,7 +516,6 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/new'
-    | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -580,7 +569,6 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/new'
-    | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -635,7 +623,6 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/new'
-    | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -813,13 +800,6 @@ declare module '@tanstack/react-router' {
       path: '/dispatch/new'
       fullPath: '/dashboard/dispatch/new'
       preLoaderRoute: typeof DashboardDispatchNewRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/dispatch/pending-dispatch': {
-      id: '/dashboard/dispatch/pending-dispatch'
-      path: '/dispatch/pending-dispatch'
-      fullPath: '/dashboard/dispatch/pending-dispatch'
-      preLoaderRoute: typeof DashboardDispatchPendingDispatchRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/lot/': {
@@ -1069,7 +1049,6 @@ interface DashboardRouteRouteChildren {
   DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
   DashboardDispatchNameRoute: typeof DashboardDispatchNameRoute
   DashboardDispatchNewRoute: typeof DashboardDispatchNewRoute
-  DashboardDispatchPendingDispatchRoute: typeof DashboardDispatchPendingDispatchRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
   DashboardMasterBrandsRoute: typeof DashboardMasterBrandsRoute
@@ -1114,7 +1093,6 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBrokerNewRoute: DashboardBrokerNewRoute,
   DashboardDispatchNameRoute: DashboardDispatchNameRoute,
   DashboardDispatchNewRoute: DashboardDispatchNewRoute,
-  DashboardDispatchPendingDispatchRoute: DashboardDispatchPendingDispatchRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
   DashboardMasterBrandsRoute: DashboardMasterBrandsRoute,

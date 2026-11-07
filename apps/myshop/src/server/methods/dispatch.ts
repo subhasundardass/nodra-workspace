@@ -190,46 +190,43 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
           }),
         ]);
 
-      // Identify SaleBook entries that already have a Dispatch.
-      const dispatchedSaleBooks = new Set<string>();
+      // Map Dispatch documents by SaleBook.
+      const dispatchMap = new Map<string, DocumentData>();
 
       for (const dispatch of dispatches) {
         const data = serialise(dispatch) as DocumentData;
         const saleBook = String(data.sale_book ?? "");
 
         if (saleBook) {
-          dispatchedSaleBooks.add(saleBook);
+          dispatchMap.set(saleBook, data);
         }
       }
 
-      // Create lookup maps for linked documents.
       const partyMap = getTitleMap(parties);
       const brokerMap = getTitleMap(brokers);
       const transporterMap = getTitleMap(transporters);
 
-      // Keep only SaleBook entries pending dispatch.
-      const pendingSaleBooks = saleBooks
-        .map((saleBook) => serialise(saleBook) as DocumentData)
-        .filter((saleBook) => {
-          const name = String(saleBook.name ?? "");
+      // Include ALL SaleBook entries.
+      const allSaleBooks = saleBooks.map(
+        (saleBook) => serialise(saleBook) as DocumentData,
+      );
 
-          return name && !dispatchedSaleBooks.has(name);
-        });
+      const totalCount = allSaleBooks.length;
 
-      const totalCount = pendingSaleBooks.length;
-
-      // Apply pagination after filtering.
-      const paginatedSaleBooks = pendingSaleBooks.slice(offset, offset + limit);
+      const paginatedSaleBooks = allSaleBooks.slice(offset, offset + limit);
 
       const documents = paginatedSaleBooks.map((data) => {
-        const party = String(data.party ?? "");
+        const name = String(data.name ?? "");
+        const dispatch = dispatchMap.get(name);
+
+        const party = String(dispatch?.party ?? data.party ?? "");
         const broker = String(data.broker ?? "");
-        const transporter = String(data.transporter ?? "");
+        const transporter = String(dispatch?.transporter ?? "");
 
         return {
           ...data,
 
-          name: String(data.name ?? ""),
+          name,
 
           party: party || null,
           party_name: (partyMap.get(party) ?? party) || null,
@@ -237,14 +234,22 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
           broker: broker || null,
           broker_name: (brokerMap.get(broker) ?? broker) || null,
 
+          dispatch: dispatch ?? null,
+          dispatch_name: dispatch?.name ?? null,
+
+          // Dispatch information
+          dispatch_date: dispatch?.dispatch_date ?? null,
           transporter: transporter || null,
           transporter_name:
             (transporterMap.get(transporter) ?? transporter) || null,
 
-          bags: Math.trunc(toNumber(data.bags)),
-          total_bags: Math.trunc(toNumber(data.bags)),
+          has_dispatch: Boolean(dispatch),
 
-          total_kgs: toNumber(data.total_kgs),
+          // Sale information
+          sold_bags: Math.trunc(toNumber(data.sold_bags)),
+          sold_quantity: toNumber(data.sold_quantity),
+          rate: toNumber(data.rate),
+          total_amount: toNumber(data.sold_quantity) * toNumber(data.rate),
         };
       });
 

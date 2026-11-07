@@ -3,8 +3,15 @@ import type { ReactNode } from "react";
 import { DataField } from "@/components/doctype/fields/data-field";
 import { DateField } from "@/components/doctype/fields/date-field";
 import { LinkField } from "@/components/doctype/fields/link-field";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDate } from "@/lib/format";
+import { Input } from "@/components/ui/input";
 
 type DispatchFormProps = {
   form: any;
@@ -12,61 +19,46 @@ type DispatchFormProps = {
 
 export function DispatchForm({ form }: DispatchFormProps) {
   return (
-    <div className="space-y-5">
-      {/* 1. Dispatch Information */}
+    <div className="space-y-2">
+      {/* 1. Sale Information */}
 
       <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
         <div>
-          <h3 className="text-base font-semibold">Dispatch Information</h3>
+          <h3 className="text-base font-semibold">Sale Information</h3>
           <p className="text-sm text-muted-foreground">
             Sale and buyer information.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-1 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-1 md:grid-cols-3">
           <form.Field name="sale_book">
             {(field: any) => (
-              <FieldRow label="Sale ID" htmlFor={field.name}>
-                <LinkField
+              <FieldRow label="SaleBook ID" htmlFor={field.name}>
+                <DataField
+                  id={field.name}
+                  name={field.name}
                   value={String(field.state.value ?? "")}
                   onChange={() => {}}
-                  doctype="SaleBook"
                   readOnly
                   className="w-full"
                 />
               </FieldRow>
             )}
           </form.Field>
-
-          <form.Field name="dispatch_date">
+          <form.Field name="sale_date">
             {(field: any) => (
-              <FieldRow label="Dispatch Date" htmlFor={field.name} required>
-                <DateField
+              <FieldRow label="Sale Date" htmlFor={field.name}>
+                <DataField
                   id={field.name}
                   name={field.name}
                   value={formatDate(String(field.state.value ?? ""))}
-                  onChange={field.handleChange}
-                  className="w-full"
-                  inputClassName="text-right"
-                />
-              </FieldRow>
-            )}
-          </form.Field>
-
-          <form.Field name="party">
-            {(field: any) => (
-              <FieldRow label="Party" htmlFor={field.name}>
-                <LinkField
-                  value={String(field.state.value ?? "")}
                   onChange={() => {}}
-                  doctype="Party"
                   readOnly
                   className="w-full"
                 />
               </FieldRow>
             )}
           </form.Field>
-
           <form.Field name="broker">
             {(field: any) => (
               <FieldRow label="Broker" htmlFor={field.name}>
@@ -80,10 +72,181 @@ export function DispatchForm({ form }: DispatchFormProps) {
               </FieldRow>
             )}
           </form.Field>
+          <form.Field name="lot_id">
+            {(field: any) => (
+              <FieldRow label="Lot ID" htmlFor={field.name}>
+                <DataField
+                  id={field.name}
+                  name={field.name}
+                  value={String(field.state.value ?? "")}
+                  onChange={() => {}}
+                  readOnly
+                  className="w-full"
+                />
+              </FieldRow>
+            )}
+          </form.Field>
+          <form.Field name="total_bags">
+            {(field: any) => (
+              <FieldRow label="Total Bags" htmlFor={field.name}>
+                <DataField
+                  id={field.name}
+                  name={field.name}
+                  value={String(field.state.value ?? 0)}
+                  onChange={() => {}}
+                  readOnly
+                  className="w-full"
+                />
+              </FieldRow>
+            )}
+          </form.Field>
+          <form.Field name="total_kgs">
+            {(field: any) => (
+              <FieldRow label="Total KGs" htmlFor={field.name}>
+                <DataField
+                  id={field.name}
+                  name={field.name}
+                  value={String(field.state.value ?? 0)}
+                  onChange={() => {}}
+                  readOnly
+                  className="w-full"
+                />
+              </FieldRow>
+            )}
+          </form.Field>
         </div>
       </section>
 
-      {/* 2. Transport Information */}
+      {/* 2. Dispatch Information */}
+      <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
+        <div>
+          <h3 className="text-base font-semibold">Dispatch Information</h3>
+          <p className="text-sm text-muted-foreground">
+            Sale and buyer information.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-3">
+          <div className="col-span-2">
+            <form.Field name="party">
+              {(field: any) => (
+                <FieldRow label="Party" htmlFor={field.name} required>
+                  <LinkField
+                    value={String(field.state.value ?? "")}
+                    onChange={field.handleChange}
+                    doctype="Party"
+                    className="w-full"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="col-span-1">
+            <form.Field name="dispatch_date">
+              {(field: any) => (
+                <FieldRow label="Dispatch Date" htmlFor={field.name} required>
+                  <DateField
+                    id={field.name}
+                    name={field.name}
+                    value={String(field.state.value ?? "")}
+                    onChange={field.handleChange}
+                    className="w-full"
+                    inputClassName="text-right"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="col-span-1">
+            <form.Field name="payment_type">
+              {(field: any) => (
+                <FieldRow label="Payment Type" required htmlFor={field.name}>
+                  <Select
+                    value={String(field.state.value ?? "DUE")}
+                    onValueChange={field.handleChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select payment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DUE">Due</SelectItem>
+                      <SelectItem value="DISCOUNT">Discount</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Subscribe selector={(state: any) => state.values.payment_type}>
+            {(paymentType: string) => (
+              <div className="col-span-1">
+                <form.Field name="discount_percentage">
+                  {(field: any) => (
+                    <FieldRow label="Discount (%)" htmlFor={field.name}>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        disabled={paymentType !== "DISCOUNT"}
+                        value={String(field.state.value ?? "")}
+                        onChange={(e) =>
+                          field.handleChange(
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                          )
+                        }
+                        placeholder="%"
+                        className="text-right"
+                      />
+                    </FieldRow>
+                  )}
+                </form.Field>
+              </div>
+            )}
+          </form.Subscribe>
+
+          <div className="col-span-1">
+            <form.Field name="received_date">
+              {(field: any) => (
+                <FieldRow label="Receive Date" htmlFor={field.name} required>
+                  <DateField
+                    id={field.name}
+                    name={field.name}
+                    value={String(field.state.value ?? "")}
+                    onChange={field.handleChange}
+                    className="w-full"
+                    inputClassName="text-right"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="col-span-3">
+            <form.Field name="remarks">
+              {(field: any) => (
+                <FieldRow label="Remarks" htmlFor={field.name}>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    value={String(field.state.value ?? "")}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Enter remarks"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+        </div>
+      </section>
+      {/* 3. Transport Information */}
 
       <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
         <div>
@@ -93,7 +256,7 @@ export function DispatchForm({ form }: DispatchFormProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-1 md:grid-cols-2">
           <form.Field name="transporter">
             {(field: any) => (
               <FieldRow label="Transporter" htmlFor={field.name}>
@@ -135,90 +298,6 @@ export function DispatchForm({ form }: DispatchFormProps) {
             )}
           </form.Field>
         </div>
-      </section>
-
-      {/* 3. Dispatch Quantity */}
-
-      <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
-        <div>
-          <h3 className="text-base font-semibold">Dispatch Quantity</h3>
-          <p className="text-sm text-muted-foreground">
-            Quantities inherited from SaleBook.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
-          <form.Field name="total_bags">
-            {(field: any) => (
-              <FieldRow label="Total Bags" htmlFor={field.name}>
-                <DataField
-                  id={field.name}
-                  name={field.name}
-                  value={String(field.state.value ?? 0)}
-                  onChange={() => {}}
-                  readOnly
-                  className="w-full"
-                />
-              </FieldRow>
-            )}
-          </form.Field>
-
-          <form.Field name="total_kgs">
-            {(field: any) => (
-              <FieldRow label="Total KGs" htmlFor={field.name}>
-                <DataField
-                  id={field.name}
-                  name={field.name}
-                  value={String(field.state.value ?? 0)}
-                  onChange={() => {}}
-                  readOnly
-                  className="w-full"
-                />
-              </FieldRow>
-            )}
-          </form.Field>
-        </div>
-      </section>
-
-      {/* 4. Additional Information */}
-
-      <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
-        <h3 className="text-base font-semibold">Additional Information</h3>
-
-        <form.Field name="remarks">
-          {(field: any) => (
-            <FieldRow label="Remarks" htmlFor={field.name}>
-              <DataField
-                id={field.name}
-                name={field.name}
-                value={String(field.state.value ?? "")}
-                onChange={field.handleChange}
-                className="w-full"
-              />
-            </FieldRow>
-          )}
-        </form.Field>
-      </section>
-
-      {/* 5. Workflow Information */}
-
-      <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
-        <h3 className="text-base font-semibold">Workflow Information</h3>
-
-        <form.Field name="workflow_state">
-          {(field: any) => (
-            <FieldRow label="Status" htmlFor={field.name}>
-              <DataField
-                id={field.name}
-                name={field.name}
-                value={String(field.state.value ?? "Draft")}
-                onChange={() => {}}
-                readOnly
-                className="w-full"
-              />
-            </FieldRow>
-          )}
-        </form.Field>
       </section>
     </div>
   );
