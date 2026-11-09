@@ -27,7 +27,6 @@ export const Route = createFileRoute("/dashboard/dispatch/")({
         offset: 0,
       }),
     ]);
-
     return {
       doctype: doctypeResult.doctype,
       records: listResult.documents ?? [],
@@ -61,13 +60,18 @@ function RouteComponent() {
     },
   });
 
+  // Temporary debugging
+  console.log("Dispatch records:", records);
+
+  console.log(
+    "Filtered rows:",
+    table.getFilteredRowModel().rows.map((row) => row.original),
+  );
+
   return (
     <DocTypeListTemplate
-<<<<<<< HEAD
-      title="Dispatch"
-=======
       title="Dispatch Book"
->>>>>>> origin/broker
+      showCreateButton={false}
       doctype={doctype}
       records={records}
       table={table}
@@ -75,8 +79,15 @@ function RouteComponent() {
       onOpen={openDispatch}
       onRefresh={() => router.invalidate()}
       pageSize={20}
-    >
-      <DataTable table={table} />
-    </DocTypeListTemplate>
+      totals={[
+        { fieldname: "sold_bags", label: "Total Bags" },
+        { fieldname: "sold_quantity", label: "Total KG", decimals: 2 },
+        {
+          fieldname: "total_amount",
+          label: "Total Amount",
+          currency: true,
+        },
+      ]}
+    />
   );
 }

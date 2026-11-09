@@ -1,4 +1,5 @@
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import { formatDate } from "@/lib/format";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export interface TableColumns {
@@ -67,7 +68,11 @@ export function createColumns(
       ),
       enableSorting: true,
       size: 115,
-      cell: ({ getValue }) => displayValue(getValue()),
+      cell: ({ getValue }) => (
+        <div className="text-left">
+          {displayValue(formatDate(getValue<string>()))}
+        </div>
+      ),
     },
     {
       accessorKey: "arrival_date",
@@ -76,7 +81,11 @@ export function createColumns(
       ),
       enableSorting: true,
       size: 115,
-      cell: ({ getValue }) => displayValue(getValue()),
+      cell: ({ getValue }) => (
+        <div className="text-left">
+          {displayValue(formatDate(getValue<string>()))}
+        </div>
+      ),
     },
     {
       id: "factory_name",

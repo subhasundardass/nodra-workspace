@@ -12,36 +12,52 @@ type FormValues = Record<string, unknown>;
 
 type SaleEntryData = {
   doctype: DocTypeDefinition;
+  saleBook: DocumentRecord | null;
   lot: DocumentRecord;
 };
 
 export const Route = createFileRoute("/dashboard/salebook/$name")({
   loader: async ({ params }): Promise<SaleEntryData> => {
-    const [doctypeResult, lotResult] = await Promise.all([
+    const [doctypeResult, lotResult, saleResult] = await Promise.all([
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "SaleBook",
       }),
-      callMethod<{ document: DocumentRecord }>("document.get", {
+
+      callMethod<{ document: DocumentRecord | null }>("document.get", {
         doctype: "Lots",
         name: params.name,
+      }),
+
+      callMethod<{ document: DocumentRecord | null }>("salebook.get_by_lot", {
+        lot: params.name,
       }),
     ]);
 
     if (!doctypeResult.doctype) {
-      throw new Error('DocType "SaleEntry" is not registered.');
+      throw new Error('DocType "SaleBook" is not registered.');
     }
 
-    if (!lotResult.document) {
+    const lot = lotResult.document;
+
+    if (!lot) {
       throw new Error(`Lot "${params.name}" was not found.`);
     }
 
-    if (lotResult.document.docstatus !== 51) {
-      throw new Error("Only confirmed Lots can be sold.");
-    }
+    const saleBook = saleResult.document;
+
+    console.log("Sale Entry Route:", {
+      routeLotId: params.name,
+      lotId: lot.name,
+      saleBookId: saleBook?.name ?? null,
+      saleBook,
+    });
+
+    console.log("SaleBook loaded:", saleBook);
 
     return {
       doctype: doctypeResult.doctype,
-      lot: lotResult.document,
+      saleBook,
+      lot,
     };
   },
 
@@ -49,29 +65,75 @@ export const Route = createFileRoute("/dashboard/salebook/$name")({
 });
 
 function SaleEntryRoute() {
-  const { doctype, lot } = Route.useLoaderData();
+  const { doctype, saleBook, lot } = Route.useLoaderData();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
-  async function handleSubmit(values: FormValues): Promise<void> {
-    setSaving(true);
-    console.log("Sale Entry values:", values);
-    try {
-      await callMethod("document.create", {
-        doctype: doctype.name,
-        doc: {
-          lot: lot.name,
-          sale_date: values.sale_date,
-          sale_type: values.sale_type,
-          rate: Number(values.sale_rate ?? values.rate ?? 0),
-          broker: values.broker || null,
-          remarks: values.remarks || "",
-        },
-      });
+  const lotBags = Number(lot.bags ?? 0);
 
-      toast.success("Sale Entry created successfully.");
+  async function handleSubmit(values: FormValues): Promise<void> {
+    const rate = Number(values.rate ?? 0);
+    const soldBags = Number(values.sold_bags ?? 0);
+    const soldQuantity = Number(values.sold_quantity ?? 0);
+
+    if (!Number.isFinite(rate) || rate <= 0) {
+      toast.error("Selling Rate must be greater than zero.");
+      return;
+    }
+
+    if (!Number.isFinite(soldBags) || soldBags <= 0) {
+      toast.error("Sold Bags must be greater than zero.");
+      return;
+    }
+
+    if (soldBags > lotBags) {
+      toast.error("Sold Bags cannot exceed available Lot Bags.");
+      return;
+    }
+
+    if (!Number.isFinite(soldQuantity) || soldQuantity <= 0) {
+      toast.error("Sold KG must be greater than zero.");
+      return;
+    }
+
+    const doc = {
+      lot: String(lot.name),
+      sale_date: values.sale_date,
+      sale_type: values.sale_type,
+      sold_bags: soldBags,
+      sold_quantity: soldQuantity,
+      rate,
+      broker: values.broker || null,
+      remarks: String(values.remarks ?? ""),
+    };
+
+    setSaving(true);
+
+    try {
+      if (saleBook?.name) {
+        // Update the existing SaleBook document.
+        await callMethod("document.update", {
+          doctype: doctype.name,
+          name: String(saleBook.name),
+          doc,
+        });
+
+        toast.success("Sale Entry updated successfully.");
+      } else {
+        // Create the first SaleBook document for this Lot.
+        await callMethod("document.create", {
+          doctype: doctype.name,
+          doc,
+        });
+
+        toast.success("Sale Entry created successfully.");
+      }
 
       await navigate({ to: "/dashboard/salebook" });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save Sale Entry.",
+      );
     } finally {
       setSaving(false);
     }
@@ -79,17 +141,24 @@ function SaleEntryRoute() {
 
   return (
     <DocTypeFormTemplate
-      title="Sale Entry"
+      title={saleBook ? "Edit Sale Entry" : "Create Sale Entry"}
       doctype={doctype}
-      mode="create"
+
+      mode={saleBook ? "edit" : "create"}
       initialValues={{
-        lot: lot.name,
-        sale_date: new Date().toLocaleDateString("en-CA"),
-        sale_type: "Bid",
-        sold_bags: Number(lot.bags ?? 0),
-        sold_quantity: Number(lot.bags ?? 0) * Number(lot.net_kg_per_bag ?? 0),
-        sale_rate: Number(lot.rate ?? 0),
-        remarks: "",
+        name: String(saleBook?.name ?? ""),
+        workflow_state: String(saleBook?.workflow_state ?? "Draft"),
+        lot: String(lot.name),
+        sale_date: saleBook?.sale_date ?? new Date().toISOString().slice(0, 10),
+        sale_type: saleBook?.sale_type ?? "Bid",
+        sold_bags: Number(saleBook?.sold_bags ?? lot.bags ?? 0),
+        sold_quantity: Number(
+          saleBook?.sold_quantity ??
+            Number(lot.bags ?? 0) * Number(lot.net_kg_per_bag ?? 0),
+        ),
+        rate: Number(saleBook?.rate ?? 0),
+        broker: saleBook?.broker ?? "",
+        remarks: String(saleBook?.remarks ?? ""),
       }}
       saving={saving}
       onSubmit={handleSubmit}

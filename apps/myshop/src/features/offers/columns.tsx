@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import { formatDate } from "@/lib/format";
 
 export interface OfferSheetRecord {
   name: string;
@@ -36,7 +37,8 @@ export function createColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Offer Date" />
       ),
-      cell: ({ getValue }) => String(getValue() ?? "-"),
+      cell: ({ getValue }) =>
+        String(formatDate(getValue<string | null>()) ?? "-"),
       enableSorting: true,
     },
     {

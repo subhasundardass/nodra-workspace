@@ -79,19 +79,36 @@ const invokeMethod = createServerFn({ method: "POST" })
         deleteCookie("session_token", { path: "/" });
       return { ok: true as const, data: toJsonValue(result) };
     } catch (e) {
+      const errorObject =
+        typeof e === "object" && e !== null
+          ? (e as Record<string, unknown>)
+          : {};
+
+      console.error("[Nodra Method Error]", e);
+
+      console.error("[Nodra Method Error Fields]", {
+        name: errorObject.name,
+        message: errorObject.message,
+        ownProperties: e instanceof Error ? Object.getOwnPropertyNames(e) : [],
+        details: errorObject.details,
+        errors: errorObject.errors,
+        issues: errorObject.issues,
+        data: errorObject.data,
+        cause: errorObject.cause,
+      });
+
       const details =
-        typeof e === "object" &&
-        e !== null &&
-        "details" in e &&
-        Array.isArray(e.details)
-          ? e.details
-          : [];
+        errorObject.details ??
+        errorObject.errors ??
+        errorObject.issues ??
+        errorObject.data ??
+        null;
 
       return {
         ok: false as const,
         error: e instanceof Error ? e.message : String(e),
         status: methodErrorStatus(e),
-        details,
+        details: toJsonValue(details),
       };
     }
   });

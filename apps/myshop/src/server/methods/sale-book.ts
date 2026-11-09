@@ -35,7 +35,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         ? Math.max(0, Math.trunc(requestedOffset))
         : 0;
 
-      // All confirmed Lots remain visible.
+      // Show all confirmed Lots, whether sold or not.
       const lotFilters: Filters = {
         docstatus: 51,
       };
@@ -70,7 +70,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           }),
         ]);
 
-      // Map SaleBook entries by Lot.
+      // Map SaleBook entries by linked Lot ID.
       const salesByLot = new Map<string, DocumentData>();
 
       for (const sale of saleEntries) {
@@ -80,9 +80,15 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
 
         const lotName = String(data.lot ?? "");
 
-        if (lotName) {
-          salesByLot.set(lotName, data);
+        if (!lotName) continue;
+
+        if (salesByLot.has(lotName)) {
+          throw new Error(
+            `Multiple active SaleBook entries found for Lot "${lotName}".`,
+          );
         }
+
+        salesByLot.set(lotName, data);
       }
 
       // Map Broker IDs to Broker titles.
@@ -128,9 +134,13 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         const netKgPerBag = toNumber(data.net_kg_per_bag);
 
         return {
+          // Lot identity: used for navigation.
           name: lotName,
           lot: lotName,
           lot_no: String(data.lot_no ?? ""),
+
+          // SaleBook identity: used for updating.
+          sale_book_name: sale?.name ? String(sale.name) : null,
 
           factory: data.factory ?? null,
 
@@ -147,6 +157,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           arrival_date: data.arrival_date || null,
 
           tea_testing: sale?.tea_testing ?? null,
+          tested_grade: sale?.tested_grade ?? null,
           test_information: sale?.test_information ?? null,
           tf: sale?.tf ?? null,
 
@@ -155,10 +166,15 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
 
           sale_type: sale?.sale_type ?? null,
           rate: toNumber(sale?.rate),
+
+          sold_bags: toNumber(sale?.sold_bags),
+          sold_quantity: toNumber(sale?.sold_quantity),
+
           broker: sale?.broker ?? null,
           broker_name: brokerMap.get(String(sale?.broker ?? "")) ?? "",
 
           sale_date: sale?.sale_date ?? null,
+          remarks: sale?.remarks ?? "",
           workflow_state: sale?.workflow_state ?? null,
         };
       });
@@ -168,6 +184,43 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         limit,
         offset,
         total_count: totalCount,
+      };
+    },
+    { requireAuth: true },
+  );
+
+  // Find an existing SaleBook document using its linked Lot.
+  registry.register(
+    "salebook.get_by_lot",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const lotName = String(ctx.args.lot ?? "");
+
+      if (!lotName) {
+        throw new Error("Lot is required.");
+      }
+
+      const entries = await app.orm.getList("SaleBook", {
+        limit: 10,
+        offset: 0,
+        filters: {
+          lot: lotName,
+        },
+      });
+
+      const documents = entries
+        .map((entry) => serialise(entry) as DocumentData)
+        .filter((entry) => Number(entry.docstatus) !== 98);
+
+      if (documents.length > 1) {
+        throw new Error(
+          `Multiple SaleBook entries exist for Lot "${lotName}". Please resolve the duplicates.`,
+        );
+      }
+
+      return {
+        document: documents[0] ?? null,
       };
     },
     { requireAuth: true },
