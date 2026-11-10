@@ -73,7 +73,7 @@ function RouteComponent() {
       onRefresh={() => router.invalidate()}
       pageSize={20}
     >
-      <DataTable table={table} />
+      {/* <DataTable table={table} /> */}
     </DocTypeListTemplate>
   );
 }

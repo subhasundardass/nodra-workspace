@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 export type SaleBookRecord = {
   name: string; // Lot ID used for navigation
   lot: string; // Linked Lot document ID
+  lot_no: string; // Lot Number
   sale_book_name: string | null; // Actual SaleBook document ID
 
   factory: string | null;
@@ -48,16 +49,16 @@ export function createColumns(
 ): ColumnDef<SaleBookRecord>[] {
   return [
     {
-      accessorKey: "lot",
+      accessorKey: "lot_no",
       header: "Lot No.",
       size: 100,
       cell: ({ row }) => (
         <button
           type="button"
-          className="font-medium text-primary hover:underline"
+          className="font-semibold text-primary hover:underline"
           onClick={() => onOpen(row.original.name)}
         >
-          {row.original.lot}
+          {row.original.lot_no}
         </button>
       ),
     },
@@ -155,6 +156,20 @@ export function createColumns(
           </Badge>
         );
       },
+    },
+    {
+      accessorKey: "lot",
+      header: "Lot ID.",
+      size: 100,
+      cell: ({ row }) => (
+        <button
+          type="button"
+          className="font-medium text-primary hover:underline"
+          onClick={() => onOpen(row.original.name)}
+        >
+          {row.original.lot}
+        </button>
+      ),
     },
   ];
 }

@@ -15,6 +15,7 @@ type FormValues = Record<string, unknown>;
 type DispatchData = {
   doctype: DocTypeDefinition;
   saleBook: DocumentRecord;
+  lot: DocumentRecord | null;
   dispatch: DocumentRecord | null;
 };
 
@@ -48,9 +49,20 @@ export const Route = createFileRoute("/dashboard/dispatch/$name")({
       throw new Error(`SaleBook "${params.name}" was not found.`);
     }
 
+    // Fetch linked Lot document.
+    const lotName = String(saleBook.lot ?? "");
+
+    const lotResult = lotName
+      ? await callMethod<{ document: DocumentRecord | null }>("document.get", {
+          doctype: "Lots",
+          name: lotName,
+        })
+      : null;
+
     return {
       doctype: doctypeResult.doctype,
       saleBook,
+      lot: lotResult?.document ?? null,
       dispatch: dispatchResult.document,
     };
   },
@@ -59,7 +71,7 @@ export const Route = createFileRoute("/dashboard/dispatch/$name")({
 });
 
 function RouteComponent() {
-  const { doctype, dispatch, saleBook } = Route.useLoaderData();
+  const { doctype, dispatch, saleBook, lot } = Route.useLoaderData();
 
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -70,6 +82,7 @@ function RouteComponent() {
     sale_book: String(dispatch?.sale_book ?? saleBook.name ?? ""),
     sale_date: String(saleBook.sale_date ?? ""),
     lot_id: String(saleBook.lot ?? ""),
+    lot_no: String(lot?.lot_no ?? ""),
 
     dispatch_date: String(
       dispatch?.dispatch_date ?? new Date().toISOString().slice(0, 10),
