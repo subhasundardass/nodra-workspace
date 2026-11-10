@@ -1,0 +1,166 @@
+{
+  "name": "StockLedger",
+  "module": "App",
+  "naming_rule": "series",
+  "naming_series": "SLYY#####",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot",
+    "factory",
+    "warehouse",
+    "movement_type",
+    "voucher_no"
+  ],
+  "fields": [
+    {
+      "fieldname": "posting_date",
+      "label": "Posting Date",
+      "fieldtype": "Date",
+      "default": "Today",
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot",
+      "label": "Lot",
+      "fieldtype": "Link",
+      "options": "Lots",
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "location_type",
+      "label": "Location Type",
+      "fieldtype": "Select",
+      "options": [
+        "Factory",
+        "Warehouse"
+      ],
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "factory",
+      "label": "Factory",
+      "fieldtype": "Link",
+      "options": "Factory",
+      "read_only": true
+    },
+    {
+      "fieldname": "warehouse",
+      "label": "Warehouse",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "read_only": true
+    },
+    {
+      "fieldname": "movement_type",
+      "label": "Movement Type",
+      "fieldtype": "Select",
+      "options": [
+        "Opening Stock",
+        "Lot Receipt",
+        "Transfer In",
+        "Transfer Out",
+        "Dispatch",
+        "Adjustment In",
+        "Adjustment Out",
+        "Return In",
+        "Return Out"
+      ],
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "label": "Bags",
+      "fieldtype": "Int",
+      "default": 0,
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "quantity",
+      "label": "Quantity (KG)",
+      "fieldtype": "Float",
+      "precision": 3,
+      "default": 0,
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "voucher_type",
+      "label": "Voucher Type",
+      "fieldtype": "Data",
+      "required": true,
+      "read_only": true
+    },
+    {
+      "fieldname": "voucher_no",
+      "label": "Voucher No",
+      "fieldtype": "Data",
+      "required": true,
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "voucher_detail_no",
+      "label": "Voucher Detail No",
+      "fieldtype": "Data",
+      "read_only": true
+    },
+    {
+      "fieldname": "is_reversal",
+      "label": "Is Reversal",
+      "fieldtype": "Check",
+      "default": false,
+      "read_only": true
+    },
+    {
+      "fieldname": "against_ledger",
+      "label": "Against Ledger Entry",
+      "fieldtype": "Link",
+      "options": "StockLedger",
+      "read_only": true
+    },
+    {
+      "fieldname": "remarks",
+      "label": "Remarks",
+      "fieldtype": "SmallText",
+      "read_only": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": false,
+      "create": false,
+      "delete": false
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": false,
+      "create": false,
+      "delete": false
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": false,
+      "create": false,
+      "delete": false
+    }
+  ]
+}
