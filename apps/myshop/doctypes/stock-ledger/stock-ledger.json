@@ -144,15 +144,15 @@
     {
       "role": "System Manager",
       "read": true,
-      "write": false,
-      "create": false,
+      "write": true,
+      "create": true,
       "delete": false
     },
     {
       "role": "Administrator",
       "read": true,
-      "write": false,
-      "create": false,
+      "write": true,
+      "create": true,
       "delete": false
     },
     {

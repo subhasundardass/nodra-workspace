@@ -27,6 +27,8 @@ import { Route as DashboardBrokerNewRouteImport } from './routes/dashboard/broke
 import { Route as DashboardDispatchIndexRouteImport } from './routes/dashboard/dispatch/index'
 import { Route as DashboardDispatchNameRouteImport } from './routes/dashboard/dispatch/$name'
 import { Route as DashboardDispatchPendingDispatchRouteImport } from './routes/dashboard/dispatch/pending-dispatch'
+import { Route as DashboardInventoryStockByLocationRouteImport } from './routes/dashboard/inventory/stock-by-location'
+import { Route as DashboardInventoryStockOverviewRouteImport } from './routes/dashboard/inventory/stock-overview'
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
 import { Route as DashboardLotNewRouteImport } from './routes/dashboard/lot/new'
@@ -151,6 +153,18 @@ const DashboardDispatchPendingDispatchRoute =
   DashboardDispatchPendingDispatchRouteImport.update({
     id: '/dispatch/pending-dispatch',
     path: '/dispatch/pending-dispatch',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardInventoryStockByLocationRoute =
+  DashboardInventoryStockByLocationRouteImport.update({
+    id: '/inventory/stock-by-location',
+    path: '/inventory/stock-by-location',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardInventoryStockOverviewRoute =
+  DashboardInventoryStockOverviewRouteImport.update({
+    id: '/inventory/stock-overview',
+    path: '/inventory/stock-overview',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 const DashboardLotIndexRoute = DashboardLotIndexRouteImport.update({
@@ -353,6 +367,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
+  '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -406,6 +422,8 @@ export interface FileRoutesByTo {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
+  '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -461,6 +479,8 @@ export interface FileRoutesById {
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
+  '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
   '/dashboard/master/brands': typeof DashboardMasterBrandsRoute
@@ -517,6 +537,8 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
+    | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -570,6 +592,8 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
+    | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -624,6 +648,8 @@ export interface FileRouteTypes {
     | '/dashboard/broker/new'
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
+    | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
     | '/dashboard/master/brands'
@@ -801,6 +827,20 @@ declare module '@tanstack/react-router' {
       path: '/dispatch/pending-dispatch'
       fullPath: '/dashboard/dispatch/pending-dispatch'
       preLoaderRoute: typeof DashboardDispatchPendingDispatchRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/inventory/stock-by-location': {
+      id: '/dashboard/inventory/stock-by-location'
+      path: '/inventory/stock-by-location'
+      fullPath: '/dashboard/inventory/stock-by-location'
+      preLoaderRoute: typeof DashboardInventoryStockByLocationRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/inventory/stock-overview': {
+      id: '/dashboard/inventory/stock-overview'
+      path: '/inventory/stock-overview'
+      fullPath: '/dashboard/inventory/stock-overview'
+      preLoaderRoute: typeof DashboardInventoryStockOverviewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/lot/': {
@@ -1050,6 +1090,8 @@ interface DashboardRouteRouteChildren {
   DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
   DashboardDispatchNameRoute: typeof DashboardDispatchNameRoute
   DashboardDispatchPendingDispatchRoute: typeof DashboardDispatchPendingDispatchRoute
+  DashboardInventoryStockByLocationRoute: typeof DashboardInventoryStockByLocationRoute
+  DashboardInventoryStockOverviewRoute: typeof DashboardInventoryStockOverviewRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
   DashboardMasterBrandsRoute: typeof DashboardMasterBrandsRoute
@@ -1094,6 +1136,9 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBrokerNewRoute: DashboardBrokerNewRoute,
   DashboardDispatchNameRoute: DashboardDispatchNameRoute,
   DashboardDispatchPendingDispatchRoute: DashboardDispatchPendingDispatchRoute,
+  DashboardInventoryStockByLocationRoute:
+    DashboardInventoryStockByLocationRoute,
+  DashboardInventoryStockOverviewRoute: DashboardInventoryStockOverviewRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
   DashboardMasterBrandsRoute: DashboardMasterBrandsRoute,

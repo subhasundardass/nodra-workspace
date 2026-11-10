@@ -17,6 +17,7 @@ type DocumentRow = Record<string, unknown>;
 export type DocTypeListColumn = {
   id: string;
   label: string;
+
   fieldname?: string;
   searchable?: boolean;
   sortable?: boolean;
@@ -40,6 +41,7 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   totals?: DocTypeListTotal[];
 
   title?: string;
+  createButtonLabel?: string;
   description?: string;
   actions?: GlobalToolbarAction[];
   showCreateButton?: boolean;
@@ -88,6 +90,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   table: suppliedTable,
   children,
   title,
+  createButtonLabel,
   description,
   actions,
   totals,
@@ -211,13 +214,13 @@ export function DocTypeListTemplate<TRecord extends object>({
     return [
       {
         id: "create",
-        label: `Create ${doctype.name}`,
+        label: createButtonLabel ?? `Create ${doctype.name}`,
         icon: Plus,
         variant: "default",
         onClick: onCreate,
       },
     ];
-  }, [actions, canCreate, doctype.name, onCreate]);
+  }, [actions, canCreate, createButtonLabel, doctype.name, onCreate]);
 
   return (
     <PageContainer>
@@ -268,7 +271,7 @@ export function DocTypeListTemplate<TRecord extends object>({
             {canCreate && onCreate && (
               <Button type="button" className="mt-4" onClick={onCreate}>
                 <Plus className="mr-2 size-4" />
-                Create {doctype.name}
+                {createButtonLabel ?? `Create ${doctype.name}`}
               </Button>
             )}
           </div>

@@ -110,17 +110,7 @@ export function createColumns(
       minSize: 100,
       cell: ({ getValue }) => displayValue(getValue()),
     },
-    {
-      id: "warehouse_title",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="WH/Godown" />
-      ),
-      accessorFn: (row) => row["warehouse.title"] || row.warehouse || "—",
-      enableSorting: true,
-      size: 115,
-      minSize: 85,
-      cell: ({ getValue }) => displayValue(getValue()),
-    },
+
     {
       id: "grade_code",
       header: ({ column }) => (

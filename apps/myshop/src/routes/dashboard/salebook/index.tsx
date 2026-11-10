@@ -8,7 +8,6 @@ import { callMethod } from "@/lib/call-method";
 import { useDataTable } from "@/hooks/use-data-table";
 
 import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
-import { DataTable } from "@/components/ui/table/data-table";
 
 import type { DocTypeDefinition } from "nodra";
 import {
@@ -49,6 +48,14 @@ function RouteComponent() {
       params: { name },
     });
 
+  const createSaleBook = () =>
+    navigate({
+      to: "/dashboard/salebook/new",
+      search: {
+        lot: "",
+      },
+    });
+
   const { table } = useDataTable({
     data: records,
     columns: createColumns(openSaleBook),
@@ -64,16 +71,15 @@ function RouteComponent() {
   return (
     <DocTypeListTemplate
       title="Sale Book"
-      showCreateButton={false}
+      showCreateButton={true}
+      createButtonLabel="Create Sale Entry"
       doctype={doctype}
       records={records}
       table={table}
-      onCreate={() => null}
+      onCreate={createSaleBook}
       onOpen={openSaleBook}
       onRefresh={() => router.invalidate()}
       pageSize={20}
-    >
-      {/* <DataTable table={table} /> */}
-    </DocTypeListTemplate>
+    />
   );
 }
