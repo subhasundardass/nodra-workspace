@@ -7,6 +7,8 @@ export type DispatchRecord = {
   sale_book: string;
   sale_date: string | null;
   dispatch_date: string | null;
+  lot_id: string | null;
+  lot_no: string | null;
   party: string | null;
   party_name: string | null;
   broker: string | null;
@@ -66,6 +68,15 @@ export function createColumns(
       size: 115,
       cell: ({ getValue }) =>
         displayValue(formatDate(getValue<string | null>())),
+    },
+    {
+      accessorKey: "lot_no",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Lot No" />
+      ),
+      enableSorting: true,
+      size: 115,
+      cell: ({ getValue }) => displayValue(getValue<string | null>()),
     },
     {
       accessorKey: "broker_name",

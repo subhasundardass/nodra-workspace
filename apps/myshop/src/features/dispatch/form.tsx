@@ -72,9 +72,9 @@ export function DispatchForm({ form }: DispatchFormProps) {
               </FieldRow>
             )}
           </form.Field>
-          <form.Field name="lot_id">
+          <form.Field name="lot_no">
             {(field: any) => (
-              <FieldRow label="Lot ID" htmlFor={field.name}>
+              <FieldRow label="Lot No" htmlFor={field.name}>
                 <DataField
                   id={field.name}
                   name={field.name}

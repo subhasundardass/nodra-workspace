@@ -110,23 +110,16 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Pending Dispatch",
-            url: "/dashboard/dispatch/pending-dispatch",
-            icon: "clock",
-            isActive: false,
-            items: [],
-          },
-          {
-            title: "Dispatch Entry",
-            url: "/dashboard/dispatch",
-            icon: "add",
-            isActive: false,
-            items: [],
-          },
-          {
             title: "Dispatch Book",
             url: "/dashboard/dispatch",
             icon: "page",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Pending Dispatch",
+            url: "/dashboard/dispatch/pending-dispatch",
+            icon: "clock",
             isActive: false,
             items: [],
           },
@@ -163,6 +156,44 @@ export const navGroups: NavGroup[] = [
           },
           {
             title: "Payment Receipts",
+            url: "/dashboard/salebook/pending-sale",
+            icon: "clock",
+            isActive: false,
+            items: [],
+          },
+        ],
+      },
+
+      // 4.2. Stock & Inventory
+      {
+        title: "Stock & Inventory",
+        url: "#",
+        icon: "kanban",
+        isActive: false,
+        items: [
+          {
+            title: "Stock Overview",
+            url: "/dashboard/offers",
+            icon: "post",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Stock by Location",
+            url: "/dashboard/offers",
+            icon: "page",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Stock Transfer",
+            url: "/dashboard/salebook",
+            icon: "product",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Stock Ledger",
             url: "/dashboard/salebook/pending-sale",
             icon: "clock",
             isActive: false,

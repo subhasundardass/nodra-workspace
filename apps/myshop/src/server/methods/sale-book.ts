@@ -40,10 +40,15 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         docstatus: 51,
       };
 
+      const sortOrder =
+        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
+          ? "asc"
+          : "desc";
+
       const lotOptions: ListOptions = {
         limit,
         offset,
-        orderBy: "arrival_date desc",
+        orderBy: `lot_no ${sortOrder}`,
       };
 
       const [lots, totalCount, saleEntries, offerSheets, brokers] =
