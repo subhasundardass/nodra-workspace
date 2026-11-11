@@ -81,8 +81,10 @@ function RouteComponent() {
       onOpen={openOffer}
       onRefresh={() => router.invalidate()}
       pageSize={20}
-    >
-      <DataTable table={table} />
-    </DocTypeListTemplate>
+      totals={[
+        { fieldname: "total_bags", label: "Total Bags" },
+        { fieldname: "total_kg", label: "Total Kgs", decimals: 2 },
+      ]}
+    ></DocTypeListTemplate>
   );
 }

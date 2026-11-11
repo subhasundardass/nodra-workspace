@@ -80,6 +80,19 @@ function RouteComponent() {
       onOpen={openSaleBook}
       onRefresh={() => router.invalidate()}
       pageSize={20}
+      totals={[
+        { fieldname: "bags", label: "Total Bags" },
+        { fieldname: "total_kg", label: "Total Kgs", decimals: 2 },
+
+        { fieldname: "sold_bags", label: "Sold Bags" },
+        { fieldname: "sold_quantity", label: "Sold Kgs", decimals: 2 },
+
+        {
+          fieldname: "total_amount",
+          label: "Total Amount",
+          currency: true,
+        },
+      ]}
     />
   );
 }

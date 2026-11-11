@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 import { formatDate, formatMoney } from "@/lib/format";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export type SaleBookRecord = {
-  name: string; // Lot ID used for navigation
-  lot: string; // Linked Lot document ID
-  lot_no: string; // Lot Number
-  sale_book_name: string | null; // Actual SaleBook document ID
+  name: string;
+  lot: string;
+  lot_no: string;
+  sale_book_name: string | null;
 
   factory: string | null;
 
@@ -44,19 +45,30 @@ export type SaleBookRecord = {
   workflow_state: string | null;
 };
 
+const formatNumber = (value: number, maximumFractionDigits = 0) =>
+  Number(value ?? 0).toLocaleString("en-IN", {
+    maximumFractionDigits,
+  });
+
+const displayValue = (value: unknown) =>
+  value == null || value === "" ? "—" : String(value);
+
 export function createColumns(
   onOpen: (name: string) => void,
 ): ColumnDef<SaleBookRecord>[] {
   return [
     {
       accessorKey: "lot_no",
-      header: "Lot No.",
-      size: 100,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Lot No." />
+      ),
+      enableSorting: true,
+      size: 60,
+      minSize: 60,
       cell: ({ row }) => (
         <button
           type="button"
           className="font-semibold text-primary hover:underline"
-
           onClick={() => {
             if (row.original.sale_book_name) {
               onOpen(row.original.sale_book_name);
@@ -69,78 +81,174 @@ export function createColumns(
     },
     {
       accessorKey: "brand",
-      header: "Mark / Brand",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Mark / Brand" />
+      ),
+      enableSorting: true,
+      size: 160,
+      minSize: 160,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "grade",
-      header: "Grade",
-      size: 30,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Grade" />
+      ),
+      enableSorting: true,
+      size: 65,
+      minSize: 65,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "bags",
-      header: "Bags",
+      id: "bags",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Bags"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      meta: {
+        className: "text-right tabular-nums",
+      },
+      enableSorting: true,
       size: 65,
+      minSize: 65,
+      cell: ({ getValue }) => (
+        <div className="text-right tabular-nums">
+          {formatNumber(Number(getValue()))}
+        </div>
+      ),
     },
     {
       accessorKey: "net_kg_per_bag",
-      header: "Kgs",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Kgs"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      meta: {
+        className: "text-right tabular-nums",
+      },
+      enableSorting: true,
       size: 70,
+      minSize: 70,
+      cell: ({ getValue }) => (
+        <div className="text-right tabular-nums">
+          {formatNumber(Number(getValue()), 3)}
+        </div>
+      ),
     },
     {
       accessorKey: "total_kg",
-      header: "Total Kg",
-      cell: ({ row }) => Number(row.original.total_kg).toLocaleString("en-IN"),
-      size: 70,
+      id: "total_kg",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Total Kg"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      meta: {
+        className: "text-right tabular-nums",
+      },
+      enableSorting: true,
+      size: 90,
+      minSize: 90,
+      cell: ({ getValue }) => (
+        <div className="text-right tabular-nums">
+          {formatNumber(Number(getValue()), 3)}
+        </div>
+      ),
     },
-
     {
       accessorKey: "test_information",
-      header: "Test Information",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Test Information" />
+      ),
+      enableSorting: true,
+      size: 180,
+      minSize: 180,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "tf",
-      header: "T/F",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="T/F" />
+      ),
+      enableSorting: true,
+      size: 60,
+      minSize: 60,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "sale_type",
-      header: "Type",
-      size: 30,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Type" />
+      ),
+      enableSorting: true,
+      size: 85,
+      minSize: 85,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
-
     {
       accessorKey: "rate",
-      header: "Rate",
-      size: 30,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Rate"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      meta: {
+        className: "text-right tabular-nums",
+      },
+      enableSorting: true,
+      size: 100,
+      minSize: 100,
       cell: ({ row }) => {
         const rate = Number(row.original.rate);
 
         return (
-          <div className="text-right font-semibold">
-            {rate > 0 ? formatMoney(rate) : "-"}
+          <div className="text-right font-semibold tabular-nums">
+            {rate > 0 ? formatMoney(rate) : "—"}
           </div>
         );
       },
     },
     {
       accessorKey: "broker_name",
-      header: "Broker",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Broker" />
+      ),
+      enableSorting: true,
       size: 130,
-
-      cell: ({ row }) => row.original.broker_name || "-",
+      minSize: 130,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "remarks",
-      header: "Remarks",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Remarks" />
+      ),
+      enableSorting: true,
       size: 130,
-
-      cell: ({ row }) => row.original.remarks || "-",
+      minSize: 130,
+      cell: ({ getValue }) => displayValue(getValue()),
     },
     {
       accessorKey: "workflow_state",
-      header: "Status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      enableSorting: true,
       size: 110,
-      cell: ({ row }) => {
-        const status = row.original.workflow_state || "Draft";
+      minSize: 110,
+      cell: ({ getValue }) => {
+        const status = getValue<string>() || "Draft";
 
         return (
           <Badge
@@ -159,8 +267,12 @@ export function createColumns(
     },
     {
       accessorKey: "lot",
-      header: "Sale ID.",
-      size: 100,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Sale ID." />
+      ),
+      enableSorting: true,
+      size: 110,
+      minSize: 110,
       cell: ({ row }) => (
         <button
           type="button"
@@ -169,15 +281,42 @@ export function createColumns(
             onOpen(row.original.sale_book_name || row.original.lot)
           }
         >
-          {row.original.sale_book_name}
+          {displayValue(row.original.sale_book_name)}
         </button>
       ),
     },
     {
+      id: "total_amount",
+      accessorFn: (row) =>
+        Number(row.sold_quantity ?? 0) * Number(row.rate ?? 0),
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title="Total Amount"
+          className="[&>span:first-child]:ml-auto"
+        />
+      ),
+      meta: {
+        className: "text-right tabular-nums",
+      },
+      enableSorting: true,
+      size: 145,
+      cell: ({ getValue }) => (
+        <div className="text-right font-bold tabular-nums">
+          {formatMoney(Number(getValue()))}
+        </div>
+      ),
+    },
+    {
       accessorKey: "sale_date",
-      header: "Sale Date",
-      cell: ({ row }) => formatDate(row.original.sale_date),
-      size: 70,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Sale Date" />
+      ),
+      enableSorting: true,
+      size: 115,
+      minSize: 115,
+      cell: ({ getValue }) =>
+        displayValue(formatDate(getValue<string | null>())),
     },
   ];
 }
