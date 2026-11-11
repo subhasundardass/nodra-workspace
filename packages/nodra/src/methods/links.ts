@@ -12,15 +12,18 @@ export interface LinkMethodApp {
   registry: {
     get(name: string): DocTypeDefinition;
   };
+
   orm: {
     getList(
       doctype: string,
       options?: {
+        filters?: Record<string, unknown>;
         orFilters?: Array<[string, "like", unknown]>;
         orderBy?: string;
         limit?: number;
       },
     ): Promise<LinkDocument[]>;
+
     getDoc(doctype: string, name: string): Promise<LinkDocument>;
   };
 }
@@ -78,6 +81,14 @@ export function registerLinkMethods(
           validFields.has(field) && fields.indexOf(field) === index,
       );
 
+      // added later: if selectedName is provided, we will return that document only, otherwise we will search based on query and return a list of documents
+      const filters =
+        ctx.args.filters &&
+        typeof ctx.args.filters === "object" &&
+        !Array.isArray(ctx.args.filters)
+          ? (ctx.args.filters as Record<string, unknown>)
+          : {};
+
       let docs: LinkDocument[] = [];
 
       if (selectedName) {
@@ -89,6 +100,7 @@ export function registerLinkMethods(
         }
       } else {
         docs = await app.orm.getList(doctype, {
+          filters,
           ...(query
             ? {
                 orFilters: searchFields.map(

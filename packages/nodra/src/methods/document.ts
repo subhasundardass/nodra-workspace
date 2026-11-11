@@ -91,14 +91,14 @@ function assertPermission(
   const matchedPermissions =
     meta.permissions?.filter((perm) => user?.roles.includes(perm.role)) ?? [];
 
-  console.log("[PERMISSION DEBUG]", {
-    doctype: meta.name,
-    action,
-    userEmail: user?.email ?? null,
-    userRoles: user?.roles ?? [],
-    definedRoles: meta.permissions?.map((perm) => perm.role) ?? [],
-    matchedPermissions,
-  });
+  // console.log("[PERMISSION DEBUG]", {
+  //   doctype: meta.name,
+  //   action,
+  //   userEmail: user?.email ?? null,
+  //   userRoles: user?.roles ?? [],
+  //   definedRoles: meta.permissions?.map((perm) => perm.role) ?? [],
+  //   matchedPermissions,
+  // });
 
   if (!user || !hasPermission(meta, action, user, owner)) {
     console.error("[PERMISSION DENIED]", {
