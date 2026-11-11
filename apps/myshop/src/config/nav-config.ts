@@ -471,7 +471,7 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Party",
+            title: "Party/Buyer",
             url: "/dashboard/party",
             icon: "user",
             isActive: false,

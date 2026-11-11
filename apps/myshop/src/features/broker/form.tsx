@@ -52,7 +52,7 @@ function FormSection({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
         {children}
       </div>
     </section>
@@ -61,7 +61,7 @@ function FormSection({
 
 export function BrokerForm({ form }: BrokerFormProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FormSection
         title="Broker Information"
         description="Enter the broker's name and business category."

@@ -60,14 +60,6 @@ function RouteComponent() {
     },
   });
 
-  // Temporary debugging
-  console.log("Dispatch records:", records);
-
-  console.log(
-    "Filtered rows:",
-    table.getFilteredRowModel().rows.map((row) => row.original),
-  );
-
   return (
     <DocTypeListTemplate
       title="Dispatch Book"
