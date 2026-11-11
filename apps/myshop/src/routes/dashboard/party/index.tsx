@@ -29,9 +29,12 @@ export const Route = createFileRoute("/dashboard/party/")({
           "name",
           "title",
           "party_type",
-
           "phone",
           "email",
+          "city",
+          "state",
+          "gstin",
+          "pan",
           "is_active",
           "workflow_state",
           "docstatus",

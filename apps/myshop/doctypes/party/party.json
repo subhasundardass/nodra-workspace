@@ -143,13 +143,8 @@
     },
     {
       "fieldname": "account_type",
-      "fieldtype": "Select",
-      "label": "Account Type",
-      "options": [
-        "Current",
-        "Savings",
-        "Other"
-      ]
+      "fieldtype": "Data",
+      "label": "Account Type"
     },
     {
       "fieldname": "is_active",

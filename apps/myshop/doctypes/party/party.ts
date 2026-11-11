@@ -52,11 +52,9 @@ export class Party extends Document {
   }
 
   async beforeValidate(): Promise<void> {
-    const doc = this as unknown as Record<string, unknown>;
-    console.log("PARTY CONTROLLER TITLE:", this.title);
-    // Normalize text fields.
-    const textFields = [
+    const fieldNames = [
       "title",
+      "party_type",
       "phone",
       "email",
       "gstin",
@@ -73,10 +71,15 @@ export class Party extends Document {
       "ifsc",
       "branch",
       "account_type",
-    ];
+      "is_active",
+      "workflow_state",
+    ] as const;
 
-    for (const field of textFields) {
-      doc[field] = this.clean(doc[field]);
+    // Read values from Nodra Document.
+    const doc: Record<string, unknown> = {};
+
+    for (const field of fieldNames) {
+      doc[field] = this.get(field);
     }
 
     // Empty optional values become null.
@@ -98,15 +101,11 @@ export class Party extends Document {
         doc[field] = null;
       }
     }
-    console.log("Party data before required validation:", {
-      title: doc.title,
-      party_type: doc.party_type,
-      phone: doc.phone,
-      gstin: doc.gstin,
-      pan: doc.pan,
-      state: doc.state,
-      city: doc.city,
-    });
+
+    if (doc.account_type === "") {
+      doc.account_type = "Current";
+    }
+
     // Required fields.
     doc.title = this.required(doc.title, "Buyer Name");
     doc.party_type = this.required(doc.party_type, "Buyer Type");
@@ -161,7 +160,9 @@ export class Party extends Document {
     }
 
     // PAN.
-    const pan = String(doc.pan).toUpperCase();
+    const pan = String(doc.pan ?? "")
+      .trim()
+      .toUpperCase();
 
     if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
       throw new Error("Enter a valid PAN number.");
@@ -170,14 +171,12 @@ export class Party extends Document {
     doc.pan = pan;
 
     // GSTIN.
-    const gstin = String(doc.gstin).toUpperCase();
+    const gstin = String(doc.gstin ?? "")
+      .trim()
+      .toUpperCase();
 
     if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin)) {
       throw new Error("Enter a valid 15-character GSTIN.");
-    }
-
-    if (gstin.substring(2, 12) !== pan) {
-      throw new Error("GSTIN does not match the entered PAN.");
     }
 
     doc.gstin = gstin;
@@ -190,42 +189,6 @@ export class Party extends Document {
     // Country.
     if (!doc.country) {
       doc.country = "India";
-    }
-
-    // Account Type.
-    const accountTypes: AccountType[] = ["Current", "Savings", "Other"];
-
-    if (
-      doc.account_type !== null &&
-      !accountTypes.includes(doc.account_type as AccountType)
-    ) {
-      throw new Error("Invalid Account Type.");
-    }
-
-    // Bank Account Number.
-    if (
-      doc.account_number &&
-      !/^[A-Za-z0-9/-]{5,34}$/.test(String(doc.account_number))
-    ) {
-      throw new Error("Enter a valid bank account number.");
-    }
-
-    // IFSC.
-    if (doc.ifsc) {
-      const ifsc = String(doc.ifsc).toUpperCase();
-
-      if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
-        throw new Error("Enter a valid 11-character IFSC code.");
-      }
-
-      doc.ifsc = ifsc;
-    }
-
-    // Account Type requires Account Number.
-    if (doc.account_type && !doc.account_number) {
-      throw new Error(
-        "Account Number is required when Account Type is selected.",
-      );
     }
 
     // Active checkbox normalization.
