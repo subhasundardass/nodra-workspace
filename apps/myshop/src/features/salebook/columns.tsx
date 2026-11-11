@@ -56,7 +56,12 @@ export function createColumns(
         <button
           type="button"
           className="font-semibold text-primary hover:underline"
-          onClick={() => onOpen(row.original.name)}
+
+          onClick={() => {
+            if (row.original.sale_book_name) {
+              onOpen(row.original.sale_book_name);
+            }
+          }}
         >
           {row.original.lot_no}
         </button>
@@ -87,12 +92,7 @@ export function createColumns(
       cell: ({ row }) => Number(row.original.total_kg).toLocaleString("en-IN"),
       size: 70,
     },
-    {
-      accessorKey: "arrival_date",
-      header: "Arrival Date",
-      cell: ({ row }) => formatDate(row.original.arrival_date),
-      size: 70,
-    },
+
     {
       accessorKey: "test_information",
       header: "Test Information",
@@ -159,17 +159,25 @@ export function createColumns(
     },
     {
       accessorKey: "lot",
-      header: "Lot ID.",
+      header: "Sale ID.",
       size: 100,
       cell: ({ row }) => (
         <button
           type="button"
           className="font-medium text-primary hover:underline"
-          onClick={() => onOpen(row.original.name)}
+          onClick={() =>
+            onOpen(row.original.sale_book_name || row.original.lot)
+          }
         >
-          {row.original.lot}
+          {row.original.sale_book_name}
         </button>
       ),
+    },
+    {
+      accessorKey: "sale_date",
+      header: "Sale Date",
+      cell: ({ row }) => formatDate(row.original.sale_date),
+      size: 70,
     },
   ];
 }

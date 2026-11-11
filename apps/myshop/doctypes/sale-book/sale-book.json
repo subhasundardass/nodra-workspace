@@ -116,14 +116,6 @@
         ]
       },
       {
-        "from": "Confirmed",
-        "action": "Reopen",
-        "to": "Draft",
-        "roles": [
-          "Administrator"
-        ]
-      },
-      {
         "from": "Draft",
         "action": "Cancel",
         "to": "Cancelled",

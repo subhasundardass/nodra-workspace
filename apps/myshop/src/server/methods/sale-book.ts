@@ -79,6 +79,9 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           app.orm.getList("SaleBook", {
             limit: 1000,
             offset: 0,
+            filters: {
+              docstatus: ["in", [0, 51]],
+            },
           }),
 
           app.orm.getList("OfferSheet", {
@@ -296,6 +299,86 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
       return {
         documents,
         total_count: documents.length,
+      };
+    },
+    { requireAuth: true },
+  );
+
+  /**
+   * Pending SaleBook entries for Lots that are confirmed but not yet sold.
+   *
+   * Displays one row per confirmed Lot.
+   * Multiple SaleBook entries are grouped by Lot.  
+   */
+  registry.register(
+    "salebook.get_pending_lots",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const requestedLimit = Number(ctx.args.limit);
+      const requestedOffset = Number(ctx.args.offset);
+
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
+        : 100;
+
+      const offset = Number.isFinite(requestedOffset)
+        ? Math.max(0, Math.trunc(requestedOffset))
+        : 0;
+
+      const sortOrder =
+        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
+          ? "asc"
+          : "desc";
+
+      const lotFilters: Filters = {
+        docstatus: 51,
+      };
+
+      const lotOptions: ListOptions = {
+        limit,
+        offset,
+        orderBy: `lot_no ${sortOrder}`,
+      };
+
+      const [lots, totalCount] = await Promise.all([
+        app.orm.getList("Lots", {
+          ...lotOptions,
+          filters: lotFilters,
+        }),
+
+        app.orm.getCount("Lots", lotFilters),
+      ]);
+
+      const documents = lots.map((lot) => {
+        const data = serialise(lot) as DocumentData;
+        const lotName = String(data.name ?? "");
+
+        return {
+          name: lotName,
+          lot: lotName,
+          lot_no: String(data.lot_no ?? ""),
+          factory: data.factory ?? null,
+
+          original_brand: data.original_brand ?? null,
+          brand: data.brand ?? data.original_brand ?? null,
+
+          original_grade: data.grade ?? null,
+          grade: data.grade ?? null,
+
+          bags: toNumber(data.bags),
+          net_kg_per_bag: toNumber(data.net_kg_per_bag),
+          total_kg: toNumber(data.bags) * toNumber(data.net_kg_per_bag),
+
+          arrival_date: data.arrival_date || null,
+        };
+      });
+
+      return {
+        documents,
+        limit,
+        offset,
+        total_count: totalCount,
       };
     },
     { requireAuth: true },

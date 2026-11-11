@@ -50,7 +50,7 @@ function FormSection({
 }) {
   return (
     <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
-      <div className="space-y-1">
+      <div className="space-y-0">
         <h3 className="text-base font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
@@ -176,8 +176,8 @@ export function SaleEntryForm({
                 onChange={(event) => field.handleChange(event.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm shadow-none"
               >
-                <option value="Bid">Bid</option>
                 <option value="Advance">Advance</option>
+                <option value="Bid">Bid</option>
               </select>
             </FieldRow>
           )}
@@ -191,7 +191,6 @@ export function SaleEntryForm({
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
                 className="w-full"
-                clearable
               />
             </FieldRow>
           )}

@@ -24,9 +24,7 @@ export const Route = createFileRoute("/dashboard/salebook/pending-sale")({
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "SaleBook",
       }),
-      callMethod<{
-        documents: SaleBookRecord[];
-      }>("salebook.get_list", {
+      callMethod<{ documents: SaleBookRecord[] }>("salebook.get_pending_lots", {
         limit: 100,
         offset: 0,
       }),
@@ -36,13 +34,9 @@ export const Route = createFileRoute("/dashboard/salebook/pending-sale")({
       throw new Error('DocType "SaleBook" is not registered.');
     }
 
-    const records = (listResult.documents ?? []).filter(
-      (record) => !record.sale_book_name,
-    );
-
     return {
       doctype: doctypeResult.doctype,
-      records,
+      records: listResult.documents ?? [],
     };
   },
 
@@ -54,14 +48,15 @@ function PendingSaleRoute() {
   const navigate = useNavigate();
   const router = useRouter();
 
+  const openLot = (lot: string) =>
+    navigate({
+      to: "/dashboard/salebook/new",
+      search: { lot },
+    });
+
   const { table } = useDataTable({
     data: records,
-    columns: createColumns((lot) =>
-      navigate({
-        to: "/dashboard/salebook/$name",
-        params: { name: lot },
-      }),
-    ),
+    columns: createColumns(openLot),
     pageCount: 1,
     initialState: {
       pagination: { pageIndex: 0, pageSize: 20 },
@@ -75,12 +70,7 @@ function PendingSaleRoute() {
       description={`${records.length} lots pending sale entry`}
       records={records}
       table={table}
-      onOpen={(lot) =>
-        navigate({
-          to: "/dashboard/salebook/$name",
-          params: { name: lot },
-        })
-      }
+      onOpen={openLot}
       onRefresh={() => router.invalidate()}
     />
   );

@@ -12,24 +12,20 @@ type FormValues = Record<string, unknown>;
 
 type SaleEntryData = {
   doctype: DocTypeDefinition;
-  saleBook: DocumentRecord | null;
+  saleBook: DocumentRecord;
   lot: DocumentRecord;
 };
 
 export const Route = createFileRoute("/dashboard/salebook/$name")({
   loader: async ({ params }): Promise<SaleEntryData> => {
-    const [doctypeResult, lotResult, saleResult] = await Promise.all([
+    const [doctypeResult, saleResult] = await Promise.all([
       callMethod<{ doctype: DocTypeDefinition }>("nodra.doctype.get", {
         name: "SaleBook",
       }),
 
       callMethod<{ document: DocumentRecord | null }>("document.get", {
-        doctype: "Lots",
+        doctype: "SaleBook",
         name: params.name,
-      }),
-
-      callMethod<{ document: DocumentRecord | null }>("salebook.get_by_lot", {
-        lot: params.name,
       }),
     ]);
 
@@ -37,22 +33,37 @@ export const Route = createFileRoute("/dashboard/salebook/$name")({
       throw new Error('DocType "SaleBook" is not registered.');
     }
 
+    const saleBook = saleResult.document;
+
+    if (!saleBook) {
+      throw new Error(`SaleBook "${params.name}" was not found.`);
+    }
+
+    const lotId = String(saleBook.lot ?? "");
+
+    if (!lotId) {
+      throw new Error("SaleBook does not have a linked Lot.");
+    }
+
+    const lotResult = await callMethod<{
+      document: DocumentRecord | null;
+    }>("document.get", {
+      doctype: "Lots",
+      name: lotId,
+    });
+
     const lot = lotResult.document;
 
     if (!lot) {
-      throw new Error(`Lot "${params.name}" was not found.`);
+      throw new Error(`Lot "${lotId}" was not found.`);
     }
 
-    const saleBook = saleResult.document;
-
     console.log("Sale Entry Route:", {
-      routeLotId: params.name,
+      saleBookId: saleBook.name,
       lotId: lot.name,
-      saleBookId: saleBook?.name ?? null,
       saleBook,
+      lot,
     });
-
-    console.log("SaleBook loaded:", saleBook);
 
     return {
       doctype: doctypeResult.doctype,
@@ -110,29 +121,18 @@ function SaleEntryRoute() {
     setSaving(true);
 
     try {
-      if (saleBook?.name) {
-        // Update the existing SaleBook document.
-        await callMethod("document.update", {
-          doctype: doctype.name,
-          name: String(saleBook.name),
-          doc,
-        });
+      await callMethod("document.update", {
+        doctype: doctype.name,
+        name: String(saleBook.name),
+        doc,
+      });
 
-        toast.success("Sale Entry updated successfully.");
-      } else {
-        // Create the first SaleBook document for this Lot.
-        await callMethod("document.create", {
-          doctype: doctype.name,
-          doc,
-        });
-
-        toast.success("Sale Entry created successfully.");
-      }
+      toast.success("Sale Entry updated successfully.");
 
       await navigate({ to: "/dashboard/salebook" });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save Sale Entry.",
+        error instanceof Error ? error.message : "Failed to update Sale Entry.",
       );
     } finally {
       setSaving(false);
@@ -141,24 +141,23 @@ function SaleEntryRoute() {
 
   return (
     <DocTypeFormTemplate
-      title={saleBook ? "Edit Sale Entry" : "Create Sale Entry"}
+      title="Edit Sale Entry"
       doctype={doctype}
-
-      mode={saleBook ? "edit" : "create"}
+      mode="edit"
       initialValues={{
-        name: String(saleBook?.name ?? ""),
-        workflow_state: String(saleBook?.workflow_state ?? "Draft"),
+        name: String(saleBook.name),
+        workflow_state: String(saleBook.workflow_state ?? "Draft"),
         lot: String(lot.name),
-        sale_date: saleBook?.sale_date ?? new Date().toISOString().slice(0, 10),
-        sale_type: saleBook?.sale_type ?? "Bid",
-        sold_bags: Number(saleBook?.sold_bags ?? lot.bags ?? 0),
+        sale_date: saleBook.sale_date ?? new Date().toISOString().slice(0, 10),
+        sale_type: saleBook.sale_type ?? "Bid",
+        sold_bags: Number(saleBook.sold_bags ?? lot.bags ?? 0),
         sold_quantity: Number(
-          saleBook?.sold_quantity ??
+          saleBook.sold_quantity ??
             Number(lot.bags ?? 0) * Number(lot.net_kg_per_bag ?? 0),
         ),
-        rate: Number(saleBook?.rate ?? 0),
-        broker: saleBook?.broker ?? "",
-        remarks: String(saleBook?.remarks ?? ""),
+        rate: Number(saleBook.rate ?? 0),
+        broker: saleBook.broker ?? "",
+        remarks: String(saleBook.remarks ?? ""),
       }}
       saving={saving}
       onSubmit={handleSubmit}

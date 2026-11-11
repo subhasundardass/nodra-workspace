@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
 import { SaleEntryForm } from "@/features/salebook/form";
+import { LotStockBalance } from "@/server/methods/stock-ledger";
 
 type DocumentRecord = Record<string, unknown>;
 type SaleEntryValues = Record<string, unknown>;
@@ -92,6 +93,39 @@ function SaleEntryPage() {
             "Only confirmed Lots can be selected for Sale Entry.",
           );
         }
+
+        // Check actual stock balance.
+        const stock = await callMethod<LotStockBalance>(
+          "stock.get_lot_balance",
+          { lot: selectedLot },
+        );
+
+        if (stock.factory_bags <= 0 || stock.factory_quantity <= 0) {
+          throw new Error("This Lot does not have available stock in Factory.");
+        }
+
+        if (stock.warehouse_bags > 0 || stock.warehouse_quantity > 0) {
+          throw new Error(
+            "This Lot is in Warehouse and cannot be selected for Sale Entry.",
+          );
+        }
+
+        // Check already Assigned SaleBook entries for this Lot.
+        const saleBookEntries = await callMethod<{
+          documents: DocumentRecord[];
+        }>("salebook.get_by_lot", { lot: selectedLot });
+
+        const cancelled = saleBookEntries.documents.some(
+          (entry) => entry.workflow_state === "Cancelled",
+        );
+
+        if (cancelled) {
+          throw new Error(
+            "This Lot has a cancelled Sale Entry. Please contact the administrator.",
+          );
+        }
+
+        // Check if the Lot has already is in SameBook.
 
         if (!cancelled) {
           setLotDetails(document);
@@ -191,10 +225,11 @@ function SaleEntryPage() {
       initialValues={{
         lot: initialLot,
         sale_date: getToday(),
-        sale_type: "Bid",
+        sale_type: "Advance",
         broker: "",
-        sold_bags: 0,
-        sold_quantity: 0,
+        sold_bags: Number(lotDetails.bags ?? 0),
+        sold_quantity:
+          Number(lotDetails.bags ?? 0) * Number(lotDetails.net_kg_per_bag ?? 0),
         rate: 0,
         remarks: "",
         workflow_state: "Draft",

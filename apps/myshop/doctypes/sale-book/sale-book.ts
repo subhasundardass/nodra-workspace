@@ -1,4 +1,6 @@
+import { getNodra } from "@/server/nodra-app";
 import { Document } from "nodra/core/document/document";
+// Import getNodra from your existing app helper.
 
 export class SaleBook extends Document {
   title!: string;
@@ -21,6 +23,31 @@ export class SaleBook extends Document {
 
     if (!doc.broker) {
       throw new Error("Broker is required.");
+    }
+
+    // Prevent duplicate active SaleBook entries
+    const lotId = String(doc.lot);
+    const currentName = String(doc.name ?? "");
+
+    const app = await getNodra();
+
+    const existingEntries = await app.orm.getList("SaleBook", {
+      filters: {
+        lot: lotId,
+      },
+      limit: 1000,
+    });
+
+    const duplicate = existingEntries.find((entry: any) => {
+      const status = Number(entry.docstatus ?? 0);
+
+      return entry.name !== currentName && (status === 0 || status === 51);
+    });
+
+    if (duplicate) {
+      throw new Error(
+        `Lot "${lotId}" already has an active Sale Entry (${duplicate.name}).`,
+      );
     }
 
     // Sale date

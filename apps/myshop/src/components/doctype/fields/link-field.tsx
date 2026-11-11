@@ -50,7 +50,7 @@ export function LinkField({
   onChange,
   titleField,
   label,
-  placeholder = "Select a record...",
+  placeholder = "Select ...",
   description,
   required = false,
   disabled = false,
