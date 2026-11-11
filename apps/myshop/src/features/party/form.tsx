@@ -2,9 +2,10 @@ import type { ReactNode } from "react";
 
 import { DataField } from "@/components/doctype/fields/data-field";
 import type { NodraForm } from "@/components/doctype/templates/doctype-form-template";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LinkField } from "@/components/doctype/fields/link-field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "recharts/types/component/Label";
 
 interface BrokerOption {
   name: string;
@@ -45,7 +46,6 @@ function FieldRow({
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </label>
-
       <div className="min-w-0 *:w-full">{children}</div>
     </div>
   );
@@ -79,19 +79,19 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
     <div className="space-y-6">
       {/* Party Information */}
       <FormSection
-        title="Party Information"
+        title="Buyer Information"
         description="Enter the basic details of the company or individual."
       >
         <form.Field name="title">
           {(field) => (
-            <FieldRow label="Party Name" htmlFor={field.name} required>
+            <FieldRow label="Buyer Name" htmlFor={field.name} required>
               <DataField
                 id={field.name}
                 name={field.name}
                 value={String(field.state.value ?? "")}
-                onChange={field.handleChange}
+                onChange={(value) => field.handleChange(value)}
                 required
-                placeholder="Enter company or individual name"
+                placeholder="Enter Buyer Name"
               />
             </FieldRow>
           )}
@@ -99,7 +99,7 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
 
         <form.Field name="party_type">
           {(field) => (
-            <FieldRow label="Party Type" htmlFor={field.name} required>
+            <FieldRow label="Buyer Type" htmlFor={field.name} required>
               <select
                 id={field.name}
                 name={field.name}
@@ -118,12 +118,13 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
 
         <form.Field name="phone">
           {(field) => (
-            <FieldRow label="Phone" htmlFor={field.name}>
+            <FieldRow label="Phone" htmlFor={field.name} required>
               <DataField
                 id={field.name}
                 name={field.name}
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
+                required
                 placeholder="Enter contact number"
               />
             </FieldRow>
@@ -145,19 +146,20 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
         </form.Field>
       </FormSection>
 
-      {/* Business Details */}
+      {/* Tax and Address */}
       <FormSection
-        title="Business Details"
-        description="Add registration details and the party's address where applicable."
+        title="Tax and Address Details"
+        description="Enter the party's registration and address information."
       >
         <form.Field name="gstin">
           {(field) => (
-            <FieldRow label="GSTIN" htmlFor={field.name}>
+            <FieldRow label="GSTIN" htmlFor={field.name} required>
               <DataField
                 id={field.name}
                 name={field.name}
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
+                required
                 placeholder="Enter GSTIN"
               />
             </FieldRow>
@@ -166,13 +168,72 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
 
         <form.Field name="pan">
           {(field) => (
-            <FieldRow label="PAN" htmlFor={field.name}>
+            <FieldRow label="PAN" htmlFor={field.name} required>
               <DataField
                 id={field.name}
                 name={field.name}
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
+                required
                 placeholder="Enter PAN"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="state">
+          {(field) => (
+            <FieldRow label="State" htmlFor={field.name} required>
+              <LinkField
+                doctype="State"
+                titleField="state_name"
+                value={String(field.state.value ?? "")}
+                onChange={(value) => field.handleChange(String(value ?? ""))}
+                required
+                placeholder="Select State"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="city">
+          {(field) => (
+            <FieldRow label="City" htmlFor={field.name} required>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={(value) => field.handleChange(value)}
+                required
+                placeholder="Enter City"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="pincode">
+          {(field) => (
+            <FieldRow label="PIN Code" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter PIN Code"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="country">
+          {(field) => (
+            <FieldRow label="Country" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "India")}
+                onChange={field.handleChange}
+                placeholder="Enter country"
               />
             </FieldRow>
           )}
@@ -198,7 +259,6 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
             )}
           </form.Field>
         </div>
-
         <div className="md:col-span-1">
           <form.Field name="notes">
             {(field) => (
@@ -221,13 +281,12 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
         </div>
       </FormSection>
 
-      {/* Broker Information */}
+      {/* Broker Associations */}
       <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
         <div className="space-y-1">
-          <h3 className="text-base font-semibold">Broker Information</h3>
+          <h3 className="text-base font-semibold">Broker Associations</h3>
           <p className="text-sm text-muted-foreground">
-            Add one or more brokers associated with this party. At least one
-            broker is required.
+            Add brokers associated with this party, if applicable.
           </p>
         </div>
 
@@ -239,10 +298,9 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
 
             return (
               <div className="space-y-3">
-                {/* Column headings */}
                 <div className="grid grid-cols-[minmax(160px,1.5fr)_minmax(90px,0.8fr)_minmax(90px,0.8fr)_minmax(110px,0.9fr)_110px_36px] gap-2">
                   <span className="text-sm font-medium text-muted-foreground">
-                    Broker <span className="text-destructive">*</span>
+                    Broker
                   </span>
                   <span className="text-sm font-medium text-muted-foreground">
                     City
@@ -269,7 +327,6 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                       key={index}
                       className="grid grid-cols-[minmax(160px,1.5fr)_minmax(90px,0.8fr)_minmax(90px,0.8fr)_minmax(110px,0.9fr)_110px_36px] items-center gap-2"
                     >
-                      {/* Broker */}
                       <form.Field name={`brokers[${index}].broker`}>
                         {(brokerField) => (
                           <select
@@ -280,11 +337,9 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                             onChange={(event) =>
                               brokerField.handleChange(event.target.value)
                             }
-                            required
                             className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
                           >
                             <option value="">Select Broker</option>
-
                             {brokers.map((broker) => (
                               <option key={broker.name} value={broker.name}>
                                 {broker.title}
@@ -294,31 +349,18 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                         )}
                       </form.Field>
 
-                      {/* City */}
-                      <div
-                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
-                        title={selectedBroker?.city || ""}
-                      >
+                      <div className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm">
                         {selectedBroker?.city || "-"}
                       </div>
 
-                      {/* State */}
-                      <div
-                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
-                        title={selectedBroker?.state || ""}
-                      >
+                      <div className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm">
                         {selectedBroker?.state || "-"}
                       </div>
 
-                      {/* Phone */}
-                      <div
-                        className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm"
-                        title={selectedBroker?.phone || ""}
-                      >
+                      <div className="truncate rounded-md bg-muted/40 px-2 py-2 text-sm">
                         {selectedBroker?.phone || "-"}
                       </div>
 
-                      {/* Commission */}
                       <form.Field name={`brokers[${index}].commission_rate`}>
                         {(commissionField) => (
                           <input
@@ -341,33 +383,21 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                         )}
                       </form.Field>
 
-                      {/* Remove */}
                       <button
                         type="button"
-                        disabled={rows.length <= 1}
-                        onClick={() => {
+                        onClick={() =>
                           field.handleChange(
                             rows.filter((_, rowIndex) => rowIndex !== index),
-                          );
-                        }}
-                        className="flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-                        title={
-                          rows.length <= 1
-                            ? "At least one broker is required"
-                            : "Remove Broker"
+                          )
                         }
+                        className="flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted"
+                        title="Remove Broker"
                       >
                         ×
                       </button>
                     </div>
                   );
                 })}
-
-                {rows.length === 0 && (
-                  <p className="text-sm text-destructive">
-                    At least one broker is required.
-                  </p>
-                )}
 
                 <div className="flex items-center justify-between border-t pt-3">
                   <span className="text-xs text-muted-foreground">
@@ -376,7 +406,7 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
 
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={() =>
                       field.handleChange([
                         ...rows,
                         {
@@ -384,8 +414,8 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                           commission_rate: undefined,
                           notes: "",
                         },
-                      ]);
-                    }}
+                      ])
+                    }
                     className="rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
                   >
                     + Add Broker
@@ -396,8 +426,6 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
           }}
         </form.Field>
       </section>
-
-      {/* Bank Detail */}
 
       {/* Bank Details */}
       <FormSection
@@ -497,10 +525,10 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
         </form.Field>
       </FormSection>
 
-      {/* Availability */}
+      {/* Workflow */}
       <FormSection
         title="Availability"
-        description="Control whether this party is available for new transactions."
+        description="Control whether this broker is available for new transactions."
       >
         <form.Field name="is_active">
           {(field) => (
@@ -516,7 +544,12 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
                   field.handleChange(checked === true)
                 }
               />
-              <Label htmlFor={field.name}>Active</Label>
+              <label
+                htmlFor={field.name}
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                Active
+              </label>
             </div>
           )}
         </form.Field>

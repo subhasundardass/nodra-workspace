@@ -1,7 +1,7 @@
 {
   "name": "Party",
   "module": "App",
-  "description": "Central master for companies and individuals involved in the tea business, including factories, suppliers, buyers, brokers, tea owners and transporters.",
+  "description": "Central master for companies and individuals involved in the tea business",
   "naming_series": "PTYY#####",
   "naming_rule": "series",
   "title_field": "title",
@@ -54,6 +54,7 @@
       "fieldtype": "Data",
       "label": "Phone",
       "description": "Primary contact number.",
+      "reqd": true,
       "in_list_view": true
     },
     {
@@ -72,13 +73,40 @@
       "fieldname": "gstin",
       "fieldtype": "Data",
       "label": "GSTIN",
+      "reqd": true,
       "description": "GST registration number, if applicable."
     },
     {
       "fieldname": "pan",
       "fieldtype": "Data",
       "label": "PAN",
+      "reqd": true,
       "description": "Permanent Account Number, if applicable."
+    },
+    {
+      "fieldname": "state",
+      "fieldtype": "Link",
+      "label": "State",
+      "options": "State",
+      "reqd": true
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": true
+    },
+    {
+      "fieldname": "pincode",
+      "fieldtype": "Data",
+      "label": "PIN Code",
+      "max_length": 6
+    },
+    {
+      "fieldname": "country",
+      "fieldtype": "Data",
+      "label": "Country",
+      "default": "India"
     },
     {
       "fieldname": "notes",
@@ -138,7 +166,7 @@
       "label": "Workflow State",
       "options": [
         "Draft",
-        "Active",
+        "Confirmed",
         "Cancelled"
       ],
       "default": "Draft",
@@ -158,7 +186,7 @@
         "color": "gray"
       },
       {
-        "state": "Active",
+        "state": "Confirmed",
         "doc_status": 51,
         "color": "green"
       },
@@ -172,8 +200,8 @@
     "transitions": [
       {
         "from": "Draft",
-        "action": "Activate",
-        "to": "Active",
+        "action": "Confirm",
+        "to": "Confirmed",
         "roles": [
           "Administrator",
           "System Manager"
@@ -189,7 +217,7 @@
         ]
       },
       {
-        "from": "Active",
+        "from": "Confirmed",
         "action": "Cancel",
         "to": "Cancelled",
         "roles": [
