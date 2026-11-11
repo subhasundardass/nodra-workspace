@@ -113,6 +113,7 @@ export function SaleEntryForm({
                   field.handleChange(value);
                   onLotChange?.(String(value ?? ""));
                 }}
+                filters={{ docstatus: 51 }}
                 disabled={isEdit}
                 className="w-full"
                 placeholder="Select Lot No..."
