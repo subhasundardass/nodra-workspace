@@ -1,5 +1,5 @@
 import type { WorkflowActionHooks } from "nodra/orm/workflow-hooks.js";
-import { moveStock } from "../methods/stock-ledger";
+import { StockService } from "../services/stock.service";
 
 export const lotsHooks: WorkflowActionHooks = {
   "Lots.Confirm": async ({ orm, doc }) => {
@@ -9,10 +9,10 @@ export const lotsHooks: WorkflowActionHooks = {
     const netKgPerBag = Number(doc.get("net_kg_per_bag") ?? 0);
     const quantity = bags * netKgPerBag;
 
-    const factory = String(doc.get("factory") ?? "");
-    const warehouse = String(doc.get("warehouse") ?? "");
+    const factory = String(doc.get("factory") ?? "").trim();
+    const warehouse = String(doc.get("warehouse") ?? "").trim();
 
-    // Determine the initial physical stock location.
+    // Determine initial stock location.
     let destination;
 
     if (factory && !warehouse) {
@@ -31,7 +31,9 @@ export const lotsHooks: WorkflowActionHooks = {
       );
     }
 
-    await moveStock(orm, {
+    const stockService = new StockService(orm);
+
+    await stockService.moveStock({
       lot,
       movement_type: "Lot Receipt",
       bags,
