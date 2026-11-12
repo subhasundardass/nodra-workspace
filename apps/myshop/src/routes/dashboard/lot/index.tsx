@@ -95,6 +95,10 @@ function LotListRoute() {
         })
       }
       onRefresh={() => router.invalidate()}
+      totals={[
+        { fieldname: "bags", label: "Total Bags" },
+        { fieldname: "net_weight", label: "Total KG", decimals: 2 },
+      ]}
     >
       {/* <DataTable table={table} /> */}
     </DocTypeListTemplate>

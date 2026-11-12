@@ -110,6 +110,11 @@ function RouteComponent() {
     workflow_state: String(dispatch?.workflow_state ?? "Draft"),
   };
 
+  console.log(
+    "Dispatch initialValues:",
+    JSON.stringify(initialValues, null, 2),
+  );
+
   async function handleSubmit(values: FormValues): Promise<void> {
     // 1. SaleBook validation
     if (!saleBook?.name) {

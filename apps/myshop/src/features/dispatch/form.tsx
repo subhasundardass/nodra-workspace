@@ -130,7 +130,7 @@ export function DispatchForm({ form }: DispatchFormProps) {
           <div className="col-span-2">
             <form.Field name="party">
               {(field: any) => (
-                <FieldRow label="Party" htmlFor={field.name} required>
+                <FieldRow label="Buyer" htmlFor={field.name} required>
                   <LinkField
                     value={String(field.state.value ?? "")}
                     onChange={field.handleChange}

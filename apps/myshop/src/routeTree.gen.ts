@@ -53,9 +53,6 @@ import { Route as DashboardSalebookIndexRouteImport } from './routes/dashboard/s
 import { Route as DashboardSalebookNameRouteImport } from './routes/dashboard/salebook/$name'
 import { Route as DashboardSalebookNewRouteImport } from './routes/dashboard/salebook/new'
 import { Route as DashboardSalebookPendingSaleRouteImport } from './routes/dashboard/salebook/pending-sale'
-import { Route as DashboardStockMovementsIndexRouteImport } from './routes/dashboard/stock-movements/index'
-import { Route as DashboardStockMovementsNameRouteImport } from './routes/dashboard/stock-movements/$name'
-import { Route as DashboardStockMovementsNewRouteImport } from './routes/dashboard/stock-movements/new'
 import { Route as DashboardTeaTestingIndexRouteImport } from './routes/dashboard/tea-testing/index'
 import { Route as DashboardTeaTestingNameRouteImport } from './routes/dashboard/tea-testing/$name'
 import { Route as DashboardTeaValuationIndexRouteImport } from './routes/dashboard/tea-valuation/index'
@@ -295,24 +292,6 @@ const DashboardSalebookPendingSaleRoute =
     path: '/salebook/pending-sale',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
-const DashboardStockMovementsIndexRoute =
-  DashboardStockMovementsIndexRouteImport.update({
-    id: '/stock-movements/',
-    path: '/stock-movements/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardStockMovementsNameRoute =
-  DashboardStockMovementsNameRouteImport.update({
-    id: '/stock-movements/$name',
-    path: '/stock-movements/$name',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardStockMovementsNewRoute =
-  DashboardStockMovementsNewRouteImport.update({
-    id: '/stock-movements/new',
-    path: '/stock-movements/new',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
 const DashboardTeaTestingIndexRoute =
   DashboardTeaTestingIndexRouteImport.update({
     id: '/tea-testing/',
@@ -387,8 +366,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
-  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
-  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -403,7 +380,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
   '/dashboard/salebook/': typeof DashboardSalebookIndexRoute
-  '/dashboard/stock-movements/': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -442,8 +418,6 @@ export interface FileRoutesByTo {
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
-  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
-  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -458,7 +432,6 @@ export interface FileRoutesByTo {
   '/dashboard/party': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts': typeof DashboardPaymentReceiptsIndexRoute
   '/dashboard/salebook': typeof DashboardSalebookIndexRoute
-  '/dashboard/stock-movements': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
@@ -499,8 +472,6 @@ export interface FileRoutesById {
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
-  '/dashboard/stock-movements/$name': typeof DashboardStockMovementsNameRoute
-  '/dashboard/stock-movements/new': typeof DashboardStockMovementsNewRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
   '/dashboard/tea-valuation/$name': typeof DashboardTeaValuationNameRoute
   '/dashboard/user/$name': typeof DashboardUserNameRoute
@@ -515,7 +486,6 @@ export interface FileRoutesById {
   '/dashboard/party/': typeof DashboardPartyIndexRoute
   '/dashboard/payment-receipts/': typeof DashboardPaymentReceiptsIndexRoute
   '/dashboard/salebook/': typeof DashboardSalebookIndexRoute
-  '/dashboard/stock-movements/': typeof DashboardStockMovementsIndexRoute
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
@@ -557,8 +527,6 @@ export interface FileRouteTypes {
     | '/dashboard/salebook/$name'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
-    | '/dashboard/stock-movements/$name'
-    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -573,7 +541,6 @@ export interface FileRouteTypes {
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
     | '/dashboard/salebook/'
-    | '/dashboard/stock-movements/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -612,8 +579,6 @@ export interface FileRouteTypes {
     | '/dashboard/salebook/$name'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
-    | '/dashboard/stock-movements/$name'
-    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -628,7 +593,6 @@ export interface FileRouteTypes {
     | '/dashboard/party'
     | '/dashboard/payment-receipts'
     | '/dashboard/salebook'
-    | '/dashboard/stock-movements'
     | '/dashboard/tea-testing'
     | '/dashboard/tea-valuation'
     | '/dashboard/user'
@@ -668,8 +632,6 @@ export interface FileRouteTypes {
     | '/dashboard/salebook/$name'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
-    | '/dashboard/stock-movements/$name'
-    | '/dashboard/stock-movements/new'
     | '/dashboard/tea-testing/$name'
     | '/dashboard/tea-valuation/$name'
     | '/dashboard/user/$name'
@@ -684,7 +646,6 @@ export interface FileRouteTypes {
     | '/dashboard/party/'
     | '/dashboard/payment-receipts/'
     | '/dashboard/salebook/'
-    | '/dashboard/stock-movements/'
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
@@ -1011,27 +972,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSalebookPendingSaleRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/dashboard/stock-movements/': {
-      id: '/dashboard/stock-movements/'
-      path: '/stock-movements'
-      fullPath: '/dashboard/stock-movements/'
-      preLoaderRoute: typeof DashboardStockMovementsIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/stock-movements/$name': {
-      id: '/dashboard/stock-movements/$name'
-      path: '/stock-movements/$name'
-      fullPath: '/dashboard/stock-movements/$name'
-      preLoaderRoute: typeof DashboardStockMovementsNameRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/stock-movements/new': {
-      id: '/dashboard/stock-movements/new'
-      path: '/stock-movements/new'
-      fullPath: '/dashboard/stock-movements/new'
-      preLoaderRoute: typeof DashboardStockMovementsNewRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
     '/dashboard/tea-testing/': {
       id: '/dashboard/tea-testing/'
       path: '/tea-testing'
@@ -1110,8 +1050,6 @@ interface DashboardRouteRouteChildren {
   DashboardSalebookNameRoute: typeof DashboardSalebookNameRoute
   DashboardSalebookNewRoute: typeof DashboardSalebookNewRoute
   DashboardSalebookPendingSaleRoute: typeof DashboardSalebookPendingSaleRoute
-  DashboardStockMovementsNameRoute: typeof DashboardStockMovementsNameRoute
-  DashboardStockMovementsNewRoute: typeof DashboardStockMovementsNewRoute
   DashboardTeaTestingNameRoute: typeof DashboardTeaTestingNameRoute
   DashboardTeaValuationNameRoute: typeof DashboardTeaValuationNameRoute
   DashboardUserNameRoute: typeof DashboardUserNameRoute
@@ -1124,7 +1062,6 @@ interface DashboardRouteRouteChildren {
   DashboardPartyIndexRoute: typeof DashboardPartyIndexRoute
   DashboardPaymentReceiptsIndexRoute: typeof DashboardPaymentReceiptsIndexRoute
   DashboardSalebookIndexRoute: typeof DashboardSalebookIndexRoute
-  DashboardStockMovementsIndexRoute: typeof DashboardStockMovementsIndexRoute
   DashboardTeaTestingIndexRoute: typeof DashboardTeaTestingIndexRoute
   DashboardTeaValuationIndexRoute: typeof DashboardTeaValuationIndexRoute
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
@@ -1157,8 +1094,6 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardSalebookNameRoute: DashboardSalebookNameRoute,
   DashboardSalebookNewRoute: DashboardSalebookNewRoute,
   DashboardSalebookPendingSaleRoute: DashboardSalebookPendingSaleRoute,
-  DashboardStockMovementsNameRoute: DashboardStockMovementsNameRoute,
-  DashboardStockMovementsNewRoute: DashboardStockMovementsNewRoute,
   DashboardTeaTestingNameRoute: DashboardTeaTestingNameRoute,
   DashboardTeaValuationNameRoute: DashboardTeaValuationNameRoute,
   DashboardUserNameRoute: DashboardUserNameRoute,
@@ -1171,7 +1106,6 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardPartyIndexRoute: DashboardPartyIndexRoute,
   DashboardPaymentReceiptsIndexRoute: DashboardPaymentReceiptsIndexRoute,
   DashboardSalebookIndexRoute: DashboardSalebookIndexRoute,
-  DashboardStockMovementsIndexRoute: DashboardStockMovementsIndexRoute,
   DashboardTeaTestingIndexRoute: DashboardTeaTestingIndexRoute,
   DashboardTeaValuationIndexRoute: DashboardTeaValuationIndexRoute,
   DashboardUserIndexRoute: DashboardUserIndexRoute,

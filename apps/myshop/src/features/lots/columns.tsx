@@ -135,7 +135,7 @@ export function createColumns(
       enableSorting: true,
       size: 80,
       cell: ({ row }) => (
-        <div className="text-right tabular-nums">
+        <div className="w-full text-right tabular-nums">
           {formatNumber(row.original.bags)}
         </div>
       ),
@@ -152,7 +152,7 @@ export function createColumns(
       enableSorting: true,
       size: 90,
       cell: ({ row }) => (
-        <div className="text-right tabular-nums">
+        <div className="w-full text-right tabular-nums">
           {formatNumber(row.original.net_kg_per_bag, 2)}
         </div>
       ),
@@ -170,7 +170,7 @@ export function createColumns(
       enableSorting: true,
       size: 125,
       cell: ({ getValue }) => (
-        <div className="text-right tabular-nums">
+        <div className="w-full text-right tabular-nums">
           {formatNumber(Number(getValue()), 2)}
         </div>
       ),
