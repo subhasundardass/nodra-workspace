@@ -28,6 +28,7 @@ import { Route as DashboardDispatchIndexRouteImport } from './routes/dashboard/d
 import { Route as DashboardDispatchNameRouteImport } from './routes/dashboard/dispatch/$name'
 import { Route as DashboardDispatchPendingDispatchRouteImport } from './routes/dashboard/dispatch/pending-dispatch'
 import { Route as DashboardInventoryStockByLocationRouteImport } from './routes/dashboard/inventory/stock-by-location'
+import { Route as DashboardInventoryStockLedgerRouteImport } from './routes/dashboard/inventory/stock-ledger'
 import { Route as DashboardInventoryStockOverviewRouteImport } from './routes/dashboard/inventory/stock-overview'
 import { Route as DashboardLotIndexRouteImport } from './routes/dashboard/lot/index'
 import { Route as DashboardLotNameRouteImport } from './routes/dashboard/lot/$name'
@@ -60,6 +61,9 @@ import { Route as DashboardTeaValuationNameRouteImport } from './routes/dashboar
 import { Route as DashboardUserIndexRouteImport } from './routes/dashboard/user/index'
 import { Route as DashboardUserNameRouteImport } from './routes/dashboard/user/$name'
 import { Route as DashboardUserNewRouteImport } from './routes/dashboard/user/new'
+import { Route as DashboardInventoryStockTransferIndexRouteImport } from './routes/dashboard/inventory/stock-transfer/index'
+import { Route as DashboardInventoryStockTransferNameRouteImport } from './routes/dashboard/inventory/stock-transfer/$name'
+import { Route as DashboardInventoryStockTransferNewRouteImport } from './routes/dashboard/inventory/stock-transfer/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -156,6 +160,12 @@ const DashboardInventoryStockByLocationRoute =
   DashboardInventoryStockByLocationRouteImport.update({
     id: '/inventory/stock-by-location',
     path: '/inventory/stock-by-location',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardInventoryStockLedgerRoute =
+  DashboardInventoryStockLedgerRouteImport.update({
+    id: '/inventory/stock-ledger',
+    path: '/inventory/stock-ledger',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 const DashboardInventoryStockOverviewRoute =
@@ -330,6 +340,24 @@ const DashboardUserNewRoute = DashboardUserNewRouteImport.update({
   path: '/user/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardInventoryStockTransferIndexRoute =
+  DashboardInventoryStockTransferIndexRouteImport.update({
+    id: '/inventory/stock-transfer/',
+    path: '/inventory/stock-transfer/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardInventoryStockTransferNameRoute =
+  DashboardInventoryStockTransferNameRouteImport.update({
+    id: '/inventory/stock-transfer/$name',
+    path: '/inventory/stock-transfer/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardInventoryStockTransferNewRoute =
+  DashboardInventoryStockTransferNewRouteImport.update({
+    id: '/inventory/stock-transfer/new',
+    path: '/inventory/stock-transfer/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -347,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-ledger': typeof DashboardInventoryStockLedgerRoute
   '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
@@ -383,6 +412,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
+  '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
+  '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -399,6 +431,7 @@ export interface FileRoutesByTo {
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-ledger': typeof DashboardInventoryStockLedgerRoute
   '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
@@ -435,6 +468,9 @@ export interface FileRoutesByTo {
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
+  '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
+  '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/inventory/stock-transfer': typeof DashboardInventoryStockTransferIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -453,6 +489,7 @@ export interface FileRoutesById {
   '/dashboard/dispatch/$name': typeof DashboardDispatchNameRoute
   '/dashboard/dispatch/pending-dispatch': typeof DashboardDispatchPendingDispatchRoute
   '/dashboard/inventory/stock-by-location': typeof DashboardInventoryStockByLocationRoute
+  '/dashboard/inventory/stock-ledger': typeof DashboardInventoryStockLedgerRoute
   '/dashboard/inventory/stock-overview': typeof DashboardInventoryStockOverviewRoute
   '/dashboard/lot/$name': typeof DashboardLotNameRoute
   '/dashboard/lot/new': typeof DashboardLotNewRoute
@@ -489,6 +526,9 @@ export interface FileRoutesById {
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
+  '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
+  '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -508,6 +548,7 @@ export interface FileRouteTypes {
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-ledger'
     | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
@@ -544,6 +585,9 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
+    | '/dashboard/inventory/stock-transfer/$name'
+    | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/inventory/stock-transfer/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -560,6 +604,7 @@ export interface FileRouteTypes {
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-ledger'
     | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
@@ -596,6 +641,9 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing'
     | '/dashboard/tea-valuation'
     | '/dashboard/user'
+    | '/dashboard/inventory/stock-transfer/$name'
+    | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/inventory/stock-transfer'
   id:
     | '__root__'
     | '/'
@@ -613,6 +661,7 @@ export interface FileRouteTypes {
     | '/dashboard/dispatch/$name'
     | '/dashboard/dispatch/pending-dispatch'
     | '/dashboard/inventory/stock-by-location'
+    | '/dashboard/inventory/stock-ledger'
     | '/dashboard/inventory/stock-overview'
     | '/dashboard/lot/$name'
     | '/dashboard/lot/new'
@@ -649,6 +698,9 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
+    | '/dashboard/inventory/stock-transfer/$name'
+    | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/inventory/stock-transfer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -795,6 +847,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory/stock-by-location'
       fullPath: '/dashboard/inventory/stock-by-location'
       preLoaderRoute: typeof DashboardInventoryStockByLocationRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/inventory/stock-ledger': {
+      id: '/dashboard/inventory/stock-ledger'
+      path: '/inventory/stock-ledger'
+      fullPath: '/dashboard/inventory/stock-ledger'
+      preLoaderRoute: typeof DashboardInventoryStockLedgerRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/inventory/stock-overview': {
@@ -1021,6 +1080,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUserNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/inventory/stock-transfer/': {
+      id: '/dashboard/inventory/stock-transfer/'
+      path: '/inventory/stock-transfer'
+      fullPath: '/dashboard/inventory/stock-transfer/'
+      preLoaderRoute: typeof DashboardInventoryStockTransferIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/inventory/stock-transfer/$name': {
+      id: '/dashboard/inventory/stock-transfer/$name'
+      path: '/inventory/stock-transfer/$name'
+      fullPath: '/dashboard/inventory/stock-transfer/$name'
+      preLoaderRoute: typeof DashboardInventoryStockTransferNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/inventory/stock-transfer/new': {
+      id: '/dashboard/inventory/stock-transfer/new'
+      path: '/inventory/stock-transfer/new'
+      fullPath: '/dashboard/inventory/stock-transfer/new'
+      preLoaderRoute: typeof DashboardInventoryStockTransferNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
@@ -1031,6 +1111,7 @@ interface DashboardRouteRouteChildren {
   DashboardDispatchNameRoute: typeof DashboardDispatchNameRoute
   DashboardDispatchPendingDispatchRoute: typeof DashboardDispatchPendingDispatchRoute
   DashboardInventoryStockByLocationRoute: typeof DashboardInventoryStockByLocationRoute
+  DashboardInventoryStockLedgerRoute: typeof DashboardInventoryStockLedgerRoute
   DashboardInventoryStockOverviewRoute: typeof DashboardInventoryStockOverviewRoute
   DashboardLotNameRoute: typeof DashboardLotNameRoute
   DashboardLotNewRoute: typeof DashboardLotNewRoute
@@ -1065,6 +1146,9 @@ interface DashboardRouteRouteChildren {
   DashboardTeaTestingIndexRoute: typeof DashboardTeaTestingIndexRoute
   DashboardTeaValuationIndexRoute: typeof DashboardTeaValuationIndexRoute
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
+  DashboardInventoryStockTransferNameRoute: typeof DashboardInventoryStockTransferNameRoute
+  DashboardInventoryStockTransferNewRoute: typeof DashboardInventoryStockTransferNewRoute
+  DashboardInventoryStockTransferIndexRoute: typeof DashboardInventoryStockTransferIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -1075,6 +1159,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardDispatchPendingDispatchRoute: DashboardDispatchPendingDispatchRoute,
   DashboardInventoryStockByLocationRoute:
     DashboardInventoryStockByLocationRoute,
+  DashboardInventoryStockLedgerRoute: DashboardInventoryStockLedgerRoute,
   DashboardInventoryStockOverviewRoute: DashboardInventoryStockOverviewRoute,
   DashboardLotNameRoute: DashboardLotNameRoute,
   DashboardLotNewRoute: DashboardLotNewRoute,
@@ -1109,6 +1194,12 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardTeaTestingIndexRoute: DashboardTeaTestingIndexRoute,
   DashboardTeaValuationIndexRoute: DashboardTeaValuationIndexRoute,
   DashboardUserIndexRoute: DashboardUserIndexRoute,
+  DashboardInventoryStockTransferNameRoute:
+    DashboardInventoryStockTransferNameRoute,
+  DashboardInventoryStockTransferNewRoute:
+    DashboardInventoryStockTransferNewRoute,
+  DashboardInventoryStockTransferIndexRoute:
+    DashboardInventoryStockTransferIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

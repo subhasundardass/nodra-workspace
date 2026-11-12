@@ -1,0 +1,123 @@
+{
+  "name": "StockTransfer",
+  "module": "App",
+  "naming_rule": "series",
+  "naming_series": "STYY#####",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "name",
+  "search_fields": [
+    "name",
+    "lot",
+    "source_factory",
+    "source_warehouse",
+    "destination_factory",
+    "destination_warehouse"
+  ],
+  "fields": [
+    {
+      "fieldname": "transfer_date",
+      "label": "Transfer Date",
+      "fieldtype": "Date",
+      "default": "Today",
+      "reqd": true
+    },
+    {
+      "fieldname": "lot",
+      "label": "Lot",
+      "fieldtype": "Link",
+      "options": "Lots",
+      "reqd": true
+    },
+    {
+      "fieldname": "source_location_type",
+      "label": "Location Type",
+      "fieldtype": "Select",
+      "options": "Factory\nWarehouse",
+      "reqd": true
+    },
+    {
+      "fieldname": "source_factory",
+      "label": "Factory",
+      "fieldtype": "Link",
+      "options": "Factory",
+      "depends_on": "eval:doc.source_location_type === 'Factory'",
+      "mandatory_depends_on": "eval:doc.source_location_type === 'Factory'"
+    },
+    {
+      "fieldname": "source_warehouse",
+      "label": "Warehouse",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "depends_on": "eval:doc.source_location_type === 'Warehouse'",
+      "mandatory_depends_on": "eval:doc.source_location_type === 'Warehouse'"
+    },
+    {
+      "fieldname": "destination_location_type",
+      "label": "Location Type",
+      "fieldtype": "Select",
+      "options": "Factory\nWarehouse",
+      "reqd": true
+    },
+    {
+      "fieldname": "destination_factory",
+      "label": "Factory",
+      "fieldtype": "Link",
+      "options": "Factory",
+      "depends_on": "eval:doc.destination_location_type === 'Factory'",
+      "mandatory_depends_on": "eval:doc.destination_location_type === 'Factory'"
+    },
+    {
+      "fieldname": "destination_warehouse",
+      "label": "Warehouse",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "depends_on": "eval:doc.destination_location_type === 'Warehouse'",
+      "mandatory_depends_on": "eval:doc.destination_location_type === 'Warehouse'"
+    },
+    {
+      "fieldname": "bags",
+      "label": "Bags",
+      "fieldtype": "Int",
+      "reqd": true
+    },
+    {
+      "fieldname": "quantity",
+      "label": "Quantity (KG)",
+      "fieldtype": "Float",
+      "precision": 3,
+      "reqd": true
+    },
+    {
+      "fieldname": "remarks",
+      "label": "Remarks",
+      "fieldtype": "SmallText"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false
+    }
+  ]
+}

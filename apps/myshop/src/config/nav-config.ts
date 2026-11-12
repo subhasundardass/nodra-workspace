@@ -187,7 +187,7 @@ export const navGroups: NavGroup[] = [
           },
           {
             title: "Stock Ledger",
-            url: "/inventory/stock-ledger",
+            url: "/dashboard/inventory/stock-ledger",
             icon: "product",
             isActive: false,
             items: [],
