@@ -174,16 +174,16 @@ export function createColumns(
       minSize: 180,
       cell: ({ getValue }) => displayValue(getValue()),
     },
-    {
-      accessorKey: "tf",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="T/F" />
-      ),
-      enableSorting: true,
-      size: 60,
-      minSize: 60,
-      cell: ({ getValue }) => displayValue(getValue()),
-    },
+    // {
+    //   accessorKey: "tf",
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="T/F" />
+    //   ),
+    //   enableSorting: true,
+    //   size: 60,
+    //   minSize: 60,
+    //   cell: ({ getValue }) => displayValue(getValue()),
+    // },
     {
       accessorKey: "sale_type",
       header: ({ column }) => (
