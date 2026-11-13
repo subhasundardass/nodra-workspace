@@ -53,9 +53,9 @@ export function createColumns(
         <button
           type="button"
           className="font-medium text-primary hover:underline"
-          onClick={() => onOpen(row.original.name)}
+          onClick={() => onOpen(row.original.sale_book)}
         >
-          {row.original.name}
+          {row.original.sale_book}
         </button>
       ),
     },
@@ -227,6 +227,23 @@ export function createColumns(
           </span>
         );
       },
+    },
+    {
+      accessorKey: "dispatch_id",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ID#" />
+      ),
+      // enableSorting: true,
+      size: 130,
+      minSize: 110,
+      cell: ({ row }) => (
+        <div
+          className="font-medium text-primary text-xs"
+          onClick={() => onOpen(row.original.name)}
+        >
+          {row.original.name}
+        </div>
+      ),
     },
   ];
 }

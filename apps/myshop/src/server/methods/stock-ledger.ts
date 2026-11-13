@@ -1,6 +1,10 @@
 import type { MethodRegistry } from "nodra";
 import { getNodra } from "../nodra-app";
-import { StockService, type StockMovement } from "../services/stock.service";
+import {
+  StockService,
+  type StockMovement,
+  type LocationType,
+} from "../services/stock.service";
 
 export function registerStockLedgerMethods(registry: MethodRegistry): void {
   registry.register(
@@ -31,6 +35,24 @@ export function registerStockLedgerMethods(registry: MethodRegistry): void {
       await stockService.moveStock(movement);
 
       return { success: true };
+    },
+    { requireAuth: true },
+  );
+
+  registry.register(
+    "stock.get_location_balance",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const stockService = new StockService(app.orm);
+
+      return stockService.getLocationBalances({
+        fromDate: String(ctx.args.from_date ?? ""),
+        toDate: String(ctx.args.to_date ?? ""),
+        locationType: ctx.args.location_type
+          ? (String(ctx.args.location_type) as LocationType)
+          : undefined,
+      });
     },
     { requireAuth: true },
   );

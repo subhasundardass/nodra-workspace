@@ -348,6 +348,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
    * Displays one row per confirmed Lot.
    * Multiple SaleBook entries are grouped by Lot.  
    */
+
   registry.register(
     "salebook.get_pending_lots",
     async (ctx) => {
@@ -379,18 +380,47 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         orderBy: `lot_no ${sortOrder}`,
       };
 
-      const [lots, totalCount] = await Promise.all([
+      const [lots, totalCount, teaTestings] = await Promise.all([
         app.orm.getList("Lots", {
           ...lotOptions,
           filters: lotFilters,
         }),
 
         app.orm.getCount("Lots", lotFilters),
+
+        app.orm.getList("TeaTesting", {
+          limit: 1000,
+          offset: 0,
+          filters: {
+            docstatus: 51,
+          },
+        }),
       ]);
+
+      // Map the latest completed TeaTesting record by Lot.
+      const testingByLot = new Map<string, DocumentData>();
+
+      for (const testing of teaTestings) {
+        const data = serialise(testing) as DocumentData;
+        const lotName = String(data.lot ?? "");
+
+        if (!lotName) continue;
+
+        const existing = testingByLot.get(lotName);
+
+        if (
+          !existing ||
+          toDateValue(data.sample_date) > toDateValue(existing.sample_date)
+        ) {
+          testingByLot.set(lotName, data);
+        }
+      }
 
       const documents = lots.map((lot) => {
         const data = serialise(lot) as DocumentData;
         const lotName = String(data.name ?? "");
+
+        const testing = testingByLot.get(lotName) ?? null;
 
         return {
           name: lotName,
@@ -409,6 +439,23 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           total_kg: toNumber(data.bags) * toNumber(data.net_kg_per_bag),
 
           arrival_date: data.arrival_date || null,
+
+          // Tea Testing Information
+          tea_testing: testing?.name ?? null,
+          tested_grade: testing?.tested_grade ?? null,
+
+          test_information: testing
+            ? [
+                testing.appearance,
+                testing.infusion,
+                testing.liquor,
+                testing.taste,
+                testing.defects,
+                testing.test_remarks,
+              ]
+                .filter(Boolean)
+                .join(" / ")
+            : null,
         };
       });
 

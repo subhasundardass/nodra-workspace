@@ -509,4 +509,124 @@ export class StockService {
       }
     });
   }
+
+  // -------------------------------------------------------------------------
+  // Location Balances
+  // -------------------------------------------------------------------------
+
+  async getLocationBalances(params: {
+    fromDate: string;
+    toDate: string;
+    locationType?: LocationType;
+  }) {
+    const { fromDate, toDate, locationType } = params;
+
+    if (!fromDate || !toDate || fromDate > toDate) {
+      throw new Error("Invalid stock date range.");
+    }
+
+    if (
+      locationType &&
+      locationType !== "Factory" &&
+      locationType !== "Warehouse"
+    ) {
+      throw new Error("Invalid location type.");
+    }
+
+    // Fetch all ledger entries up to the selected To Date.
+    const entries = await this.orm.getList("StockLedger", {
+      filters: {
+        posting_date: ["<=", toDate],
+      },
+    });
+
+    const locations = new Map<
+      string,
+      {
+        location: StockLocation;
+        opening_bags: number;
+        opening_quantity: number;
+        stock_in_bags: number;
+        stock_in_quantity: number;
+        stock_out_bags: number;
+        stock_out_quantity: number;
+        closing_bags: number;
+        closing_quantity: number;
+      }
+    >();
+
+    for (const entry of entries) {
+      const type = entry.get("location_type");
+
+      if (type !== "Factory" && type !== "Warehouse") {
+        continue;
+      }
+
+      if (locationType && type !== locationType) {
+        continue;
+      }
+
+      const location: StockLocation = {
+        location_type: type,
+        factory: String(entry.get("factory") ?? "").trim() || undefined,
+        warehouse: String(entry.get("warehouse") ?? "").trim() || undefined,
+      };
+
+      this.validateLocation(location);
+
+      const name = type === "Factory" ? location.factory! : location.warehouse!;
+
+      const key = `${type}:${name}`;
+
+      if (!locations.has(key)) {
+        locations.set(key, {
+          location,
+          opening_bags: 0,
+          opening_quantity: 0,
+          stock_in_bags: 0,
+          stock_in_quantity: 0,
+          stock_out_bags: 0,
+          stock_out_quantity: 0,
+          closing_bags: 0,
+          closing_quantity: 0,
+        });
+      }
+
+      const row = locations.get(key)!;
+
+      const bags = this.getNumber(entry.get("bags"));
+      const quantity = this.getNumber(entry.get("quantity"));
+      const postingDate = String(entry.get("posting_date") ?? "");
+
+      if (postingDate < fromDate) {
+        row.opening_bags += bags;
+        row.opening_quantity += quantity;
+      } else {
+        if (bags > 0) {
+          row.stock_in_bags += bags;
+          row.stock_in_quantity += quantity;
+        } else if (bags < 0) {
+          row.stock_out_bags += Math.abs(bags);
+          row.stock_out_quantity += Math.abs(quantity);
+        }
+      }
+
+      row.closing_bags += bags;
+      row.closing_quantity += quantity;
+    }
+
+    return Array.from(locations.values())
+      .filter(
+        (row) =>
+          row.opening_bags !== 0 ||
+          row.stock_in_bags !== 0 ||
+          row.stock_out_bags !== 0 ||
+          row.closing_bags !== 0,
+      )
+      .sort((a, b) => {
+        const aName = a.location.factory ?? a.location.warehouse ?? "";
+        const bName = b.location.factory ?? b.location.warehouse ?? "";
+        return aName.localeCompare(bName);
+      });
+  }
 }
