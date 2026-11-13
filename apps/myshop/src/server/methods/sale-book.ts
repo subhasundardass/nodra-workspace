@@ -67,7 +67,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         orderBy: `lot_no ${sortOrder}`,
       };
 
-      const [lots, totalCount, saleEntries, offerSheets, brokers] =
+      const [lots, totalCount, saleEntries, offerSheets, brokers, teaTestings] =
         await Promise.all([
           app.orm.getList("Lots", {
             ...lotOptions,
@@ -95,6 +95,14 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           app.orm.getList("Broker", {
             limit: 1000,
             offset: 0,
+          }),
+
+          app.orm.getList("TeaTesting", {
+            limit: 1000,
+            offset: 0,
+            filters: {
+              docstatus: 51,
+            },
           }),
         ]);
 
@@ -163,11 +171,29 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }
       }
 
+      // Tea Testing data is not currently used in the merged output, but it can be processed similarly if needed.
+      const testingByLot = new Map<string, DocumentData>();
+      for (const testing of teaTestings) {
+        const data = serialise(testing) as DocumentData;
+        const lotName = String(data.lot ?? "");
+
+        if (!lotName) continue;
+
+        const existing = testingByLot.get(lotName);
+
+        if (
+          !existing ||
+          toDateValue(data.sample_date) > toDateValue(existing.sample_date)
+        ) {
+          testingByLot.set(lotName, data);
+        }
+      }
+
       // Merge Lot, SaleBook and Offer data.
       const documents = lots.map((lot) => {
         const data = serialise(lot) as DocumentData;
         const lotName = String(data.name ?? "");
-
+        const testing = testingByLot.get(lotName) ?? null;
         const sales = salesByLot.get(lotName) ?? [];
 
         // Latest SaleBook entry for displaying individual fields.
@@ -193,6 +219,23 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           lot: lotName,
           lot_no: String(data.lot_no ?? ""),
 
+          // Testing information from the latest TeaTesting entry for this Lot.
+          tea_testing: testing?.name ?? null,
+          tested_grade: testing?.tested_grade ?? null,
+          test_information: testing
+            ? [
+                testing.appearance,
+                testing.infusion,
+                testing.liquor,
+                testing.taste,
+                testing.defects,
+                testing.test_remarks,
+              ]
+                .filter(Boolean)
+                .join(" / ")
+            : null,
+
+          tf: latestSale?.tf ?? null,
           // Latest SaleBook identity.
           // Use individual SaleBook document name for updates.
           sale_book_name: latestSale?.name ? String(latestSale.name) : null,
@@ -223,11 +266,6 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           total_kg: bags * netKgPerBag,
 
           arrival_date: data.arrival_date || null,
-
-          tea_testing: latestSale?.tea_testing ?? null,
-          tested_grade: latestSale?.tested_grade ?? null,
-          test_information: latestSale?.test_information ?? null,
-          tf: latestSale?.tf ?? null,
 
           offer: latestSale?.offer ?? null,
           asking_price: askingPriceByLot.get(lotName) ?? 0,
