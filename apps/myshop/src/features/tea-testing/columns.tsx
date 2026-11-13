@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import { Badge } from "@/components/ui/badge";
 
 export interface TableColumns {
   name: string;
@@ -113,12 +114,34 @@ export function createColumns(
       ),
       cell: ({ getValue }) => displayValue(getValue()),
     },
+
     {
-      accessorKey: "testing_status",
+      id: "workflow_state",
+      accessorKey: "workflow_state",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Test Status" />
+        <DataTableColumnHeader column={column} title="Status" />
       ),
-      cell: ({ getValue }) => displayValue(getValue()),
+      cell: ({ getValue }) => {
+        const status = String(getValue() ?? "—");
+
+        const styles =
+          status === "Confirmed"
+            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+            : status === "Draft"
+              ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+              : "bg-muted text-muted-foreground";
+
+        return (
+          <span
+            className={`rounded-md px-2 py-1 text-xs font-medium ${styles}`}
+          >
+            {status}
+          </span>
+        );
+      },
+      enableSorting: true,
+      size: 110,
+      minSize: 110,
     },
   ];
 }
