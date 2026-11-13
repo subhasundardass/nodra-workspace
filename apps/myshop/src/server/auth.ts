@@ -14,25 +14,25 @@
  * the doctype/document name as real arguments instead of trying to parse
  * them back out of something ambient.
  */
-import { createMiddleware } from "@tanstack/react-start";
-import {
-  getRequestHeader,
-  getRequestHeaders,
-} from "@tanstack/react-start/server";
-import { getNodra, type NodraApp } from "./nodra-app";
-import { extractSessionToken } from "nodra/auth";
-import {
-  hasPermission,
-  getRoleHierarchy,
-  type PermissionAction,
-  type UserContext,
-} from "nodra/permissions/permission";
-import { logPermissionCheck } from "nodra/permissions/audit-log";
-import {
-  AuthenticationError,
-  NotFoundError,
-  PermissionError,
-} from "nodra/core/errors";
+// import { createMiddleware } from "@tanstack/react-start";
+// import {
+//   getRequestHeader,
+//   getRequestHeaders,
+// } from "@tanstack/react-start/server";
+// import { getNodra, type NodraApp } from "./nodra-app";
+// import { extractSessionToken } from "nodra/auth";
+// import {
+//   hasPermission,
+//   getRoleHierarchy,
+//   type PermissionAction,
+//   type UserContext,
+// } from "nodra/permissions/permission";
+// import { logPermissionCheck } from "nodra/permissions/audit-log";
+// import {
+//   AuthenticationError,
+//   NotFoundError,
+//   PermissionError,
+// } from "nodra/core/errors";
 
 // export interface AuthUser {
 //   id: string;

@@ -322,7 +322,8 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
         return {
           ...data,
 
-          name,
+          name: dispatch?.name ?? null,
+          sale_book: name,
 
           // Lot information
           lot: lotName || null,
