@@ -39,7 +39,6 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   table?: Table<TRecord>;
   children?: ReactNode;
   totals?: DocTypeListTotal[];
-
   title?: string;
   createButtonLabel?: string;
   description?: string;

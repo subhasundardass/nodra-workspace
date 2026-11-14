@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Table } from "@tanstack/react-table";
 import { Download, Filter, RotateCcw, Search, X, Columns3 } from "lucide-react";
-
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -188,6 +188,44 @@ export function DocTypeListToolbar<TData>({
     URL.revokeObjectURL(url);
   }
 
+  //Export to Excel
+  function exportXls() {
+    const columns = table
+      .getVisibleLeafColumns()
+      .filter(
+        (column) =>
+          column.id !== "actions" && typeof column.accessorFn === "function",
+      );
+
+    const rows = table.getFilteredRowModel().rows;
+
+    const data = [
+      columns.map((column) => getColumnLabel(table, column.id)),
+      ...rows.map((row) =>
+        columns.map((column) => {
+          const value = row.getValue(column.id);
+
+          // Prevent spreadsheet formula execution.
+          if (typeof value === "string" && /^[\s]*[=+\-@]/.test(value)) {
+            return `'${value}`;
+          }
+
+          return value == null ? "" : value;
+        }),
+      ),
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Records");
+
+    const fileName =
+      doctypeName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "records";
+
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  }
+
   return (
     <div className="flex flex-col gap-3  p-0">
       <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
@@ -341,9 +379,14 @@ export function DocTypeListToolbar<TData>({
             </PopoverContent>
           </Popover>
 
-          <Button type="button" variant="outline" size="sm" onClick={exportCsv}>
+          {/* <Button type="button" variant="outline" size="sm" onClick={exportCsv}>
             <Download className="mr-2 size-4" />
             Export CSV
+          </Button> */}
+
+          <Button type="button" variant="outline" size="sm" onClick={exportXls}>
+            <Download className="mr-2 size-4" />
+            Export XLS
           </Button>
 
           {onRefresh && (

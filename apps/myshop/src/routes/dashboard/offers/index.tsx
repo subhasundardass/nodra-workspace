@@ -77,6 +77,7 @@ function RouteComponent() {
       doctype={doctype}
       records={records}
       table={table}
+      // actions={offerActions}
       onCreate={() => navigate({ to: "/dashboard/offers/new" })}
       onOpen={openOffer}
       onRefresh={() => router.invalidate()}
