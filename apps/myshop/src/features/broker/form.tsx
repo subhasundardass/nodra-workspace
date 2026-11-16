@@ -102,6 +102,34 @@ export function BrokerForm({ form }: BrokerFormProps) {
             </FieldRow>
           )}
         </form.Field>
+
+        <form.Field name="gstin">
+          {(field) => (
+            <FieldRow label="GSTIN" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter GSTIN"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="pan">
+          {(field) => (
+            <FieldRow label="PAN" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter PAN"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
       </FormSection>
 
       <FormSection
