@@ -37,6 +37,20 @@
       "reqd": false
     },
     {
+      "fieldname": "gstin",
+      "fieldtype": "Data",
+      "label": "GSTIN",
+      "max_length": 15,
+      "in_list_view": false
+    },
+    {
+      "fieldname": "pan",
+      "fieldtype": "Data",
+      "label": "PAN",
+      "max_length": 10,
+      "in_list_view": false
+    },
+    {
       "fieldname": "contact_person",
       "fieldtype": "Data",
       "label": "Contact Person",
