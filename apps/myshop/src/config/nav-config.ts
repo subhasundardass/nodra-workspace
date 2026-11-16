@@ -519,6 +519,13 @@ export const navGroups: NavGroup[] = [
             isActive: false,
             items: [],
           },
+          {
+            title: "Discount Table",
+            url: "/dashboard/master/discount",
+            icon: "workspace",
+            isActive: false,
+            items: [],
+          },
         ],
       },
 
