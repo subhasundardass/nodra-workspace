@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, useMemo } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { ColumnDef, Table } from "@tanstack/react-table";
 import type { DocTypeDefinition } from "nodra";
 import { Plus } from "lucide-react";
@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 import { GlobalToolbar } from "@/components/toolbar";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/table/data-table";
+import { DataTable, DataTableTotal } from "@/components/ui/table/data-table";
 import { DocTypeListToolbar } from "@/components/doctype/list/doctype-list-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import PageContainer from "@/components/layout/page-container";
@@ -17,7 +17,6 @@ type DocumentRow = Record<string, unknown>;
 export type DocTypeListColumn = {
   id: string;
   label: string;
-
   fieldname?: string;
   searchable?: boolean;
   sortable?: boolean;
@@ -29,13 +28,17 @@ export type DocTypeListTotal = {
   label?: string;
   decimals?: number;
   currency?: boolean;
+  align?: "left" | "center" | "right";
+};
+
+type CalculatedTotal = DocTypeListTotal & {
+  value: string;
 };
 
 export type DocTypeListTemplateProps<TRecord extends object> = {
   doctype: DocTypeDefinition;
   records?: TRecord[];
   columns?: DocTypeListColumn[];
-  /** Pass this when rendering a custom DataTable so the global toolbar controls it. */
   table?: Table<TRecord>;
   children?: ReactNode;
   totals?: DocTypeListTotal[];
@@ -82,6 +85,22 @@ function getListFields(doctype: DocTypeDefinition) {
   ];
 }
 
+function formatTotal(item: DocTypeListTotal, total: number): string {
+  if (item.currency) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(total);
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: item.decimals ?? 2,
+  }).format(total);
+}
+
 export function DocTypeListTemplate<TRecord extends object>({
   doctype,
   records = [],
@@ -126,8 +145,7 @@ export function DocTypeListTemplate<TRecord extends object>({
         enableSorting: field.sortable ?? Boolean(field.fieldname),
         enableHiding: field.fieldname !== "name",
         cell: ({ row }) => {
-          const record = row.original;
-          const document = toDocumentRow(record);
+          const document = toDocumentRow(row.original);
 
           if (field.render) return field.render(document);
 
@@ -170,8 +188,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   const filteredRows = table.getFilteredRowModel().rows;
   const visibleRecordCount = filteredRows.length;
 
-  // Calculate totals across all filtered rows, not only the current page.
-  const totalValues = useMemo(() => {
+  const totalValues = useMemo<CalculatedTotal[]>(() => {
     if (!totals?.length) return [];
 
     return totals.map((item) => {
@@ -187,21 +204,9 @@ export function DocTypeListTemplate<TRecord extends object>({
         return Number.isFinite(number) ? sum + number : sum;
       }, 0);
 
-      const value = item.currency
-        ? new Intl.NumberFormat("en-IN", {
-            style: "currency",
-            currency: "INR",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(total)
-        : new Intl.NumberFormat("en-IN", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: item.decimals ?? 2,
-          }).format(total);
-
       return {
         ...item,
-        value,
+        value: formatTotal(item, total),
       };
     });
   }, [totals, filteredRows]);
@@ -220,6 +225,17 @@ export function DocTypeListTemplate<TRecord extends object>({
       },
     ];
   }, [actions, canCreate, createButtonLabel, doctype.name, onCreate]);
+
+  const tableContent =
+    children === undefined ? (
+      <DataTable table={table} totals={totalValues} />
+    ) : isValidElement(children) && children.type === DataTable ? (
+      cloneElement(children as ReactElement<{ totals?: DataTableTotal[] }>, {
+        totals: totalValues,
+      })
+    ) : (
+      children
+    );
 
   return (
     <PageContainer>
@@ -274,10 +290,8 @@ export function DocTypeListTemplate<TRecord extends object>({
               </Button>
             )}
           </div>
-        ) : children !== undefined ? (
-          children
         ) : (
-          <DataTable table={table} totals={totalValues} />
+          tableContent
         )}
       </div>
     </PageContainer>
