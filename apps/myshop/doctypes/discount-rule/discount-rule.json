@@ -1,0 +1,29 @@
+{
+  "name": "DiscountRule",
+  "module": "App",
+  "description": "Child table containing payment day and discount percentage rules",
+  "naming_rule": "field",
+  "is_submittable": false,
+  "is_child": true,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "fields": [
+    {
+      "fieldname": "payment_days",
+      "fieldtype": "Int",
+      "label": "Payment Within (Days)",
+      "description": "Maximum number of days from the sale date to qualify for this discount.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "discount_percent",
+      "fieldtype": "Float",
+      "label": "Discount (%)",
+      "precision": 2,
+      "reqd": true,
+      "in_list_view": true
+    }
+  ]
+}

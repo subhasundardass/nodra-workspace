@@ -58,12 +58,12 @@ export const Route = createFileRoute("/dashboard/salebook/$name")({
       throw new Error(`Lot "${lotId}" was not found.`);
     }
 
-    console.log("Sale Entry Route:", {
-      saleBookId: saleBook.name,
-      lotId: lot.name,
-      saleBook,
-      lot,
-    });
+    // console.log("Sale Entry Route:", {
+    //   saleBookId: saleBook.name,
+    //   lotId: lot.name,
+    //   saleBook,
+    //   lot,
+    // });
 
     return {
       doctype: doctypeResult.doctype,

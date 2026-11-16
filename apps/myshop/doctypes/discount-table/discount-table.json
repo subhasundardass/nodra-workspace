@@ -1,0 +1,82 @@
+{
+  "name": "DiscountTable",
+  "module": "App",
+  "description": "Master for managing buyer payment-based discount policies",
+  "naming_series": "DTYY#####",
+  "naming_rule": "series",
+  "title_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "title"
+  ],
+  "sort_field": "effective_from",
+  "sort_order": "desc",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "effective_from",
+      "fieldtype": "Date",
+      "label": "Effective From",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "effective_to",
+      "fieldtype": "Date",
+      "label": "Effective To",
+      "description": "Last date this discount policy remains applicable.",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "discount_rules",
+      "fieldtype": "Table",
+      "label": "Discount Rules",
+      "options": "DiscountRule",
+      "reqd": true
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Active",
+      "default": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

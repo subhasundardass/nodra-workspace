@@ -64,6 +64,9 @@ import { Route as DashboardUserNewRouteImport } from './routes/dashboard/user/ne
 import { Route as DashboardInventoryStockTransferIndexRouteImport } from './routes/dashboard/inventory/stock-transfer/index'
 import { Route as DashboardInventoryStockTransferNameRouteImport } from './routes/dashboard/inventory/stock-transfer/$name'
 import { Route as DashboardInventoryStockTransferNewRouteImport } from './routes/dashboard/inventory/stock-transfer/new'
+import { Route as DashboardMasterDiscountIndexRouteImport } from './routes/dashboard/master/discount/index'
+import { Route as DashboardMasterDiscountNameRouteImport } from './routes/dashboard/master/discount/$name'
+import { Route as DashboardMasterDiscountNewRouteImport } from './routes/dashboard/master/discount/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -358,6 +361,24 @@ const DashboardInventoryStockTransferNewRoute =
     path: '/inventory/stock-transfer/new',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardMasterDiscountIndexRoute =
+  DashboardMasterDiscountIndexRouteImport.update({
+    id: '/master/discount/',
+    path: '/master/discount/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardMasterDiscountNameRoute =
+  DashboardMasterDiscountNameRouteImport.update({
+    id: '/master/discount/$name',
+    path: '/master/discount/$name',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardMasterDiscountNewRoute =
+  DashboardMasterDiscountNewRouteImport.update({
+    id: '/master/discount/new',
+    path: '/master/discount/new',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -414,7 +435,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/user/': typeof DashboardUserIndexRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
+  '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
+  '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -470,7 +494,10 @@ export interface FileRoutesByTo {
   '/dashboard/user': typeof DashboardUserIndexRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
+  '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
   '/dashboard/inventory/stock-transfer': typeof DashboardInventoryStockTransferIndexRoute
+  '/dashboard/master/discount': typeof DashboardMasterDiscountIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -528,7 +555,10 @@ export interface FileRoutesById {
   '/dashboard/user/': typeof DashboardUserIndexRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
+  '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
+  '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
+  '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -587,7 +617,10 @@ export interface FileRouteTypes {
     | '/dashboard/user/'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/master/discount/$name'
+    | '/dashboard/master/discount/new'
     | '/dashboard/inventory/stock-transfer/'
+    | '/dashboard/master/discount/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -643,7 +676,10 @@ export interface FileRouteTypes {
     | '/dashboard/user'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/master/discount/$name'
+    | '/dashboard/master/discount/new'
     | '/dashboard/inventory/stock-transfer'
+    | '/dashboard/master/discount'
   id:
     | '__root__'
     | '/'
@@ -700,7 +736,10 @@ export interface FileRouteTypes {
     | '/dashboard/user/'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
+    | '/dashboard/master/discount/$name'
+    | '/dashboard/master/discount/new'
     | '/dashboard/inventory/stock-transfer/'
+    | '/dashboard/master/discount/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1101,6 +1140,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInventoryStockTransferNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/master/discount/': {
+      id: '/dashboard/master/discount/'
+      path: '/master/discount'
+      fullPath: '/dashboard/master/discount/'
+      preLoaderRoute: typeof DashboardMasterDiscountIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/discount/$name': {
+      id: '/dashboard/master/discount/$name'
+      path: '/master/discount/$name'
+      fullPath: '/dashboard/master/discount/$name'
+      preLoaderRoute: typeof DashboardMasterDiscountNameRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/master/discount/new': {
+      id: '/dashboard/master/discount/new'
+      path: '/master/discount/new'
+      fullPath: '/dashboard/master/discount/new'
+      preLoaderRoute: typeof DashboardMasterDiscountNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
@@ -1148,7 +1208,10 @@ interface DashboardRouteRouteChildren {
   DashboardUserIndexRoute: typeof DashboardUserIndexRoute
   DashboardInventoryStockTransferNameRoute: typeof DashboardInventoryStockTransferNameRoute
   DashboardInventoryStockTransferNewRoute: typeof DashboardInventoryStockTransferNewRoute
+  DashboardMasterDiscountNameRoute: typeof DashboardMasterDiscountNameRoute
+  DashboardMasterDiscountNewRoute: typeof DashboardMasterDiscountNewRoute
   DashboardInventoryStockTransferIndexRoute: typeof DashboardInventoryStockTransferIndexRoute
+  DashboardMasterDiscountIndexRoute: typeof DashboardMasterDiscountIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -1198,8 +1261,11 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
     DashboardInventoryStockTransferNameRoute,
   DashboardInventoryStockTransferNewRoute:
     DashboardInventoryStockTransferNewRoute,
+  DashboardMasterDiscountNameRoute: DashboardMasterDiscountNameRoute,
+  DashboardMasterDiscountNewRoute: DashboardMasterDiscountNewRoute,
   DashboardInventoryStockTransferIndexRoute:
     DashboardInventoryStockTransferIndexRoute,
+  DashboardMasterDiscountIndexRoute: DashboardMasterDiscountIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
