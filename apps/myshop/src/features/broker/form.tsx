@@ -5,6 +5,7 @@ import type { NodraForm } from "@/components/doctype/templates/doctype-form-temp
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LinkField } from "@/components/doctype/fields/link-field";
 
 interface BrokerFormProps {
   form: NodraForm;
@@ -180,11 +181,12 @@ export function BrokerForm({ form }: BrokerFormProps) {
         <form.Field name="state">
           {(field) => (
             <FieldRow label="State" htmlFor={field.name} required>
-              <DataField
-                id={field.name}
-                name={field.name}
+              <LinkField
+                doctype="State"
+                titleField="state_name"
                 value={String(field.state.value ?? "")}
-                onChange={field.handleChange}
+                onChange={(value) => field.handleChange(String(value ?? ""))}
+                required
                 placeholder="Select State"
               />
             </FieldRow>
