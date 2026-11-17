@@ -357,4 +357,139 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
     },
     { requireAuth: true },
   );
+
+  //Priview
+  registry.register(
+    "salesinvoice.get_invoice_preview",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const buyer = String(ctx.args.buyer ?? "");
+      const broker = String(ctx.args.broker ?? "");
+
+      if (!buyer || !broker) {
+        throw new Error("Buyer and Broker are required.");
+      }
+
+      const [dispatchRecords, saleBookRecords, lotRecords, invoiceRecords] =
+        await Promise.all([
+          app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
+          app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
+          app.orm.getList("Lots", { limit: 1000, offset: 0 }),
+          app.orm.getList("SalesInvoice", { limit: 1000, offset: 0 }),
+        ]);
+
+      const saleBooks = new Map<string, DocumentData>();
+      for (const record of saleBookRecords) {
+        const data = serialise(record) as DocumentData;
+        if (data.name) {
+          saleBooks.set(String(data.name), data);
+        }
+      }
+
+      const lots = new Map<string, DocumentData>();
+      for (const record of lotRecords) {
+        const data = serialise(record) as DocumentData;
+        if (data.name) {
+          lots.set(String(data.name), data);
+        }
+      }
+
+      // Dispatches already reserved by Draft or Confirmed invoices.
+      const reservedDispatches = new Set<string>();
+
+      for (const record of invoiceRecords) {
+        const invoice = serialise(record) as DocumentData;
+
+        if (
+          invoice.workflow_state === "Cancelled" ||
+          Number(invoice.docstatus) === 98
+        ) {
+          continue;
+        }
+
+        const items = Array.isArray(invoice.items) ? invoice.items : [];
+
+        for (const item of items) {
+          if (!item || typeof item !== "object") continue;
+
+          const dispatch = String((item as DocumentData).dispatch ?? "");
+
+          if (dispatch) {
+            reservedDispatches.add(dispatch);
+          }
+        }
+      }
+
+      // Find eligible Dispatch records for this Buyer + Broker.
+      const documents = dispatchRecords
+        .map((record) => serialise(record) as DocumentData)
+        .filter((dispatch) => {
+          const isConfirmed =
+            dispatch.workflow_state === "Confirmed" ||
+            Number(dispatch.docstatus) === 51;
+
+          if (!isConfirmed) return false;
+
+          if (reservedDispatches.has(String(dispatch.name ?? ""))) {
+            return false;
+          }
+
+          if (String(dispatch.party ?? "") !== buyer) {
+            return false;
+          }
+
+          const saleBook = saleBooks.get(String(dispatch.sale_book ?? ""));
+
+          if (!saleBook) return false;
+
+          const saleBookBroker = String(saleBook.broker ?? "");
+          const dispatchBroker = String(dispatch.broker ?? "");
+
+          return (saleBookBroker || dispatchBroker) === broker;
+        })
+        .map((dispatch) => {
+          const saleBook = saleBooks.get(String(dispatch.sale_book ?? ""))!;
+
+          const lotName = String(saleBook.lot ?? "");
+          const lot = lots.get(lotName);
+
+          const bags = toNumber(dispatch.total_bags);
+          const kgs = toNumber(dispatch.total_kgs);
+          const rate = toNumber(saleBook.rate);
+
+          return {
+            // Dispatch identity
+            name: String(dispatch.name),
+            dispatch: String(dispatch.name),
+            dispatch_date: String(dispatch.dispatch_date ?? ""),
+
+            // Linked documents
+            sale_book: String(saleBook.name ?? ""),
+            lot: lotName,
+            lot_no: String(lot?.lot_no ?? lotName),
+
+            // Lot details
+            mark_brand: String(lot?.mark_brand ?? ""),
+            grade: String(lot?.grade ?? ""),
+
+            // Dispatch quantities
+            bags,
+            kgs,
+
+            // SaleBook agreed rate
+            rate,
+            amount: kgs * rate,
+          };
+        });
+
+      return {
+        buyer,
+        broker,
+        dispatches: documents,
+        total_count: documents.length,
+      };
+    },
+    { requireAuth: true },
+  );
 }
