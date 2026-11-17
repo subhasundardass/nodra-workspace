@@ -122,35 +122,35 @@ export const navGroups: NavGroup[] = [
       // 4.1. Invoice & Billing
       {
         title: "Invoice & Billing",
-        url: "#",
+        url: "/dashboard/billing",
         icon: "kanban",
         isActive: false,
         items: [
           {
             title: "Sales Invoices",
-            url: "/dashboard/offers",
+            url: "/dashboard/billing/sales-invoice",
             icon: "post",
             isActive: false,
             items: [],
           },
           {
             title: "Pending Invoices",
-            url: "/dashboard/offers",
-            icon: "page",
+            url: "/dashboard/billing/pending-invoices",
+            icon: "clock",
             isActive: false,
             items: [],
           },
           {
             title: "Sales Returns",
-            url: "/dashboard/salebook",
+            url: "/dashboard/billing/sales-returns",
             icon: "product",
             isActive: false,
             items: [],
           },
           {
             title: "Payment Receipts",
-            url: "/dashboard/salebook/pending-sale",
-            icon: "clock",
+            url: "/dashboard/billing/payment-receipts",
+            icon: "product",
             isActive: false,
             items: [],
           },

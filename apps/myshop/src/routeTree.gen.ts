@@ -17,10 +17,12 @@ import { Route as HealthRouteImport } from './routes/health'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as DashboardBillingRouteRouteImport } from './routes/dashboard/billing/route'
 import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
 import { Route as ApiMethodMethodPathRouteImport } from './routes/api/method/$methodPath'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignUpIndexRouteImport } from './routes/auth/sign-up/index'
+import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard/billing/index'
 import { Route as DashboardBrokerIndexRouteImport } from './routes/dashboard/broker/index'
 import { Route as DashboardBrokerNameRouteImport } from './routes/dashboard/broker/$name'
 import { Route as DashboardBrokerNewRouteImport } from './routes/dashboard/broker/new'
@@ -61,6 +63,10 @@ import { Route as DashboardTeaValuationNameRouteImport } from './routes/dashboar
 import { Route as DashboardUserIndexRouteImport } from './routes/dashboard/user/index'
 import { Route as DashboardUserNameRouteImport } from './routes/dashboard/user/$name'
 import { Route as DashboardUserNewRouteImport } from './routes/dashboard/user/new'
+import { Route as DashboardBillingPendingInvoicesIndexRouteImport } from './routes/dashboard/billing/pending-invoices/index'
+import { Route as DashboardBillingSalesInvoiceIndexRouteImport } from './routes/dashboard/billing/sales-invoice/index'
+import { Route as DashboardBillingSalesInvoiceNameRouteImport } from './routes/dashboard/billing/sales-invoice/$name'
+import { Route as DashboardBillingSalesInvoiceNewRouteImport } from './routes/dashboard/billing/sales-invoice/new'
 import { Route as DashboardInventoryStockTransferIndexRouteImport } from './routes/dashboard/inventory/stock-transfer/index'
 import { Route as DashboardInventoryStockTransferNameRouteImport } from './routes/dashboard/inventory/stock-transfer/$name'
 import { Route as DashboardInventoryStockTransferNewRouteImport } from './routes/dashboard/inventory/stock-transfer/new'
@@ -108,6 +114,11 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthRoute,
 } as any)
+const DashboardBillingRouteRoute = DashboardBillingRouteRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardOverviewRoute = DashboardOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
@@ -127,6 +138,11 @@ const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardBillingRouteRoute,
 } as any)
 const DashboardBrokerIndexRoute = DashboardBrokerIndexRouteImport.update({
   id: '/broker/',
@@ -343,6 +359,30 @@ const DashboardUserNewRoute = DashboardUserNewRouteImport.update({
   path: '/user/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardBillingPendingInvoicesIndexRoute =
+  DashboardBillingPendingInvoicesIndexRouteImport.update({
+    id: '/pending-invoices/',
+    path: '/pending-invoices/',
+    getParentRoute: () => DashboardBillingRouteRoute,
+  } as any)
+const DashboardBillingSalesInvoiceIndexRoute =
+  DashboardBillingSalesInvoiceIndexRouteImport.update({
+    id: '/sales-invoice/',
+    path: '/sales-invoice/',
+    getParentRoute: () => DashboardBillingRouteRoute,
+  } as any)
+const DashboardBillingSalesInvoiceNameRoute =
+  DashboardBillingSalesInvoiceNameRouteImport.update({
+    id: '/sales-invoice/$name',
+    path: '/sales-invoice/$name',
+    getParentRoute: () => DashboardBillingRouteRoute,
+  } as any)
+const DashboardBillingSalesInvoiceNewRoute =
+  DashboardBillingSalesInvoiceNewRouteImport.update({
+    id: '/sales-invoice/new',
+    path: '/sales-invoice/new',
+    getParentRoute: () => DashboardBillingRouteRoute,
+  } as any)
 const DashboardInventoryStockTransferIndexRoute =
   DashboardInventoryStockTransferIndexRouteImport.update({
     id: '/inventory/stock-transfer/',
@@ -388,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/health': typeof HealthRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/dashboard/billing': typeof DashboardBillingRouteRouteWithChildren
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
@@ -422,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatch/': typeof DashboardDispatchIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
@@ -433,10 +475,14 @@ export interface FileRoutesByFullPath {
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
+  '/dashboard/billing/sales-invoice/$name': typeof DashboardBillingSalesInvoiceNameRoute
+  '/dashboard/billing/sales-invoice/new': typeof DashboardBillingSalesInvoiceNewRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
   '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
   '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
+  '/dashboard/billing/pending-invoices/': typeof DashboardBillingPendingInvoicesIndexRoute
+  '/dashboard/billing/sales-invoice/': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
 }
@@ -481,6 +527,7 @@ export interface FileRoutesByTo {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/auth/sign-up': typeof AuthSignUpIndexRoute
+  '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/broker': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatch': typeof DashboardDispatchIndexRoute
   '/dashboard/lot': typeof DashboardLotIndexRoute
@@ -492,10 +539,14 @@ export interface FileRoutesByTo {
   '/dashboard/tea-testing': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user': typeof DashboardUserIndexRoute
+  '/dashboard/billing/sales-invoice/$name': typeof DashboardBillingSalesInvoiceNameRoute
+  '/dashboard/billing/sales-invoice/new': typeof DashboardBillingSalesInvoiceNewRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
   '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
   '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
+  '/dashboard/billing/pending-invoices': typeof DashboardBillingPendingInvoicesIndexRoute
+  '/dashboard/billing/sales-invoice': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount': typeof DashboardMasterDiscountIndexRoute
 }
@@ -508,6 +559,7 @@ export interface FileRoutesById {
   '/health': typeof HealthRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/dashboard/billing': typeof DashboardBillingRouteRouteWithChildren
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
@@ -542,6 +594,7 @@ export interface FileRoutesById {
   '/dashboard/user/new': typeof DashboardUserNewRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/broker/': typeof DashboardBrokerIndexRoute
   '/dashboard/dispatch/': typeof DashboardDispatchIndexRoute
   '/dashboard/lot/': typeof DashboardLotIndexRoute
@@ -553,10 +606,14 @@ export interface FileRoutesById {
   '/dashboard/tea-testing/': typeof DashboardTeaTestingIndexRoute
   '/dashboard/tea-valuation/': typeof DashboardTeaValuationIndexRoute
   '/dashboard/user/': typeof DashboardUserIndexRoute
+  '/dashboard/billing/sales-invoice/$name': typeof DashboardBillingSalesInvoiceNameRoute
+  '/dashboard/billing/sales-invoice/new': typeof DashboardBillingSalesInvoiceNewRoute
   '/dashboard/inventory/stock-transfer/$name': typeof DashboardInventoryStockTransferNameRoute
   '/dashboard/inventory/stock-transfer/new': typeof DashboardInventoryStockTransferNewRoute
   '/dashboard/master/discount/$name': typeof DashboardMasterDiscountNameRoute
   '/dashboard/master/discount/new': typeof DashboardMasterDiscountNewRoute
+  '/dashboard/billing/pending-invoices/': typeof DashboardBillingPendingInvoicesIndexRoute
+  '/dashboard/billing/sales-invoice/': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
 }
@@ -570,6 +627,7 @@ export interface FileRouteTypes {
     | '/health'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/dashboard/billing'
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
@@ -604,6 +662,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/billing/'
     | '/dashboard/broker/'
     | '/dashboard/dispatch/'
     | '/dashboard/lot/'
@@ -615,10 +674,14 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
+    | '/dashboard/billing/sales-invoice/$name'
+    | '/dashboard/billing/sales-invoice/new'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
     | '/dashboard/master/discount/$name'
     | '/dashboard/master/discount/new'
+    | '/dashboard/billing/pending-invoices/'
+    | '/dashboard/billing/sales-invoice/'
     | '/dashboard/inventory/stock-transfer/'
     | '/dashboard/master/discount/'
   fileRoutesByTo: FileRoutesByTo
@@ -663,6 +726,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/dashboard/billing'
     | '/dashboard/broker'
     | '/dashboard/dispatch'
     | '/dashboard/lot'
@@ -674,10 +738,14 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing'
     | '/dashboard/tea-valuation'
     | '/dashboard/user'
+    | '/dashboard/billing/sales-invoice/$name'
+    | '/dashboard/billing/sales-invoice/new'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
     | '/dashboard/master/discount/$name'
     | '/dashboard/master/discount/new'
+    | '/dashboard/billing/pending-invoices'
+    | '/dashboard/billing/sales-invoice'
     | '/dashboard/inventory/stock-transfer'
     | '/dashboard/master/discount'
   id:
@@ -689,6 +757,7 @@ export interface FileRouteTypes {
     | '/health'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/dashboard/billing'
     | '/dashboard/overview'
     | '/auth/'
     | '/api/method/$methodPath'
@@ -723,6 +792,7 @@ export interface FileRouteTypes {
     | '/dashboard/user/new'
     | '/auth/sign-in/'
     | '/auth/sign-up/'
+    | '/dashboard/billing/'
     | '/dashboard/broker/'
     | '/dashboard/dispatch/'
     | '/dashboard/lot/'
@@ -734,10 +804,14 @@ export interface FileRouteTypes {
     | '/dashboard/tea-testing/'
     | '/dashboard/tea-valuation/'
     | '/dashboard/user/'
+    | '/dashboard/billing/sales-invoice/$name'
+    | '/dashboard/billing/sales-invoice/new'
     | '/dashboard/inventory/stock-transfer/$name'
     | '/dashboard/inventory/stock-transfer/new'
     | '/dashboard/master/discount/$name'
     | '/dashboard/master/discount/new'
+    | '/dashboard/billing/pending-invoices/'
+    | '/dashboard/billing/sales-invoice/'
     | '/dashboard/inventory/stock-transfer/'
     | '/dashboard/master/discount/'
   fileRoutesById: FileRoutesById
@@ -811,6 +885,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/overview': {
       id: '/dashboard/overview'
       path: '/overview'
@@ -838,6 +919,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-up/'
       preLoaderRoute: typeof AuthSignUpIndexRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/dashboard/billing/': {
+      id: '/dashboard/billing/'
+      path: '/'
+      fullPath: '/dashboard/billing/'
+      preLoaderRoute: typeof DashboardBillingIndexRouteImport
+      parentRoute: typeof DashboardBillingRouteRoute
     }
     '/dashboard/broker/': {
       id: '/dashboard/broker/'
@@ -1119,6 +1207,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUserNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/billing/pending-invoices/': {
+      id: '/dashboard/billing/pending-invoices/'
+      path: '/pending-invoices'
+      fullPath: '/dashboard/billing/pending-invoices/'
+      preLoaderRoute: typeof DashboardBillingPendingInvoicesIndexRouteImport
+      parentRoute: typeof DashboardBillingRouteRoute
+    }
+    '/dashboard/billing/sales-invoice/': {
+      id: '/dashboard/billing/sales-invoice/'
+      path: '/sales-invoice'
+      fullPath: '/dashboard/billing/sales-invoice/'
+      preLoaderRoute: typeof DashboardBillingSalesInvoiceIndexRouteImport
+      parentRoute: typeof DashboardBillingRouteRoute
+    }
+    '/dashboard/billing/sales-invoice/$name': {
+      id: '/dashboard/billing/sales-invoice/$name'
+      path: '/sales-invoice/$name'
+      fullPath: '/dashboard/billing/sales-invoice/$name'
+      preLoaderRoute: typeof DashboardBillingSalesInvoiceNameRouteImport
+      parentRoute: typeof DashboardBillingRouteRoute
+    }
+    '/dashboard/billing/sales-invoice/new': {
+      id: '/dashboard/billing/sales-invoice/new'
+      path: '/sales-invoice/new'
+      fullPath: '/dashboard/billing/sales-invoice/new'
+      preLoaderRoute: typeof DashboardBillingSalesInvoiceNewRouteImport
+      parentRoute: typeof DashboardBillingRouteRoute
+    }
     '/dashboard/inventory/stock-transfer/': {
       id: '/dashboard/inventory/stock-transfer/'
       path: '/inventory/stock-transfer'
@@ -1164,7 +1280,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardBillingRouteRouteChildren {
+  DashboardBillingIndexRoute: typeof DashboardBillingIndexRoute
+  DashboardBillingSalesInvoiceNameRoute: typeof DashboardBillingSalesInvoiceNameRoute
+  DashboardBillingSalesInvoiceNewRoute: typeof DashboardBillingSalesInvoiceNewRoute
+  DashboardBillingPendingInvoicesIndexRoute: typeof DashboardBillingPendingInvoicesIndexRoute
+  DashboardBillingSalesInvoiceIndexRoute: typeof DashboardBillingSalesInvoiceIndexRoute
+}
+
+const DashboardBillingRouteRouteChildren: DashboardBillingRouteRouteChildren = {
+  DashboardBillingIndexRoute: DashboardBillingIndexRoute,
+  DashboardBillingSalesInvoiceNameRoute: DashboardBillingSalesInvoiceNameRoute,
+  DashboardBillingSalesInvoiceNewRoute: DashboardBillingSalesInvoiceNewRoute,
+  DashboardBillingPendingInvoicesIndexRoute:
+    DashboardBillingPendingInvoicesIndexRoute,
+  DashboardBillingSalesInvoiceIndexRoute:
+    DashboardBillingSalesInvoiceIndexRoute,
+}
+
+const DashboardBillingRouteRouteWithChildren =
+  DashboardBillingRouteRoute._addFileChildren(
+    DashboardBillingRouteRouteChildren,
+  )
+
 interface DashboardRouteRouteChildren {
+  DashboardBillingRouteRoute: typeof DashboardBillingRouteRouteWithChildren
   DashboardOverviewRoute: typeof DashboardOverviewRoute
   DashboardBrokerNameRoute: typeof DashboardBrokerNameRoute
   DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
@@ -1215,6 +1355,7 @@ interface DashboardRouteRouteChildren {
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardBillingRouteRoute: DashboardBillingRouteRouteWithChildren,
   DashboardOverviewRoute: DashboardOverviewRoute,
   DashboardBrokerNameRoute: DashboardBrokerNameRoute,
   DashboardBrokerNewRoute: DashboardBrokerNewRoute,
