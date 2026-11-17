@@ -79,7 +79,7 @@ export function register${className}Methods(
   registry: MethodRegistry,
 ): void {
   registry.register(
-    "${slug}.get",
+    "${slug}.metho-dname",
     async (ctx) => {
       const name = getRequiredName(ctx.args.name);
       const app = await getNodra();
@@ -87,137 +87,6 @@ export function register${className}Methods(
       const doc = await app.orm.getDoc("${doctypeName}", name);
 
       return serialise(doc);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "${slug}.list",
-    async (ctx) => {
-      const app = await getNodra();
-      const args = ctx.args;
-
-      const requestedLimit = Number(args.limit);
-      const requestedOffset = Number(args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 20;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      const fields = Array.isArray(args.fields)
-        ? args.fields.filter(
-            (field): field is string =>
-              typeof field === "string",
-          )
-        : undefined;
-
-      let filters: Filters | undefined;
-
-      if (args.filters !== undefined) {
-        if (!isRecord(args.filters)) {
-          throw new Error("${doctypeName} filters must be an object");
-        }
-
-        // The cast bridges the generic request payload and Nodra's
-        // Filters type. Validate supported filter operators and fields
-        // before passing client-provided filters to the ORM.
-        filters = args.filters as Filters;
-      }
-
-      const options: ListOptions = {
-        limit,
-        offset,
-        ...(fields ? { fields } : {}),
-        ...(filters ? { filters } : {}),
-        ...(typeof args.orderBy === "string"
-          ? { orderBy: args.orderBy }
-          : {}),
-      };
-
-      const [docs, totalCount] = await Promise.all([
-        app.orm.getList("${doctypeName}", options),
-        app.orm.getCount("${doctypeName}", filters),
-      ]);
-
-      return {
-        data: docs.map((doc) => serialise(doc)),
-        meta: {
-          total_count: totalCount,
-          limit,
-          offset,
-        },
-      };
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "${slug}.create",
-    async (ctx) => {
-      const data: unknown = ctx.args.data;
-
-      if (!isRecord(data)) {
-        throw new Error("${doctypeName} data must be an object");
-      }
-
-      const app = await getNodra();
-      const meta = app.registry.get("${doctypeName}");
-      const doc = new ${className}(
-        meta,
-        data,
-      );
-
-      const inserted = await app.orm.insert(doc);
-
-      return serialise(inserted);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "${slug}.update",
-    async (ctx) => {
-      const name = getRequiredName(ctx.args.name);
-      const data: unknown = ctx.args.data;
-
-      if (!isRecord(data)) {
-        throw new Error("${doctypeName} data must be an object");
-      }
-
-      const app = await getNodra();
-      const meta = app.registry.get("${doctypeName}");
-
-      // Load the current document using the ORM.
-      const existing = await app.orm.getDoc("${doctypeName}", name);
-
-      // Do not assume the Document has a data property.
-      // Read existing values using the Document API supported by Nodra.
-      const doc = new ${className}(meta, { name });
-
-      for (const [key, value] of Object.entries(data)) {
-        doc.set(key, value);
-      }
-
-      const updated = await app.orm.update(doc);
-
-      return serialise(updated);
-    },
-    { requireAuth: true },
-  );
-
-  registry.register(
-    "${slug}.delete",
-    async (ctx) => {
-      const name = getRequiredName(ctx.args.name);
-      const app = await getNodra();
-
-      await app.orm.deleteDoc("${doctypeName}", name);
-
-      return { message: "ok" as const };
     },
     { requireAuth: true },
   );
