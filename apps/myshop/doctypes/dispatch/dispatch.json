@@ -108,6 +108,16 @@
       "precision": 3
     },
     {
+      "fieldname": "billing_address",
+      "fieldtype": "SmallText",
+      "label": "Billing Address"
+    },
+    {
+      "fieldname": "shipping_address",
+      "fieldtype": "SmallText",
+      "label": "Shipping Address"
+    },
+    {
       "fieldname": "remarks",
       "fieldtype": "SmallText",
       "label": "Remarks"
