@@ -3,7 +3,7 @@
   "module": "App",
   "naming_series": "DPYY#####",
   "naming_rule": "series",
-  "is_submittable": false,
+  "is_submittable": true,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
@@ -203,11 +203,19 @@
       "read": true,
       "write": true,
       "create": true,
-      "delete": false,
-      "submit": false,
-      "cancel": false,
-      "amend": false,
+      "delete": true,
+      "submit": true,
+      "cancel": true,
+      "amend": true,
       "if_owner": false
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
     }
   ]
 }

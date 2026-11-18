@@ -209,14 +209,14 @@ export function createColumns(
             ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
             : status === "Cancelled"
               ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-              : "bg-muted text-muted-foreground";
+              : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400";
 
         const dotStyles =
           status === "Confirmed"
             ? "bg-emerald-500"
             : status === "Cancelled"
               ? "bg-red-500"
-              : "bg-muted-foreground";
+              : "bg-amber-500";
 
         return (
           <span

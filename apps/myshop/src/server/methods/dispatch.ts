@@ -1,9 +1,14 @@
 /**
  * Nodra methods for the "Dispatch" doctype.
  *
- * Returns SaleBook entries pending dispatch.
- * A SaleBook entry is excluded once a Dispatch record
- * has been created against it.
+ * Dispatch Book:
+ *   - Uses SaleBook as the source of sale and lot information.
+ *   - Uses Dispatch as the source of dispatch information and status.
+ *
+ * Status mapping:
+ *   - No Dispatch / Draft (docstatus 0) = Pending
+ *   - Confirmed (docstatus 51)         = Confirmed
+ *   - Cancelled (docstatus 98)         = Cancelled
  */
 
 import type { MethodRegistry } from "nodra";
@@ -12,9 +17,61 @@ import { serialise } from "../http";
 
 type DocumentData = Record<string, unknown>;
 
+type DispatchStatus = "Pending" | "Confirmed" | "Cancelled";
+
 function toNumber(value: unknown): number {
   const number = Number(value ?? 0);
   return Number.isFinite(number) ? number : 0;
+}
+
+function getDocStatus(document: DocumentData): number {
+  return Number(document.docstatus ?? 0);
+}
+
+function getDispatchStatus(
+  dispatch: DocumentData,
+): "Draft" | "Confirmed" | "Cancelled" {
+  const docstatus = Number(dispatch.docstatus);
+
+  if (docstatus === 51) return "Confirmed";
+  if (docstatus === 98) return "Cancelled";
+
+  return "Draft";
+}
+
+/**
+ * Select the most relevant Dispatch for a SaleBook.
+ *
+ * A non-cancelled Dispatch always takes priority over
+ * a cancelled Dispatch for the same SaleBook.
+ */
+function buildDispatchMap(dispatches: unknown[]): Map<string, DocumentData> {
+  const map = new Map<string, DocumentData>();
+
+  for (const document of dispatches) {
+    const data = serialise(document) as DocumentData;
+    const saleBookName = String(data.sale_book ?? "").trim();
+
+    if (!saleBookName) continue;
+
+    const existing = map.get(saleBookName);
+
+    if (!existing) {
+      map.set(saleBookName, data);
+      continue;
+    }
+
+    const existingCancelled = getDocStatus(existing) === 98;
+    const currentCancelled = getDocStatus(data) === 98;
+
+    // Prefer an active Draft or Confirmed Dispatch
+    // over an older Cancelled Dispatch.
+    if (existingCancelled && !currentCancelled) {
+      map.set(saleBookName, data);
+    }
+  }
+
+  return map;
 }
 
 function getTitleMap(documents: unknown[]): Map<string, string> {
@@ -32,127 +89,99 @@ function getTitleMap(documents: unknown[]): Map<string, string> {
   return map;
 }
 
+function buildLotMap(documents: unknown[]): Map<string, DocumentData> {
+  const map = new Map<string, DocumentData>();
+
+  for (const document of documents) {
+    const data = serialise(document) as DocumentData;
+    const name = String(data.name ?? "");
+
+    if (name) {
+      map.set(name, data);
+    }
+  }
+
+  return map;
+}
+
+function getPagination(ctx: { args: Record<string, unknown> }): {
+  limit: number;
+  offset: number;
+} {
+  const requestedLimit = Number(ctx.args.limit);
+  const requestedOffset = Number(ctx.args.offset);
+
+  return {
+    limit: Number.isFinite(requestedLimit)
+      ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
+      : 100,
+
+    offset: Number.isFinite(requestedOffset)
+      ? Math.max(0, Math.trunc(requestedOffset))
+      : 0,
+  };
+}
+
 export function registerDispatchMethods(registry: MethodRegistry): void {
+  // --------------------------------------------------
+  // Pending Dispatch List
+  //
+  // Returns SaleBooks that do not have an active
+  // Dispatch record.
+  //
+  // Draft and Confirmed Dispatches are considered
+  // already created. Cancelled Dispatches do not
+  // permanently block a SaleBook from being dispatched.
+  // --------------------------------------------------
+
   registry.register(
     "dispatch.get_pending_list",
     async (ctx) => {
       const app = await getNodra();
+      const { limit, offset } = getPagination(ctx);
 
-      // Pagination
-      const requestedLimit = Number(ctx.args.limit);
-      const requestedOffset = Number(ctx.args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 100;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      // Fetch required documents
       const [saleBooks, dispatches, parties, brokers, transporters, lots] =
         await Promise.all([
-          app.orm.getList("SaleBook", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Dispatch", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Party", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Broker", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Transporter", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Lots", {
-            limit: 1000,
-            offset: 0,
-          }),
+          app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
+          app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
+          app.orm.getList("Party", { limit: 1000, offset: 0 }),
+          app.orm.getList("Broker", { limit: 1000, offset: 0 }),
+          app.orm.getList("Transporter", { limit: 1000, offset: 0 }),
+          app.orm.getList("Lots", { limit: 1000, offset: 0 }),
         ]);
 
-      // --------------------------------------------------
-      // Identify SaleBooks already dispatched
-      // --------------------------------------------------
-
-      const dispatchedSaleBooks = new Set<string>();
-
-      for (const dispatch of dispatches) {
-        const data = serialise(dispatch) as DocumentData;
-        const saleBookName = String(data.sale_book ?? "");
-
-        if (saleBookName) {
-          dispatchedSaleBooks.add(saleBookName);
-        }
-      }
-
-      // --------------------------------------------------
-      // Create lookup maps
-      // --------------------------------------------------
+      const dispatchMap = buildDispatchMap(dispatches);
 
       const partyMap = getTitleMap(parties);
       const brokerMap = getTitleMap(brokers);
       const transporterMap = getTitleMap(transporters);
+      const lotMap = buildLotMap(lots);
 
-      // Lot lookup by document name
-      const lotMap = new Map<string, DocumentData>();
-
-      for (const lot of lots) {
-        const data = serialise(lot) as DocumentData;
-        const lotName = String(data.name ?? "");
-
-        if (lotName) {
-          lotMap.set(lotName, data);
-        }
-      }
-
-      // --------------------------------------------------
-      // Filter pending SaleBooks
-      // --------------------------------------------------
-
+      // Only active Dispatch records block a SaleBook.
       const pendingSaleBooks = saleBooks
-        .map((saleBook) => serialise(saleBook) as DocumentData)
+        .map((document) => serialise(document) as DocumentData)
         .filter((saleBook) => {
           const name = String(saleBook.name ?? "");
+          if (!name) return false;
 
-          return name && !dispatchedSaleBooks.has(name);
+          const dispatch = dispatchMap.get(name);
+
+          return !dispatch || getDocStatus(dispatch) === 98;
         });
 
       const totalCount = pendingSaleBooks.length;
-
-      // Pagination
       const paginatedSaleBooks = pendingSaleBooks.slice(offset, offset + limit);
-
-      // --------------------------------------------------
-      // Prepare response
-      // --------------------------------------------------
 
       const documents = paginatedSaleBooks.map((data) => {
         const name = String(data.name ?? "");
 
-        // Linked Lot
         const lotName = String(data.lot ?? "");
         const lot = lotMap.get(lotName);
 
-        // Linked master data
         const party = String(data.party ?? "");
         const broker = String(data.broker ?? "");
         const transporter = String(data.transporter ?? "");
 
-        // Quantities
         const bags = Math.trunc(toNumber(data.bags));
         const totalKgs = toNumber(data.total_kgs);
 
@@ -160,29 +189,27 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
           ...data,
 
           name,
+          sale_book: name,
 
-          // Lot information
           lot: lotName || null,
           lot_no: lot?.lot_no ?? null,
 
-          // Party information
           party: party || null,
           party_name: party ? (partyMap.get(party) ?? party) : null,
 
-          // Broker information
           broker: broker || null,
           broker_name: broker ? (brokerMap.get(broker) ?? broker) : null,
 
-          // Transporter information
           transporter: transporter || null,
           transporter_name: transporter
             ? (transporterMap.get(transporter) ?? transporter)
             : null,
 
-          // Quantity information
           bags,
           total_bags: bags,
           total_kgs: totalKgs,
+
+          workflow_state: "Pending" as DispatchStatus,
         };
       });
 
@@ -196,160 +223,128 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
     { requireAuth: true },
   );
 
-  //--All
+  // --------------------------------------------------
+  // Complete Dispatch Book
+  //
+  // Returns every SaleBook with its associated
+  // Dispatch record and correct Dispatch status.
+  // --------------------------------------------------
+
   registry.register(
     "dispatch.get_list",
     async (ctx) => {
       const app = await getNodra();
+      const { limit, offset } = getPagination(ctx);
 
-      // Pagination
-      const requestedLimit = Number(ctx.args.limit);
-      const requestedOffset = Number(ctx.args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 100;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      // Fetch required documents
       const [saleBooks, dispatches, parties, brokers, transporters, lots] =
         await Promise.all([
-          app.orm.getList("SaleBook", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Dispatch", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Party", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Broker", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Transporter", {
-            limit: 1000,
-            offset: 0,
-          }),
-
-          app.orm.getList("Lots", {
-            limit: 1000,
-            offset: 0,
-          }),
+          app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
+          app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
+          app.orm.getList("Party", { limit: 1000, offset: 0 }),
+          app.orm.getList("Broker", { limit: 1000, offset: 0 }),
+          app.orm.getList("Transporter", { limit: 1000, offset: 0 }),
+          app.orm.getList("Lots", { limit: 1000, offset: 0 }),
         ]);
 
-      // --------------------------------------------------
-      // Build lookup maps
-      // --------------------------------------------------
+      const dispatchMap = buildDispatchMap(dispatches);
 
-      // Dispatch by SaleBook
-      const dispatchMap = new Map<string, DocumentData>();
-
-      for (const dispatch of dispatches) {
-        const data = serialise(dispatch) as DocumentData;
-        const saleBookName = String(data.sale_book ?? "");
-
-        if (saleBookName) {
-          dispatchMap.set(saleBookName, data);
-        }
-      }
-
-      // Lot by document name
-      const lotMap = new Map<string, DocumentData>();
-
-      for (const lot of lots) {
-        const data = serialise(lot) as DocumentData;
-        const lotName = String(data.name ?? "");
-
-        if (lotName) {
-          lotMap.set(lotName, data);
-        }
-      }
-
-      // Master data maps
       const partyMap = getTitleMap(parties);
       const brokerMap = getTitleMap(brokers);
       const transporterMap = getTitleMap(transporters);
-
-      // --------------------------------------------------
-      // SaleBook records
-      // --------------------------------------------------
+      const lotMap = buildLotMap(lots);
 
       const allSaleBooks = saleBooks.map(
-        (saleBook) => serialise(saleBook) as DocumentData,
+        (document) => serialise(document) as DocumentData,
       );
 
-      const totalCount = allSaleBooks.length;
+      // Only include SaleBooks that have a non-cancelled Dispatch.
+      const dispatchedSaleBooks = allSaleBooks.filter((data) => {
+        const saleBookName = String(data.name ?? "");
+        const dispatch = dispatchMap.get(saleBookName);
 
-      // Pagination
-      const paginatedSaleBooks = allSaleBooks.slice(offset, offset + limit);
+        if (!dispatch) return false;
 
-      // --------------------------------------------------
-      // Prepare response
-      // --------------------------------------------------
+        const docstatus = Number(dispatch.docstatus ?? 0);
+
+        // Cancelled Dispatch records should not appear in Dispatch Book.
+        return docstatus !== 98;
+      });
+
+      const totalCount = dispatchedSaleBooks.length;
+
+      // Apply pagination after filtering.
+      const paginatedSaleBooks = dispatchedSaleBooks.slice(
+        offset,
+        offset + limit,
+      );
 
       const documents = paginatedSaleBooks.map((data) => {
-        const name = String(data.name ?? "");
+        const saleBookName = String(data.name ?? "");
 
-        // Linked documents
-        const dispatch = dispatchMap.get(name);
+        const dispatch = dispatchMap.get(saleBookName)!;
 
+        // Lot information comes from SaleBook.
         const lotName = String(data.lot ?? "");
         const lot = lotMap.get(lotName);
 
-        // Party and transporter
-        const party = String(dispatch?.party ?? data.party ?? "");
-        const transporter = String(dispatch?.transporter ?? "");
+        // Dispatch-related links come from Dispatch.
+        const party = String(dispatch.party ?? "");
+        const transporter = String(dispatch.transporter ?? "");
 
-        // Broker
+        // Broker and sale quantities come from SaleBook.
         const broker = String(data.broker ?? "");
-
-        // Sale quantities
         const soldBags = Math.trunc(toNumber(data.sold_bags));
         const soldQuantity = toNumber(data.sold_quantity);
         const rate = toNumber(data.rate);
 
+        const status = getDispatchStatus(dispatch);
+
         return {
+          // Preserve SaleBook information.
           ...data,
 
-          name: dispatch?.name ?? null,
-          sale_book: name,
+          // Keep SaleBook and Dispatch identities separate.
+          name: dispatch.name ?? null,
+          sale_book: saleBookName,
 
-          // Lot information
+          // Lot information.
           lot: lotName || null,
           lot_no: lot?.lot_no ?? null,
 
-          // Party information
+          // Buyer information from Dispatch.
           party: party || null,
           party_name: party ? (partyMap.get(party) ?? party) : null,
 
-          // Broker information
+          // Broker information from SaleBook.
           broker: broker || null,
           broker_name: broker ? (brokerMap.get(broker) ?? broker) : null,
 
-          // Dispatch information
-          dispatch: dispatch ?? null,
-          dispatch_name: dispatch?.name ?? null,
-          dispatch_date: dispatch?.dispatch_date ?? null,
+          // Dispatch information.
+          dispatch,
+          dispatch_name: dispatch.name ?? null,
+          dispatch_date: dispatch.dispatch_date ?? null,
+          received_date: dispatch.received_date ?? null,
 
+          billing_address: dispatch.billing_address ?? null,
+          shipping_address: dispatch.shipping_address ?? null,
+
+          payment_type: dispatch.payment_type ?? null,
+          discount_percentage: dispatch.discount_percentage ?? null,
+
+          lr_number: dispatch.lr_number ?? null,
+          challan_number: dispatch.challan_number ?? null,
+          remarks: dispatch.remarks ?? null,
+
+          workflow_state: status,
+          has_dispatch: true,
+
+          // Transport information from Dispatch.
           transporter: transporter || null,
           transporter_name: transporter
             ? (transporterMap.get(transporter) ?? transporter)
             : null,
 
-          has_dispatch: Boolean(dispatch),
-
-          // Sale information
+          // Sale information.
           sold_bags: soldBags,
           sold_quantity: soldQuantity,
           rate,
@@ -367,20 +362,27 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
     { requireAuth: true },
   );
 
-  // Find an existing Dispatch document using its linked SaleBook.
+  // --------------------------------------------------
+  // Get Dispatch by SaleBook
+  //
+  // Returns an existing Draft or Confirmed Dispatch.
+  // Cancelled records are ignored so a new Dispatch
+  // can be created for the same SaleBook.
+  // --------------------------------------------------
+
   registry.register(
     "dispatch.get_by_sale_book",
     async (ctx) => {
       const app = await getNodra();
 
-      const saleBookName = String(ctx.args.sale_book ?? "");
+      const saleBookName = String(ctx.args.sale_book ?? "").trim();
 
       if (!saleBookName) {
         throw new Error("Sale Book is required.");
       }
 
       const entries = await app.orm.getList("Dispatch", {
-        limit: 10,
+        limit: 100,
         offset: 0,
         filters: {
           sale_book: saleBookName,
@@ -389,11 +391,11 @@ export function registerDispatchMethods(registry: MethodRegistry): void {
 
       const documents = entries
         .map((entry) => serialise(entry) as DocumentData)
-        .filter((entry) => Number(entry.docstatus) !== 98);
+        .filter((entry) => getDocStatus(entry) !== 98);
 
       if (documents.length > 1) {
         throw new Error(
-          `Multiple Dispatch entries exist for SaleBook "${saleBookName}". Please resolve the duplicates.`,
+          `Multiple active Dispatch entries exist for SaleBook "${saleBookName}". Please resolve the duplicates.`,
         );
       }
 
