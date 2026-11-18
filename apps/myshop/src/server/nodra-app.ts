@@ -1,123 +1,37 @@
-/**
- * Nodra application bootstrap for TanStack Start.
- *
- * This replaces the original Fastify-based `Nodra.boot()`, which did two
- * things: (1) connect the database and build the ORM/registry, and (2) spin
- * up a Fastify HTTP server with routes attached to it. TanStack Start *is*
- * the HTTP server now (Vite + Nitro), and routes live under
- * `src/routes/api/**`, so this file only keeps responsibility (1).
- *
- * Import `getNodra()` from any server route to get a lazily-initialized,
- * request-shared singleton (db pool + registry + ORM).
- */
-import { createRequire } from "node:module";
-import path from "node:path";
-import { Database } from "nodra/database/connection";
-import { DocTypeRegistry } from "nodra/core/doctype/registry";
-import { loadDocTypesFromDirectory } from "nodra/core/doctype/loader";
-import { ORM } from "nodra/orm/crud";
-import { createLogger, type Logger } from "nodra/utils/logger";
-import { loadConfig, type NodraConfig } from "nodra/core/config";
-import { AuthService } from "nodra/auth/auth";
-import { ORMAuthUserRepository } from "nodra/auth/user-repository";
-import { DefaultMethodRegistry, type MethodRegistry } from "nodra/api/method";
-import { registerAppMethods } from "./methods";
-import { RedisSessionStore, SessionManager } from "nodra/auth/session";
+import dotenv from "dotenv";
+import { resolve } from "node:path";
+import { createGetNodra } from "nodra/app";
+import { loadConfig } from "nodra/core/config";
 
-const require = createRequire(import.meta.url);
+dotenv.config({
+  path: resolve(process.cwd(), "apps/myshop/.env"),
+});
+// Discover application DocType controllers.
+const controllerModules = import.meta.glob<Record<string, unknown>>(
+  "../../doctypes/*/*.ts",
+  { eager: true },
+);
 
-/**
- * Absolute path to `packages/nodra/doctypes` regardless of how `nodra` was
- * resolved (workspace symlink today, hoisted/published package later).
- * `require.resolve` always works here, unlike `import.meta.resolve`, which
- * needs a newer Node than this project otherwise requires.
- */
-function frameworkDoctypesDir(): string {
-  const nodraPackageJson = require.resolve("nodra/package.json");
-  return path.join(path.dirname(nodraPackageJson), "doctypes");
-}
+// Discover application methods.
+const methodModules = import.meta.glob<Record<string, unknown>>(
+  "./methods/*.ts",
+  { eager: true },
+);
 
-export class NodraApp {
-  readonly config: NodraConfig;
-  readonly db: Database;
-  readonly registry: DocTypeRegistry;
-  readonly orm: ORM;
-  readonly logger: Logger;
-  readonly methods: MethodRegistry;
-  readonly sessions: SessionManager;
-  readonly auth: AuthService;
+// Discover application workflow hooks.
+const workflowHookModules = import.meta.glob<Record<string, unknown>>(
+  "./hooks/*.ts",
+  { eager: true },
+);
 
-  private constructor(config: NodraConfig) {
-    this.config = config;
-    this.db = new Database(config.db);
-    this.registry = new DocTypeRegistry();
-    this.orm = new ORM(this.db, this.registry);
-    this.logger = createLogger(config.logging);
-    this.methods = new DefaultMethodRegistry();
+// Config
+const config = await loadConfig(process.cwd());
 
-    const sessionStore = new RedisSessionStore(
-      process.env.REDIS_URL ?? "redis://localhost:6380",
-      "myapp",
-    );
-    this.sessions = new SessionManager(sessionStore);
-
-    const users = new ORMAuthUserRepository(this.orm);
-    this.auth = new AuthService(users, this.sessions);
-  }
-
-  static async create(): Promise<NodraApp> {
-    const config = await loadConfig(process.cwd());
-    const app = new NodraApp(config);
-
-    await app.db.connect();
-    app.logger.info("Database connected");
-
-    const frameworkDir = frameworkDoctypesDir();
-    const appDir = path.join(process.cwd(), "doctypes");
-
-    console.log("Framework DocTypes directory:", frameworkDir);
-    console.log("App DocTypes directory:", appDir);
-
-    // Doctype metadata: framework built-ins (User, Role, ...) from the
-    // `nodra` package, then this app's own doctypes — in that order, so
-    // app doctypes can safely `Link` to framework ones. Both directories
-    // are optional; a missing one just yields an empty array.
-    const [frameworkDoctypes, appDoctypes] = await Promise.all([
-      loadDocTypesFromDirectory(frameworkDoctypesDir()),
-      loadDocTypesFromDirectory(path.join(process.cwd(), "doctypes")),
-    ]);
-
-    for (const doctype of [...frameworkDoctypes, ...appDoctypes]) {
-      app.registry.register(doctype);
-    }
-    app.logger.info(
-      `Loaded ${frameworkDoctypes.length} framework doctype(s), ${appDoctypes.length} app doctype(s)`,
-    );
-
-    registerAppMethods(app.methods);
-
-    return app;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Process-wide singleton
-// ---------------------------------------------------------------------------
-//
-// TanStack Start's Nitro/Node server keeps one long-lived process per
-// deployment target (unlike edge/serverless runtimes that cold-start per
-// request). A module-scoped promise is enough to make sure `db.connect()`
-// only runs once and every server route awaits the same instance.
-
-let instance: Promise<NodraApp> | null = null;
-
-export function getNodra(): Promise<NodraApp> {
-  if (!instance) {
-    instance = NodraApp.create().catch((err) => {
-      // Allow a retry on the next request if boot failed (e.g. DB was down).
-      instance = null;
-      throw err;
-    });
-  }
-  return instance;
-}
+//--Nodra App
+export const getNodra = createGetNodra({
+  config,
+  controllerModules,
+  methodModules,
+  workflowHookModules,
+  sessionKeyPrefix: process.env.SESSION_PREFIX ?? "nodra",
+});

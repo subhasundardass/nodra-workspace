@@ -1,0 +1,249 @@
+{
+  "name": "Party",
+  "module": "App",
+  "description": "Central master for companies and individuals involved in the tea business",
+  "naming_series": "PTYY#####",
+  "naming_rule": "series",
+  "title_field": "title",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "title",
+    "phone",
+    "email",
+    "gstin",
+    "pan"
+  ],
+  "sort_field": "title",
+  "sort_order": "asc",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Party Name",
+      "description": "Name of the company or individual.",
+      "reqd": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "brokers",
+      "fieldtype": "Table",
+      "label": "Attached Brokers",
+      "options": "Party Broker"
+    },
+    {
+      "fieldname": "party_type",
+      "fieldtype": "Select",
+      "label": "Party Type",
+      "description": "Specifies whether the party is a company or an individual.",
+      "options": [
+        "Company",
+        "Individual"
+      ],
+      "default": "Company",
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "phone",
+      "fieldtype": "Data",
+      "label": "Phone",
+      "description": "Primary contact number.",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "description": "Primary business or contact email address."
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "SmallText",
+      "label": "Address",
+      "description": "Business or residential address."
+    },
+    {
+      "fieldname": "gstin",
+      "fieldtype": "Data",
+      "label": "GSTIN",
+      "reqd": true,
+      "description": "GST registration number, if applicable."
+    },
+    {
+      "fieldname": "pan",
+      "fieldtype": "Data",
+      "label": "PAN",
+      "reqd": true,
+      "description": "Permanent Account Number, if applicable."
+    },
+    {
+      "fieldname": "state",
+      "fieldtype": "Link",
+      "label": "State",
+      "options": "State",
+      "reqd": true
+    },
+    {
+      "fieldname": "city",
+      "fieldtype": "Data",
+      "label": "City",
+      "reqd": true
+    },
+    {
+      "fieldname": "pincode",
+      "fieldtype": "Data",
+      "label": "PIN Code",
+      "max_length": 6
+    },
+    {
+      "fieldname": "country",
+      "fieldtype": "Data",
+      "label": "Country",
+      "default": "India"
+    },
+    {
+      "fieldname": "notes",
+      "fieldtype": "SmallText",
+      "label": "Notes",
+      "description": "Additional information about the party."
+    },
+    {
+      "fieldname": "bank_name",
+      "fieldtype": "Data",
+      "label": "Bank Name",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_holder_name",
+      "fieldtype": "Data",
+      "label": "Account Holder Name",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "account_number",
+      "fieldtype": "Data",
+      "label": "Account Number"
+    },
+    {
+      "fieldname": "ifsc",
+      "fieldtype": "Data",
+      "label": "IFSC Code"
+    },
+    {
+      "fieldname": "branch",
+      "fieldtype": "Data",
+      "label": "Branch"
+    },
+    {
+      "fieldname": "account_type",
+      "fieldtype": "Data",
+      "label": "Account Type"
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Active",
+      "description": "Whether this party can be selected in new transactions.",
+      "default": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Select",
+      "label": "Workflow State",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm",
+        "to": "Confirmed",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    },
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "submit": false,
+      "cancel": false,
+      "amend": false,
+      "if_owner": false
+    }
+  ]
+}

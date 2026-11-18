@@ -1,0 +1,71 @@
+{
+  "name": "Factory",
+  "module": "App",
+  "naming_rule": "field",
+  "naming_field": "factory_name",
+  "is_submittable": false,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "factory_name",
+  "search_fields": [
+    "factory_name",
+    "factory_code"
+  ],
+  "fields": [
+    {
+      "fieldname": "factory_name",
+      "fieldtype": "Data",
+      "label": "Factory Name",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "factory_code",
+      "fieldtype": "Data",
+      "label": "Factory Code",
+      "reqd": false,
+      "unique": true,
+      "max_length": 60,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "SmallText",
+      "label": "Address",
+      "reqd": false
+    },
+    {
+      "fieldname": "contact_person",
+      "fieldtype": "Data",
+      "label": "Contact Person",
+      "reqd": false
+    },
+    {
+      "fieldname": "phone",
+      "fieldtype": "Data",
+      "label": "Phone",
+      "reqd": false,
+      "max_length": 30
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

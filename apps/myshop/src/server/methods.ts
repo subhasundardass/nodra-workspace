@@ -9,7 +9,7 @@ import {
   type ResolvedIdentity,
 } from "nodra/api/method";
 import { AuthenticationError, extractSessionToken } from "nodra/auth";
-
+import { runWithSession } from "nodra/orm/crud";
 import { getNodra } from "./nodra-app";
 
 async function resolveMethodIdentity(
@@ -17,36 +17,54 @@ async function resolveMethodIdentity(
 ): Promise<ResolvedIdentity | null> {
   const token = extractSessionToken(ctx.request.headers, "session_token");
 
-  // No session cookie/token means anonymous request.
   if (!token) {
+    console.log("[auth failure]", {
+      method: ctx.method,
+      reason: "No session token",
+    });
     return null;
   }
+
+  if (!token) return null;
 
   const app = await getNodra();
-
-  // Resolve the opaque session from Redis.
   const session = await app.sessions.resolve(token);
 
-  // Invalid or expired session.
   if (!session) {
+    console.log("[auth failure]", {
+      method: ctx.method,
+      reason: "Session not found",
+    });
     return null;
   }
 
-  // Only User sessions can authenticate application methods.
   if (session.subject.type !== "User") {
+    console.log("[auth failure]", {
+      method: ctx.method,
+      reason: "Unexpected session subject",
+      subjectType: session.subject.type,
+    });
     return null;
   }
 
-  // Session subject ID is the User document name.
-  const user = await app.orm.getDoc("User", session.subject.id);
+  if (!session) return null;
+  if (session.subject.type !== "User") return null;
 
-  // Disabled user cannot authenticate.
+  const user = await app.asSystem(() =>
+    app.orm.getDoc("User", session.subject.id),
+  );
+
   if (!user.get("enabled")) {
+    console.log("[auth failure]", {
+      method: ctx.method,
+      reason: "User disabled",
+    });
     return null;
   }
+
+  if (!user.get("enabled")) return null;
 
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
-
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
 
   return {
@@ -58,6 +76,24 @@ async function resolveMethodIdentity(
     },
     session,
   };
+}
+
+/**
+ * Auto-load every `./methods/*.ts` file (created by `new:method <Doctype>`).
+ * Any exported function named `register<Something>Methods` is called once.
+ */
+const methodModules = import.meta.glob("./methods/*.ts", {
+  eager: true,
+}) as Record<string, Record<string, unknown>>;
+
+function registerGeneratedMethods(registry: MethodRegistry): void {
+  for (const mod of Object.values(methodModules)) {
+    for (const [name, fn] of Object.entries(mod)) {
+      if (/^register\w+Methods$/.test(name) && typeof fn === "function") {
+        (fn as (r: MethodRegistry) => void)(registry);
+      }
+    }
+  }
 }
 
 export function registerAppMethods(registry: MethodRegistry): void {
@@ -76,123 +112,24 @@ export function registerAppMethods(registry: MethodRegistry): void {
    */
   registry.use(authenticate(resolveMethodIdentity));
 
-  // ---------------------------------------------------------------------------
-  // Ping
-  // ---------------------------------------------------------------------------
+  // Establish ORM session context for every authenticated method.
+  // This wraps access control, per-method middleware, and the handler.
+  registry.use((ctx, next) => {
+    const { user, session } = ctx;
 
-  registry.register(
-    "ping",
-    () => ({
-      pong: true,
-      time: new Date().toISOString(),
-    }),
-    {
-      requireAuth: false,
-    },
-  );
+    if (!user || !session || session.subject.type !== "User") {
+      return next();
+    }
 
-  // ---------------------------------------------------------------------------
-  // Debug
-  // ---------------------------------------------------------------------------
+    return runWithSession(
+      {
+        user: session.subject.id,
+        roles: user.roles,
+      },
+      () => next(),
+    );
+  });
 
-  registry.register(
-    "debug.doctypes",
-    async () => {
-      const app = await getNodra();
-
-      return {
-        doctypes: app.registry.list(),
-      };
-    },
-    {
-      requireAuth: false,
-    },
-  );
-
-  // ---------------------------------------------------------------------------
-  // Login
-  // ---------------------------------------------------------------------------
-
-  registry.register(
-    "auth.login",
-    async (ctx) => {
-      const email = String(ctx.args.email ?? "").trim();
-
-      const password = String(ctx.args.password ?? "");
-
-      if (!email || !password) {
-        throw new AuthenticationError("Email and password are required");
-      }
-
-      const app = await getNodra();
-
-      const result = await app.auth.login({
-        username: email,
-        password,
-      });
-
-      // The HTTP transport reads this value and
-      // converts it into an HttpOnly cookie.
-      ctx.state.set("sessionToken", result.token);
-
-      return {
-        user: result.user,
-        expiresAt: result.expiresAt,
-      };
-    },
-    {
-      requireAuth: false,
-    },
-  );
-
-  // ---------------------------------------------------------------------------
-  // Current user
-  // ---------------------------------------------------------------------------
-
-  registry.register(
-    "auth.me",
-    async (ctx) => {
-      return {
-        authenticated: true,
-        user: ctx.user,
-        expiresAt: ctx.session?.expiresAt ?? null,
-      };
-    },
-    {
-      requireAuth: true,
-    },
-  );
-
-  // ---------------------------------------------------------------------------
-  // Logout
-  // ---------------------------------------------------------------------------
-
-  registry.register(
-    "auth.logout",
-    async (ctx) => {
-      if (!ctx.session) {
-        return {
-          success: true,
-        };
-      }
-
-      const app = await getNodra();
-
-      const token = extractSessionToken(ctx.request.headers, "session_token");
-
-      if (token) {
-        await app.auth.logout(token);
-      }
-
-      // Tell the HTTP transport to remove the cookie.
-      ctx.state.set("clearSessionCookie", true);
-
-      return {
-        success: true,
-      };
-    },
-    {
-      requireAuth: true,
-    },
-  );
+  // Doctype methods generated by `new:method` (orders.*, ...).
+  registerGeneratedMethods(registry);
 }

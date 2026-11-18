@@ -1,0 +1,83 @@
+{
+  "name": "SalesInvoiceItem",
+  "module": "App",
+  "description": "Child table containing dispatch and lot details for Sales Invoice",
+  "naming_rule": "field",
+  "is_submittable": false,
+  "is_child": true,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "lot",
+  "search_fields": [
+    "lot",
+    "dispatch",
+    "sale_book"
+  ],
+  "fields": [
+    {
+      "fieldname": "dispatch",
+      "label": "Dispatch",
+      "fieldtype": "Link",
+      "options": "Dispatch",
+      "required": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "sale_book",
+      "label": "Sale Book",
+      "fieldtype": "Link",
+      "options": "SaleBook",
+      "required": true
+    },
+    {
+      "fieldname": "lot",
+      "label": "Lot",
+      "fieldtype": "Link",
+      "options": "Lots",
+      "required": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "mark_brand",
+      "label": "Mark / Brand",
+      "fieldtype": "Data",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "grade",
+      "label": "Grade",
+      "fieldtype": "Data",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "label": "Bags",
+      "fieldtype": "Int",
+      "required": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "kgs",
+      "label": "Kgs",
+      "fieldtype": "Float",
+      "precision": 3,
+      "required": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "rate",
+      "label": "Rate",
+      "fieldtype": "Currency",
+      "required": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "amount",
+      "label": "Amount",
+      "fieldtype": "Currency",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ]
+}

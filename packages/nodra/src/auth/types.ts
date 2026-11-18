@@ -17,6 +17,7 @@ export interface PublicUser {
 export interface LoginInput {
   username: string;
   password: string;
+  ip?: string | null;
 }
 
 export interface LoginResult {
@@ -28,4 +29,10 @@ export interface LoginResult {
 export interface AuthUserRepository {
   findByUsername(username: string): Promise<AuthUser | null>;
   findById(id: string): Promise<AuthUser | null>;
+
+  updateLoginMetadata(
+    id: string,
+    lastLogin: Date,
+    lastIp: string | null,
+  ): Promise<void>;
 }

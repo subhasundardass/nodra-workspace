@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/method/$methodPath")({
           const app = await getNodra();
 
           const body = await request.json().catch(() => ({}));
-          const headers = getRequestHeaders();
+          const headers = request.headers;
 
           const result = await app.methods.execute(params.methodPath, {
             args: body,
@@ -29,13 +29,25 @@ export const Route = createFileRoute("/api/method/$methodPath")({
             state,
           });
 
+          // console.log("[request cookie trace]", {
+          //   method: params.methodPath,
+          //   hasCookieHeader: request.headers.has("cookie"),
+          //   hasSessionCookie: Boolean(
+          //     request.headers
+          //       .get("cookie")
+          //       ?.split(";")
+          //       .some((part) => part.trim().startsWith("session_token=")),
+          //   ),
+          // });
+
           const response = Response.json(result);
 
           // auth.login stores the new session token in method state.
           const sessionToken = state.get("sessionToken");
+          const clearSessionCookie = state.get("clearSessionCookie");
 
           if (typeof sessionToken === "string") {
-            response.headers.set(
+            response.headers.append(
               "Set-Cookie",
               [
                 `session_token=${encodeURIComponent(sessionToken)}`,
@@ -43,6 +55,13 @@ export const Route = createFileRoute("/api/method/$methodPath")({
                 "HttpOnly",
                 "SameSite=Lax",
               ].join("; "),
+            );
+          }
+
+          if (clearSessionCookie === true) {
+            response.headers.append(
+              "Set-Cookie",
+              "session_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
             );
           }
 

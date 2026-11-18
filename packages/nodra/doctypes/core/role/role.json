@@ -9,7 +9,9 @@
   "is_tree": false,
   "is_virtual": false,
   "title_field": "role_name",
-  "search_fields": ["role_name"],
+  "search_fields": [
+    "role_name"
+  ],
   "fields": [
     {
       "fieldname": "role_name",
@@ -52,6 +54,13 @@
   "permissions": [
     {
       "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    },
+    {
+      "role": "Administrator",
       "read": true,
       "write": true,
       "create": true,

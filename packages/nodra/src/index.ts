@@ -156,25 +156,6 @@ export type {
   ExportFormat,
 } from "./reports";
 
-// Views
-// export {
-//   ViewRegistry,
-//   ViewResolver,
-//   ViewService,
-//   createDefaultView,
-// } from "./core/view";
-
-// export type {
-//   ViewDefinition,
-//   ViewType,
-//   ListViewConfig,
-//   FormViewConfig,
-//   FormSection,
-//   DetailViewConfig,
-//   SearchViewConfig,
-//   KanbanViewConfig,
-// } from "./core/view";
-
 // Resource API
 export { ResourceAPI } from "./api/resource";
 
@@ -198,7 +179,7 @@ export {
   DefaultAppRegistry,
   DefaultAppInstaller,
   DependencyResolver,
-} from "./apps";
+} from "./app";
 
 export type {
   AppManifest,
@@ -209,7 +190,7 @@ export type {
   AppInstaller,
   AppRegistry,
   DependencyResolution,
-} from "./apps";
+} from "./app";
 
 // API Methods
 export {

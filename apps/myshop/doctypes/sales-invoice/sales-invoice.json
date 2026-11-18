@@ -1,0 +1,263 @@
+{
+  "name": "SalesInvoice",
+  "module": "App",
+  "description": "Sales invoice generated from confirmed dispatches, grouped by Buyer and Broker",
+  "naming_rule": "series",
+  "naming_series": "INVYY#####",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "name",
+  "search_fields": [
+    "name",
+    "buyer",
+    "broker"
+  ],
+  "fields": [
+    {
+      "fieldname": "buyer",
+      "label": "Buyer",
+      "fieldtype": "Link",
+      "options": "Party",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "broker",
+      "label": "Broker",
+      "fieldtype": "Link",
+      "options": "Broker",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "invoice_date",
+      "label": "Invoice Date",
+      "fieldtype": "Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "billing_address",
+      "label": "Billing Address",
+      "fieldtype": "SmallText",
+      "reqd": true
+    },
+    {
+      "fieldname": "shipping_address",
+      "label": "Shipping Address",
+      "fieldtype": "SmallText",
+      "reqd": true
+    },
+    {
+      "fieldname": "buyer_gstin",
+      "label": "Buyer GSTIN",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "buyer_pan",
+      "label": "Buyer PAN",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "place_of_supply",
+      "label": "Place of Supply",
+      "fieldtype": "Link",
+      "options": "State"
+    },
+    {
+      "fieldname": "gst_type",
+      "label": "GST Type",
+      "fieldtype": "Select",
+      "options": [
+        "Intra-State",
+        "Inter-State"
+      ],
+      "read_only": true
+    },
+    {
+      "fieldname": "items",
+      "label": "Invoice Items",
+      "fieldtype": "Table",
+      "options": "SalesInvoiceItem",
+      "reqd": true
+    },
+    {
+      "fieldname": "total_bags",
+      "label": "Total Bags",
+      "fieldtype": "Int",
+      "read_only": true
+    },
+    {
+      "fieldname": "total_kgs",
+      "label": "Total Kgs",
+      "fieldtype": "Float",
+      "precision": 3,
+      "read_only": true
+    },
+    {
+      "fieldname": "subtotal",
+      "label": "Subtotal",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "gst_rate",
+      "label": "GST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "cgst_rate",
+      "label": "CGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "sgst_rate",
+      "label": "SGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "igst_rate",
+      "label": "IGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "cgst_amount",
+      "label": "CGST Amount",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "sgst_amount",
+      "label": "SGST Amount",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "igst_amount",
+      "label": "IGST Amount",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "total_tax",
+      "label": "Total GST",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "grand_total",
+      "label": "Grand Total",
+      "fieldtype": "Currency",
+      "read_only": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "remarks",
+      "label": "Remarks",
+      "fieldtype": "SmallText"
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Select",
+      "options": [
+        "Draft",
+        "Confirmed",
+        "Cancelled"
+      ],
+      "default": "Draft",
+      "read_only": true,
+      "reqd": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true,
+        "color": "gray"
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51,
+        "color": "green"
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true,
+        "color": "red"
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Confirm",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Draft",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "from": "Confirmed",
+        "action": "Cancel",
+        "to": "Cancelled",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "name": "Lots",
+  "module": "App",
+  "naming_rule": "series",
+  "naming_series": "LFYYFMM###",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "search_fields": [
+    "lot_no",
+    "factory",
+    "original_brand"
+  ],
+  "fields": [
+    {
+      "fieldname": "id",
+      "fieldtype": "Data",
+      "label": "ID",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "factory",
+      "fieldtype": "Link",
+      "label": "Factory",
+      "options": "Factory",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "entry_date",
+      "fieldtype": "Date",
+      "label": "Entry Date",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "arrival_date",
+      "fieldtype": "Date",
+      "label": "Arrival Date",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "lot_no",
+      "fieldtype": "Data",
+      "label": "Lot No",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "grade",
+      "fieldtype": "Link",
+      "label": "Grade",
+      "options": "Grades",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "original_brand",
+      "fieldtype": "Link",
+      "label": "Original Brand",
+      "options": "Brand",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bags",
+      "fieldtype": "Int",
+      "label": "Bags",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "bag_from_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag From Serial No",
+      "reqd": false,
+      "default": 0,
+      "in_list_view": false
+    },
+    {
+      "fieldname": "bag_to_serial_no",
+      "fieldtype": "Int",
+      "label": "Bag To Serial No",
+      "reqd": false,
+      "default": 0,
+      "in_list_view": false
+    },
+    {
+      "fieldname": "warehouse",
+      "fieldtype": "Link",
+      "label": "Warehouse/Godown",
+      "options": "Warehouse",
+      "reqd": false,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "net_kg_per_bag",
+      "fieldtype": "Float",
+      "label": "Net KG Per Bag",
+      "reqd": true,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Data",
+      "label": "Status",
+      "read_only": true,
+      "in_list_view": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Confirm",
+        "from": "Draft",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "action": "Reopen",
+        "from": "Confirmed",
+        "to": "Draft",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Confirmed",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Administrator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "cancel": true
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
+    }
+  ]
+}

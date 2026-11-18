@@ -59,6 +59,18 @@ export class AuthService {
       username: user.username,
     });
 
+    //--Update user Meta Data
+    try {
+      await this.users.updateLoginMetadata(
+        user.id,
+        new Date(),
+        input.ip ?? null,
+      );
+    } catch (error) {
+      // Log the metadata update failure; don't fail the login.
+      console.error("Failed to update login metadata:", error);
+    }
+
     return {
       user: toPublicUser(user),
       token: result.token,

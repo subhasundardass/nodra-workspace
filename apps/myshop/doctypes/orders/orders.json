@@ -1,0 +1,84 @@
+{
+  "name": "Orders",
+  "module": "App",
+  "naming_rule": "field",
+  "naming_field": "title",
+  "is_submittable": true,
+  "is_child": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "title_field": "title",
+  "search_fields": [
+    "title"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": true,
+      "unique": true,
+      "max_length": 140,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "workflow_state",
+      "label": "Workflow State",
+      "fieldtype": "Select",
+      "options": [
+        "Draft",
+        "Pending",
+        "Confirmed"
+      ],
+      "default": "Draft",
+      "read_only": true
+    }
+  ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Pending",
+        "doc_status": 0
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 1,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "from": "Draft",
+        "action": "Submit",
+        "to": "Pending",
+        "roles": [
+          "System Manager"
+        ]
+      },
+      {
+        "from": "Pending",
+        "action": "Approve",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager"
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

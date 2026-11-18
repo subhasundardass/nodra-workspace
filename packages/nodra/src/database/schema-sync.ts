@@ -97,7 +97,11 @@ export class SchemaSync {
    * injectStandardFields(), so doctype.fields is the single source
    * of truth for all database-backed columns.
    */
-  generateCreateTable(doctype: DocTypeDefinition): string {
+  generateCreateTable(doctype: DocTypeDefinition): string | null {
+    if (doctype.is_virtual) {
+      return null;
+    }
+
     const tableName = toTableName(doctype.name);
     const columnDefs: string[] = [];
 
@@ -126,6 +130,10 @@ export class SchemaSync {
    * Generate CREATE INDEX IF NOT EXISTS statements for a DocType.
    */
   generateIndexes(doctype: DocTypeDefinition): string[] {
+    if (doctype.is_virtual) {
+      return [];
+    }
+
     const tableName = toTableName(doctype.name);
     const indexes: string[] = [];
 
@@ -171,8 +179,11 @@ export class SchemaSync {
     doctype: DocTypeDefinition,
     existingColumns: ColumnInfo[],
   ): string[] {
-    const tableName = toTableName(doctype.name);
+    if (doctype.is_virtual) {
+      return [];
+    }
 
+    const tableName = toTableName(doctype.name);
     const existingColumnNames = new Set(
       existingColumns.map((column) => column.column_name),
     );

@@ -64,9 +64,11 @@ pnpm --filter <app-name> install/add <package-name>
 
 # App-scoped — default to <app-name> via the root shortcuts below
 pnpm run new:doctype -- <DocType>         # doctypes/loan/{loan.json,loan.ts}
-pnpm run new:server-fn -- <DocType>       # src/server/functions/loan.ts (needs the doctype first)
-pnpm run migrate
+pnpm run new:method -- <DocType>
+pnpm run migrate --verbose
+pnpm --filter <DocType> cli seed:roles
 pnpm run console
+
 
 # Any other app, or the full command set: go through its own workspace
 # pnpm run cli --workspace=my-shop -- new:doctype Invoice
@@ -97,17 +99,17 @@ packages/nodra                         apps/<app-name>
 
 ## Admin Reset
 
-pnpm --filter <app-name> cli admin-reset --username admin --password 'Admin@123'
+pnpm --filter <appname> cli admin-reset --email admin@example.com --password 'Admin@123'
 
 ## Test CURL
 
 1.
 
-curl -X POST http://localhost:3000/api/method/debug.doctypes -H "Content-Type: application/json" -d '{}'
+curl -X POST http://localhost:3000/api/method/nodra.doctypes -H "Content-Type: application/json" -d '{}'
 
 2.
 
-curl -i -b cookies.txt -X POST http://localhost:3000/api/method/auth.me -H "Content-Type: application/json" -d '{}' curl -i -c cookies.txt -X POST http://localhost:3000/api/method/auth.login -H "Content-Type: application/json" -d '{"email":"admin@localhost.com","password":"Admin@123"}'
+curl -i -c cookies.txt -X POST http://localhost:3000/api/method/auth.login -H "Content-Type: application/json" -d '{"email":"admin@example.com","password":"Admin@123"}'
 
 3.
 

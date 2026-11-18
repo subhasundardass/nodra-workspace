@@ -1,0 +1,30 @@
+{
+  "name": "Party Broker",
+  "module": "App",
+  "is_child": true,
+  "is_submittable": false,
+  "is_single": false,
+  "is_tree": false,
+  "is_virtual": false,
+  "fields": [
+    {
+      "fieldname": "broker",
+      "fieldtype": "Link",
+      "label": "Broker",
+      "options": "Broker",
+      "reqd": true,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "commission_rate",
+      "fieldtype": "Float",
+      "label": "Commission Rate",
+      "in_list_view": true
+    },
+    {
+      "fieldname": "notes",
+      "fieldtype": "SmallText",
+      "label": "Notes"
+    }
+  ]
+}

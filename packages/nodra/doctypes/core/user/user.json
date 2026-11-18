@@ -9,7 +9,10 @@
   "is_tree": false,
   "is_virtual": false,
   "title_field": "full_name",
-  "search_fields": ["full_name", "email"],
+  "search_fields": [
+    "full_name",
+    "email"
+  ],
   "fields": [
     {
       "fieldname": "email",
@@ -88,8 +91,11 @@
       "fieldname": "user_type",
       "fieldtype": "Select",
       "label": "User Type",
-      "options": ["System User", "Website User"],
-      "default": "System User",
+      "options": [
+        "System Manager",
+        "Website User"
+      ],
+      "default": "System Manager",
       "reqd": true
     },
     {
