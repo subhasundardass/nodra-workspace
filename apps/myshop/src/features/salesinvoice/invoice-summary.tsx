@@ -6,6 +6,8 @@ import { InvoiceDispatch } from "./create-invoice";
 type InvoiceSummaryProps = {
   dispatches: InvoiceDispatch[];
   selectedDispatches: string[];
+  gstRate: number;
+  gstType: "Intra-State" | "Inter-State" | "";
 };
 
 function formatAmount(value: number) {
@@ -27,19 +29,59 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 export function InvoiceSummary({
   dispatches,
   selectedDispatches,
+  gstRate,
+  gstType,
 }: InvoiceSummaryProps) {
+  console.log("GST DEBUG:", {
+    gstType,
+    gstRate,
+    selectedDispatches,
+    dispatches,
+  });
+
   const summary = useMemo(() => {
     const selected = dispatches.filter((item) =>
       selectedDispatches.includes(item.name),
     );
 
+    const bags = selected.reduce((total, item) => total + item.bags, 0);
+
+    const kgs = selected.reduce((total, item) => total + item.kgs, 0);
+
+    const subtotal = selected.reduce((total, item) => total + item.amount, 0);
+
+    const validRate = Math.max(0, Number(gstRate) || 0);
+
+    const cgstRate = gstType === "Intra-State" ? validRate / 2 : 0;
+
+    const sgstRate = gstType === "Intra-State" ? validRate / 2 : 0;
+
+    const igstRate = gstType === "Inter-State" ? validRate : 0;
+
+    const cgstAmount = (subtotal * cgstRate) / 100;
+    const sgstAmount = (subtotal * sgstRate) / 100;
+    const igstAmount = (subtotal * igstRate) / 100;
+
+    const totalTax = cgstAmount + sgstAmount + igstAmount;
+
     return {
       count: selected.length,
-      bags: selected.reduce((total, item) => total + item.bags, 0),
-      kgs: selected.reduce((total, item) => total + item.kgs, 0),
-      subtotal: selected.reduce((total, item) => total + item.amount, 0),
+      bags,
+      kgs,
+      subtotal,
+
+      cgstRate,
+      sgstRate,
+      igstRate,
+
+      cgstAmount,
+      sgstAmount,
+      igstAmount,
+
+      totalTax,
+      grandTotal: subtotal + totalTax,
     };
-  }, [dispatches, selectedDispatches]);
+  }, [dispatches, selectedDispatches, gstRate, gstType]);
 
   return (
     <div className="space-y-3">
@@ -72,24 +114,51 @@ export function InvoiceSummary({
       <Separator />
 
       <div className="ml-auto max-w-md space-y-3">
-        <SummaryRow label="Subtotal" value={formatAmount(summary.subtotal)} />
+        <SummaryRow
+          label="Taxable Amount"
+          value={formatAmount(summary.subtotal)}
+        />
 
-        <SummaryRow label="CGST" value={formatAmount(0)} />
-        <SummaryRow label="SGST" value={formatAmount(0)} />
-        <SummaryRow label="IGST" value={formatAmount(0)} />
+        {gstType === "Intra-State" && (
+          <>
+            <SummaryRow
+              label={`CGST (${summary.cgstRate}%)`}
+              value={formatAmount(summary.cgstAmount)}
+            />
+            <SummaryRow
+              label={`SGST (${summary.sgstRate}%)`}
+              value={formatAmount(summary.sgstAmount)}
+            />
+          </>
+        )}
+
+        {gstType === "Inter-State" && (
+          <SummaryRow
+            label={`IGST (${summary.igstRate}%)`}
+            value={formatAmount(summary.igstAmount)}
+          />
+        )}
+
+        {!gstType && (
+          <p className="text-xs text-destructive">
+            GST type could not be determined. Please check Place of Supply.
+          </p>
+        )}
 
         <Separator />
+
+        <SummaryRow label="Total GST" value={formatAmount(summary.totalTax)} />
 
         <div className="flex items-center justify-between gap-4">
           <span className="font-semibold">Grand Total</span>
           <span className="text-xl font-bold tabular-nums">
-            {formatAmount(summary.subtotal)}
+            {formatAmount(summary.grandTotal)}
           </span>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Taxes are not included in this preview. Final tax calculation will be
-          performed and validated by the invoice backend.
+          GST shown is a preview. Final GST rates and amounts will be
+          recalculated and validated by the invoice backend.
         </p>
       </div>
     </div>

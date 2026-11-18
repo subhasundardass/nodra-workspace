@@ -7,7 +7,7 @@
 
 import type { MethodRegistry } from "nodra";
 import type { Filters, ListOptions } from "nodra/orm/crud";
-
+import { company } from "@/config/company";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
@@ -359,7 +359,6 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
   );
 
   //Priview
-
   registry.register(
     "salesinvoice.get_invoice_preview",
     async (ctx) => {
@@ -392,70 +391,166 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
       // Build document lookup maps
       // --------------------------------------------------
 
-      const saleBooks = new Map<string, DocumentData>();
+      const buildMap = (records: any[]) => {
+        const map = new Map<string, DocumentData>();
 
-      for (const record of saleBookRecords) {
-        const data = serialise(record) as DocumentData;
+        for (const record of records) {
+          const data = serialise(record) as DocumentData;
 
-        if (data.name) {
-          saleBooks.set(String(data.name), data);
+          if (data.name) {
+            map.set(String(data.name), data);
+          }
         }
-      }
 
-      const lots = new Map<string, DocumentData>();
+        return map;
+      };
 
-      for (const record of lotRecords) {
-        const data = serialise(record) as DocumentData;
-
-        if (data.name) {
-          lots.set(String(data.name), data);
-        }
-      }
-
-      const parties = new Map<string, DocumentData>();
-
-      for (const record of partyRecords) {
-        const data = serialise(record) as DocumentData;
-
-        if (data.name) {
-          parties.set(String(data.name), data);
-        }
-      }
-
-      const brokers = new Map<string, DocumentData>();
-
-      for (const record of brokerRecords) {
-        const data = serialise(record) as DocumentData;
-
-        if (data.name) {
-          brokers.set(String(data.name), data);
-        }
-      }
+      const saleBooks = buildMap(saleBookRecords);
+      const lots = buildMap(lotRecords);
+      const parties = buildMap(partyRecords);
+      const brokers = buildMap(brokerRecords);
 
       // --------------------------------------------------
-      // Resolve Buyer and Broker display names
+      // Resolve Buyer and Broker
       // --------------------------------------------------
 
       const buyerRecord = parties.get(buyer);
       const brokerRecord = brokers.get(broker);
 
+      if (!buyerRecord) {
+        throw new Error(`Buyer ${buyer} not found.`);
+      }
+
+      if (!brokerRecord) {
+        throw new Error(`Broker ${broker} not found.`);
+      }
+
       const buyerName = String(
-        buyerRecord?.party_name ??
-          buyerRecord?.title ??
-          buyerRecord?.name ??
+        buyerRecord.party_name ??
+          buyerRecord.title ??
+          buyerRecord.name ??
           buyer,
       );
 
       const brokerName = String(
-        brokerRecord?.broker_name ??
-          brokerRecord?.title ??
-          brokerRecord?.name ??
+        brokerRecord.broker_name ??
+          brokerRecord.title ??
+          brokerRecord.name ??
           broker,
       );
 
       // --------------------------------------------------
-      // Find Dispatches already reserved by invoices
-      // Draft and Confirmed invoices both reserve Dispatches.
+      // Resolve Buyer State
+      // --------------------------------------------------
+
+      const stateName = String(buyerRecord.state ?? "").trim();
+
+      const stateRecord = stateName
+        ? await app.orm.getDoc("State", stateName)
+        : null;
+
+      const stateData = stateRecord
+        ? (serialise(stateRecord) as DocumentData)
+        : {};
+
+      const stateTitle = String(stateData.state_name ?? stateName);
+
+      // Prefer the explicit GST code.
+      // Fall back to Party.state when it already contains a
+      // two-digit Indian GST state code, e.g. "19".
+      const storedGstCode = String(stateData.gst_state_code ?? "").trim();
+
+      const buyerStateCode = /^\d{2}$/.test(stateName)
+        ? stateName
+        : storedGstCode;
+
+      // --------------------------------------------------
+      // Buyer Address and Details
+      // --------------------------------------------------
+
+      const buyerAddress = [
+        buyerRecord.address,
+        buyerRecord.city,
+        buyerRecord.pincode,
+        stateTitle,
+      ]
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+        .join(", ");
+
+      const buyerDetails = {
+        name: buyer,
+        title: buyerName,
+
+        gstin: String(buyerRecord.gstin ?? ""),
+        pan: String(buyerRecord.pan ?? ""),
+
+        address: buyerAddress,
+
+        state: stateName,
+        state_name: stateTitle,
+        state_code: buyerStateCode,
+
+        city: String(buyerRecord.city ?? ""),
+        pincode: String(buyerRecord.pincode ?? ""),
+        country: String(buyerRecord.country ?? "India"),
+
+        phone: String(buyerRecord.phone ?? ""),
+        email: String(buyerRecord.email ?? ""),
+      };
+
+      // --------------------------------------------------
+      // Seller / Company GST Details
+      // --------------------------------------------------
+
+      const sellerDetails = {
+        name: company.name,
+        gstin: company.gstin,
+        address: [company.address1, company.address2]
+          .filter(Boolean)
+          .join(", "),
+
+        state: company.state,
+        state_code: String(company.state_code ?? ""),
+        phone: company.phone,
+        email: company.email,
+        website: company.website,
+      };
+
+      // --------------------------------------------------
+      // Place of Supply and GST Type
+      // --------------------------------------------------
+
+      // Buyer state is the initial default.
+      // Verify the actual Place of Supply based on the
+      // delivery details and applicable GST rules.
+      const placeOfSupply = stateName;
+      const placeOfSupplyName = stateTitle;
+      const placeOfSupplyCode = buyerStateCode;
+
+      const sellerStateCode = String(company.state_code ?? "").trim();
+
+      let isIntraState: boolean | null = null;
+      let gstType = "";
+
+      if (sellerStateCode && placeOfSupplyCode) {
+        isIntraState = sellerStateCode === placeOfSupplyCode;
+        gstType = isIntraState ? "Intra-State" : "Inter-State";
+      }
+
+      console.log("GST FINAL CHECK:", {
+        buyerState: stateTitle,
+        buyerStateCode,
+        sellerState: company.state,
+        sellerStateCode,
+        placeOfSupplyCode,
+        isIntraState,
+        gstType,
+      });
+
+      // --------------------------------------------------
+      // Find Dispatches Already Reserved by Invoices
+      // Draft and Confirmed invoices reserve Dispatches.
       // Cancelled invoices release their Dispatches.
       // --------------------------------------------------
 
@@ -484,7 +579,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
       }
 
       // --------------------------------------------------
-      // Find eligible Dispatches for Buyer + Broker
+      // Find Eligible Dispatches for Buyer + Broker
       // --------------------------------------------------
 
       const documents = dispatchRecords
@@ -552,11 +647,31 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
           };
         });
 
+      // --------------------------------------------------
+      // Return Invoice Preview
+      // --------------------------------------------------
+
       return {
         buyer,
         broker,
+
         buyer_name: buyerName,
         broker_name: brokerName,
+
+        buyer_details: buyerDetails,
+        seller_details: sellerDetails,
+
+        // GST information
+        place_of_supply: placeOfSupply,
+        place_of_supply_name: placeOfSupplyName,
+        place_of_supply_code: placeOfSupplyCode,
+
+        seller_state_code: sellerStateCode,
+
+        is_intra_state: isIntraState,
+        gst_type: gstType,
+        gst_rate: 5, //This is static becouse we are working only on Tea
+
         dispatches: documents,
         total_count: documents.length,
       };

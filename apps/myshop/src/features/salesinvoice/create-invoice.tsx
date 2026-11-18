@@ -29,15 +29,37 @@ interface SalesInvoiceFormProps {
   form: NodraForm;
   buyer: string;
   broker: string;
-  buyerName: string;
-  brokerName: string;
+  // buyerName: string;
+  // brokerName: string;
 }
+
+type BuyerDetails = {
+  name: string;
+  title: string;
+  gstin: string;
+  pan: string;
+  address: string;
+  state: string;
+  state_name?: string;
+  city: string;
+  pincode: string;
+  country: string;
+  phone: string;
+  email: string;
+};
 
 type InvoicePreviewResponse = {
   buyer_name?: string;
   broker_name?: string;
+  buyer_details?: BuyerDetails;
   dispatches: InvoiceDispatch[];
   total_count: number;
+
+  gst_type?: "Intra-State" | "Inter-State" | "";
+  gst_rate?: number;
+
+  seller_state_code?: string;
+  place_of_supply_code?: string;
 };
 
 type PreviewNames = {
@@ -84,7 +106,7 @@ function FormSection({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
         {children}
       </div>
     </section>
@@ -122,13 +144,21 @@ export function SalesInvoiceForm({
   form,
   buyer,
   broker,
-  buyerName,
-  brokerName,
 }: SalesInvoiceFormProps) {
   const [dispatches, setDispatches] = React.useState<InvoiceDispatch[]>([]);
   const [selectedDispatches, setSelectedDispatches] = React.useState<string[]>(
     [],
   );
+
+  const [buyerDetails, setBuyerDetails] = React.useState<BuyerDetails | null>(
+    null,
+  );
+
+  //Gst
+  const [gstType, setGstType] = React.useState<
+    "Intra-State" | "Inter-State" | ""
+  >("");
+  const [gstRate, setGstRate] = React.useState(0);
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -140,8 +170,10 @@ export function SalesInvoiceForm({
     brokerName: "",
   });
 
-  const displayBuyerName = buyerName || previewNames.buyerName;
-  const displayBrokerName = brokerName || previewNames.brokerName;
+  const displayBuyerName = previewNames.buyerName;
+  const displayBrokerName = previewNames.brokerName;
+
+  // Gst
 
   // Load eligible Dispatch records for the selected Buyer and Broker.
   React.useEffect(() => {
@@ -152,17 +184,20 @@ export function SalesInvoiceForm({
         setDispatches([]);
         setSelectedDispatches([]);
         setPreviewNames({ buyerName: "", brokerName: "" });
+        setBuyerDetails(null);
+        setGstType("");
+        setGstRate(0);
         setError(null);
         setLoading(false);
         return;
       }
-
       setLoading(true);
       setError(null);
       setDispatches([]);
       setSelectedDispatches([]);
       setPreviewNames({ buyerName: "", brokerName: "" });
-
+      setGstType("");
+      setGstRate(0);
       try {
         const result = await callMethod<InvoicePreviewResponse>(
           "salesinvoice.get_invoice_preview",
@@ -176,14 +211,37 @@ export function SalesInvoiceForm({
 
         setDispatches(result.dispatches ?? []);
 
+        //Gst
+        setGstType(result.gst_type ?? "");
+        setGstRate(Number(result.gst_rate ?? 0));
+
         setPreviewNames({
           buyerName: result.buyer_name ?? "",
           brokerName: result.broker_name ?? "",
         });
+
+        const details = result.buyer_details ?? null;
+        setBuyerDetails(details);
+
+        if (details) {
+          form.setFieldValue("buyer_gstin", details.gstin ?? "");
+          form.setFieldValue("buyer_pan", details.pan ?? "");
+          form.setFieldValue("place_of_supply", details.state ?? "");
+          form.setFieldValue("billing_address", details.address ?? "");
+          form.setFieldValue("shipping_address", details.address ?? "");
+        }
       } catch (err) {
         if (cancelled) return;
 
         setDispatches([]);
+        setBuyerDetails(null);
+        setGstType("");
+        setGstRate(0);
+        setPreviewNames({
+          buyerName: "",
+          brokerName: "",
+        });
+
         setError(
           err instanceof Error
             ? err.message
@@ -230,7 +288,7 @@ export function SalesInvoiceForm({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2">
       <FormSection
         title="Invoice Details"
         description="Review the buyer, broker and invoice date."
@@ -247,6 +305,39 @@ export function SalesInvoiceForm({
           value={displayBrokerName}
         />
 
+        <form.Field name="buyer_gstin">
+          {(field) => (
+            <FieldRow label="Buyer GSTIN" htmlFor={field.name}>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                readOnly
+                className="bg-muted/50 shadow-none"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="buyer_pan">
+          {(field) => (
+            <FieldRow label="Buyer PAN" htmlFor={field.name}>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                readOnly
+                className="bg-muted/50 shadow-none"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+      </FormSection>
+
+      <FormSection
+        title="Billing & Shipping Details"
+        description="Enter the billing and delivery addresses."
+      >
         <form.Field name="invoice_date">
           {(field) => (
             <FieldRow label="Invoice Date" htmlFor={field.name} required>
@@ -261,22 +352,6 @@ export function SalesInvoiceForm({
             </FieldRow>
           )}
         </form.Field>
-
-        <form.Field name="buyer_gstin">
-          {(field) => (
-            <FieldRow label="Buyer GSTIN" htmlFor={field.name}>
-              <Input
-                id={field.name}
-                name={field.name}
-                value={String(field.state.value ?? "")}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                className="bg-background shadow-none"
-              />
-            </FieldRow>
-          )}
-        </form.Field>
-
         <form.Field name="place_of_supply">
           {(field) => (
             <FieldRow label="Place of Supply" htmlFor={field.name}>
@@ -289,12 +364,6 @@ export function SalesInvoiceForm({
             </FieldRow>
           )}
         </form.Field>
-      </FormSection>
-
-      <FormSection
-        title="Billing & Shipping Details"
-        description="Enter the billing and delivery addresses."
-      >
         <form.Field name="billing_address">
           {(field) => (
             <FieldRow label="Billing Address" htmlFor={field.name} required>
@@ -354,6 +423,8 @@ export function SalesInvoiceForm({
           <InvoiceSummary
             dispatches={dispatches}
             selectedDispatches={selectedDispatches}
+            gstRate={gstRate}
+            gstType={gstType}
           />
         </div>
       </FormSection>

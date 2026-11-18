@@ -57,10 +57,25 @@
       "fieldtype": "Data"
     },
     {
+      "fieldname": "buyer_pan",
+      "label": "Buyer PAN",
+      "fieldtype": "Data"
+    },
+    {
       "fieldname": "place_of_supply",
       "label": "Place of Supply",
       "fieldtype": "Link",
       "options": "State"
+    },
+    {
+      "fieldname": "gst_type",
+      "label": "GST Type",
+      "fieldtype": "Select",
+      "options": [
+        "Intra-State",
+        "Inter-State"
+      ],
+      "read_only": true
     },
     {
       "fieldname": "items",
@@ -89,6 +104,34 @@
       "read_only": true
     },
     {
+      "fieldname": "gst_rate",
+      "label": "GST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "cgst_rate",
+      "label": "CGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "sgst_rate",
+      "label": "SGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
+      "fieldname": "igst_rate",
+      "label": "IGST Rate (%)",
+      "fieldtype": "Float",
+      "precision": 2,
+      "read_only": true
+    },
+    {
       "fieldname": "cgst_amount",
       "label": "CGST Amount",
       "fieldtype": "Currency",
@@ -103,6 +146,12 @@
     {
       "fieldname": "igst_amount",
       "label": "IGST Amount",
+      "fieldtype": "Currency",
+      "read_only": true
+    },
+    {
+      "fieldname": "total_tax",
+      "label": "Total GST",
       "fieldtype": "Currency",
       "read_only": true
     },

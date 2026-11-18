@@ -8,5 +8,8 @@ export const company = {
   phone: "+91 XXXXXXXXXX",
   email: "info@example.com",
   website: "https://example.com",
+  // GST Registration
   gstin: "",
+  state: "West Bengal",
+  state_code: "19",
 };
