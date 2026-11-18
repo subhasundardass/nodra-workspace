@@ -33,14 +33,14 @@ async function resolveMethodIdentity(
   const rawRoles = user.get("roles") as Array<{ role: string }> | undefined;
   const roles = rawRoles?.map((item) => item.role).filter(Boolean) ?? [];
 
-  console.log("[AUTH DEBUG] Authenticated user:", {
-    id: session.subject.id,
-    name: user.get("name"),
-    email: user.get("email"),
-    userType: user.get("user_type"),
-    rawRoles,
-    resolvedRoles: roles,
-  });
+  // console.log("[AUTH DEBUG] Authenticated user:", {
+  //   id: session.subject.id,
+  //   name: user.get("name"),
+  //   email: user.get("email"),
+  //   userType: user.get("user_type"),
+  //   rawRoles,
+  //   resolvedRoles: roles,
+  // });
 
   return {
     user: {

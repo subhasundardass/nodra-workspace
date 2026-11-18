@@ -5,24 +5,24 @@
  *
  * Register this module from the app's method bootstrap.
  */
-import type { MethodRegistry } from "nodra";
-import { Filters, ListOptions } from "nodra/orm/crud";
-import { Party } from "../../../doctypes/party/party";
-import { getNodra } from "../nodra-app";
-import { serialise } from "../http";
+// import type { MethodRegistry } from "nodra";
+// import { Filters, ListOptions } from "nodra/orm/crud";
+// import { Party } from "../../../doctypes/party/party";
+// import { getNodra } from "../nodra-app";
+// import { serialise } from "../http";
 
-type RecordData = Record<string, unknown>;
+// type RecordData = Record<string, unknown>;
 
-function isRecord(value: unknown): value is RecordData {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
+// function isRecord(value: unknown): value is RecordData {
+//   return value !== null && typeof value === "object" && !Array.isArray(value);
+// }
 
-function getRequiredName(value: unknown): string {
-  const name = String(value ?? "").trim();
+// function getRequiredName(value: unknown): string {
+//   const name = String(value ?? "").trim();
 
-  if (!name) {
-    throw new Error("Party name is required");
-  }
+//   if (!name) {
+//     throw new Error("Party name is required");
+//   }
 
-  return name;
-}
+//   return name;
+// }

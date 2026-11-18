@@ -17,6 +17,7 @@ export type DataTableTotal = {
   fieldname: string;
   value: string;
   label?: string;
+  align?: "left" | "center" | "right";
 };
 
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
@@ -114,8 +115,6 @@ export function DataTable<TData>({
                   </TableRow>
                 )}
 
-                {/* Optional totals row */}
-                {/* Optional totals row */}
                 {totals &&
                   totals.length > 0 &&
                   table.getRowModel().rows.length > 0 && (
@@ -125,19 +124,16 @@ export function DataTable<TData>({
                           (item) => item.fieldname === column.id,
                         );
 
-                        const columnClass =
-                          (
-                            column.columnDef.meta as
-                              { className?: string } | undefined
-                          )?.className ?? "";
-
                         return (
                           <TableCell
                             key={column.id}
                             className={`bg-muted/70 font-bold ${
                               column.columnDef.meta?.className ?? ""
                             }`}
-                            style={getCommonPinningStyles({ column })}
+                            style={{
+                              ...getCommonPinningStyles({ column }),
+                              textAlign: total?.align ?? "left",
+                            }}
                           >
                             {total ? total.value : index === 0 ? "Total" : ""}
                           </TableCell>

@@ -9,9 +9,8 @@
   "is_tree": false,
   "is_virtual": false,
   "search_fields": [
-    "factory",
     "lot_no",
-    "entry_date",
+    "factory",
     "original_brand"
   ],
   "fields": [

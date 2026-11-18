@@ -77,12 +77,15 @@ function RouteComponent() {
       doctype={doctype}
       records={records}
       table={table}
+      // actions={offerActions}
       onCreate={() => navigate({ to: "/dashboard/offers/new" })}
       onOpen={openOffer}
       onRefresh={() => router.invalidate()}
       pageSize={20}
-    >
-      <DataTable table={table} />
-    </DocTypeListTemplate>
+      totals={[
+        { fieldname: "total_bags", label: "Total Bags" },
+        { fieldname: "total_kg", label: "Total Kgs", decimals: 2 },
+      ]}
+    ></DocTypeListTemplate>
   );
 }

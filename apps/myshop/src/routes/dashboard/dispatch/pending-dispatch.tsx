@@ -73,12 +73,18 @@ function RouteComponent() {
       onRefresh={() => router.invalidate()}
       pageSize={20}
       totals={[
-        { fieldname: "sold_bags", label: "Total Bags" },
-        { fieldname: "sold_quantity", label: "Total KG", decimals: 2 },
+        { fieldname: "sold_bags", label: "Total Bags", align: "right" },
+        {
+          fieldname: "sold_quantity",
+          label: "Total KG",
+          decimals: 2,
+          align: "right",
+        },
         {
           fieldname: "total_amount",
           label: "Total Amount",
           currency: true,
+          align: "right",
         },
       ]}
     />

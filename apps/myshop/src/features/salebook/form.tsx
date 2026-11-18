@@ -12,6 +12,8 @@ type DocumentRecord = Record<string, unknown>;
 interface SaleEntryFormProps {
   form: NodraForm;
   lot: DocumentRecord;
+  isEdit?: boolean;
+  onLotChange?: (lot: string) => void;
 }
 
 function FieldRow({
@@ -48,7 +50,7 @@ function FormSection({
 }) {
   return (
     <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
-      <div className="space-y-1">
+      <div className="space-y-0">
         <h3 className="text-base font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
@@ -83,18 +85,44 @@ function ReadOnlyField({
   );
 }
 
-export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
+export function SaleEntryForm({
+  form,
+  lot,
+  isEdit = false,
+  onLotChange,
+}: SaleEntryFormProps) {
   const bags = Number(lot.bags ?? 0);
   const kgPerBag = Number(lot.net_kg_per_bag ?? 0);
   const totalKg = bags * kgPerBag;
 
   return (
     <div className="space-y-5">
+      {/* Lot Details */}
       <FormSection
         title="Lot Details"
-        description="Selected lot information. These details cannot be changed from Sale Entry."
+        description="Select a lot to load its details. Lot cannot be changed after the Sale Entry is created."
       >
-        <ReadOnlyField label="Lot No" name="lot_no" value={lot.name} />
+        <form.Field name="lot">
+          {(field) => (
+            <FieldRow label="Lot No" htmlFor={field.name} required>
+              <LinkField
+                doctype="Lots"
+                titleField="lot_no"
+                value={String(field.state.value ?? "")}
+                onChange={(value) => {
+                  field.handleChange(value);
+                  onLotChange?.(String(value ?? ""));
+                }}
+                filters={{ docstatus: 51 }}
+                disabled={isEdit}
+                className="w-full"
+                placeholder="Select Lot No..."
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        {/* <ReadOnlyField label="Lot No" name="lot_no" value={lot.name} /> */}
 
         <ReadOnlyField label="Factory" name="factory" value={lot.factory} />
 
@@ -117,9 +145,10 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
         <ReadOnlyField label="Total KG" name="total_kg" value={totalKg} />
       </FormSection>
 
+      {/* Sale Details */}
       <FormSection
         title="Sale Details"
-        description="Enter the buyer, sale quantity and agreed rate."
+        description="Enter the sale date, type, broker, quantity and agreed rate."
       >
         <form.Field name="sale_date">
           {(field) => (
@@ -147,8 +176,8 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
                 onChange={(event) => field.handleChange(event.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm shadow-none"
               >
-                <option value="Bid">Bid</option>
                 <option value="Advance">Advance</option>
+                <option value="Bid">Bid</option>
               </select>
             </FieldRow>
           )}
@@ -158,11 +187,10 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
           {(field) => (
             <FieldRow label="Broker" htmlFor={field.name} required>
               <LinkField
+                doctype="Broker"
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
-                doctype="Broker"
                 className="w-full"
-                clearable
               />
             </FieldRow>
           )}
@@ -181,6 +209,7 @@ export function SaleEntryForm({ form, lot }: SaleEntryFormProps) {
                 onBlur={field.handleBlur}
                 onChange={(event) => {
                   const soldBags = Number(event.target.value || 0);
+
                   field.handleChange(soldBags);
                   form.setFieldValue("sold_quantity", soldBags * kgPerBag);
                 }}

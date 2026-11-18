@@ -11,20 +11,4 @@ import { Lots } from "../../../doctypes/lots/lots";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
-type RecordData = Record<string, unknown>;
-
-function isRecord(value: unknown): value is RecordData {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function getRequiredName(value: unknown): string {
-  const name = String(value ?? "").trim();
-
-  if (!name) {
-    throw new Error("Lots name is required");
-  }
-
-  return name;
-}
-
 export function registerLotsMethods(registry: MethodRegistry): void {}

@@ -52,15 +52,23 @@ const metrics = [
     bg: "bg-blue-50 dark:bg-blue-950/40",
   },
   {
-    title: "Total Customers",
+    title: "Total Stock",
+    value: "42,500 kg",
+    today: "Across all locations",
+    icon: Boxes,
+    color: "text-amber-600",
+    bg: "bg-amber-50 dark:bg-amber-950/40",
+  },
+  {
+    title: "Total Offers",
     value: "186",
-    today: "+3 today",
-    icon: Users,
+    today: "+8 today",
+    icon: FileText,
     color: "text-violet-600",
     bg: "bg-violet-50 dark:bg-violet-950/40",
   },
   {
-    title: "Total Orders",
+    title: "Total Sales",
     value: "384",
     today: "5 today",
     icon: ShoppingCart,
@@ -68,7 +76,7 @@ const metrics = [
     bg: "bg-orange-50 dark:bg-orange-950/40",
   },
   {
-    title: "Total Invoiced",
+    title: "Total Sales Value",
     value: "₹42.8L",
     today: "₹2.45L today",
     icon: Receipt,
@@ -76,36 +84,28 @@ const metrics = [
     bg: "bg-emerald-50 dark:bg-emerald-950/40",
   },
   {
-    title: "Customer Dues",
-    value: "₹18.75L",
-    today: "14 overdue invoices",
-    icon: Wallet,
+    title: "Pending Dispatch",
+    value: "28",
+    today: "Lots awaiting dispatch",
+    icon: Truck,
     color: "text-rose-600",
     bg: "bg-rose-50 dark:bg-rose-950/40",
   },
   {
-    title: "Cash Sales Today",
-    value: "₹85,000",
-    today: "6 transactions",
-    icon: Banknote,
-    color: "text-green-600",
-    bg: "bg-green-50 dark:bg-green-950/40",
-  },
-  {
-    title: "Collections Today",
-    value: "₹1.25L",
-    today: "Across all payment modes",
-    icon: ArrowUpRight,
+    title: "Total Brokers",
+    value: "24",
+    today: "Registered brokers",
+    icon: Users,
     color: "text-cyan-600",
     bg: "bg-cyan-50 dark:bg-cyan-950/40",
   },
   {
-    title: "Available Stock",
-    value: "42,500 kg",
-    today: "Across all warehouses",
-    icon: Boxes,
-    color: "text-amber-600",
-    bg: "bg-amber-50 dark:bg-amber-950/40",
+    title: "Pending Payments",
+    value: "₹18.75L",
+    today: "Outstanding amount",
+    icon: Wallet,
+    color: "text-green-600",
+    bg: "bg-green-50 dark:bg-green-950/40",
   },
 ];
 
@@ -341,7 +341,7 @@ export default function TeaDashboard() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1">
+        <div className="space-y-0">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back 👋</h1>
           <p className="text-sm text-muted-foreground">
             Here is what is happening across your tea business.
@@ -349,7 +349,7 @@ export default function TeaDashboard() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap items-center rounded-md border bg-muted/40 p-1">
+          {/* <div className="flex flex-wrap items-center rounded-md border bg-muted/40 p-1">
             {periodOptions.map((option) => (
               <button
                 key={option.value}
@@ -364,12 +364,20 @@ export default function TeaDashboard() {
                 {option.label}
               </button>
             ))}
-          </div>
+          </div> */}
 
-          <Button>
+          {/* <Button>
             <Plus className="mr-2 size-4" />
             Quick Create
-          </Button>
+          </Button> */}
+          <div className="text-right">
+            <h1 className="text-xl font-bold tracking-tight">
+              MJB Group – Dashboard
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Overview of your tea operations, inventory, sales and dispatch.
+            </p>
+          </div>
         </div>
       </div>
 

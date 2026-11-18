@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, useMemo } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { ColumnDef, Table } from "@tanstack/react-table";
 import type { DocTypeDefinition } from "nodra";
 import { Plus } from "lucide-react";
@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 import { GlobalToolbar } from "@/components/toolbar";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/table/data-table";
+import { DataTable, DataTableTotal } from "@/components/ui/table/data-table";
 import { DocTypeListToolbar } from "@/components/doctype/list/doctype-list-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import PageContainer from "@/components/layout/page-container";
@@ -28,18 +28,22 @@ export type DocTypeListTotal = {
   label?: string;
   decimals?: number;
   currency?: boolean;
+  align?: "left" | "center" | "right";
+};
+
+type CalculatedTotal = DocTypeListTotal & {
+  value: string;
 };
 
 export type DocTypeListTemplateProps<TRecord extends object> = {
-  doctype: DocTypeDefinition;
+  doctype?: DocTypeDefinition;
   records?: TRecord[];
   columns?: DocTypeListColumn[];
-  /** Pass this when rendering a custom DataTable so the global toolbar controls it. */
   table?: Table<TRecord>;
   children?: ReactNode;
   totals?: DocTypeListTotal[];
-
   title?: string;
+  createButtonLabel?: string;
   description?: string;
   actions?: GlobalToolbarAction[];
   showCreateButton?: boolean;
@@ -81,6 +85,22 @@ function getListFields(doctype: DocTypeDefinition) {
   ];
 }
 
+function formatTotal(item: DocTypeListTotal, total: number): string {
+  if (item.currency) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(total);
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: item.decimals ?? 2,
+  }).format(total);
+}
+
 export function DocTypeListTemplate<TRecord extends object>({
   doctype,
   records = [],
@@ -88,6 +108,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   table: suppliedTable,
   children,
   title,
+  createButtonLabel,
   description,
   actions,
   totals,
@@ -99,8 +120,16 @@ export function DocTypeListTemplate<TRecord extends object>({
   onRefresh,
   pageSize = 20,
 }: DocTypeListTemplateProps<TRecord>) {
+  const listName = doctype?.name ?? title ?? "Records";
+
+  // --------------------------------------------------
+  // List columns
+  // --------------------------------------------------
+
   const fields = useMemo<DocTypeListColumn[]>(() => {
     if (customColumns !== undefined) return customColumns;
+
+    if (!doctype) return [];
 
     return getListFields(doctype).map((field) => ({
       id: field.fieldname,
@@ -111,7 +140,19 @@ export function DocTypeListTemplate<TRecord extends object>({
     }));
   }, [customColumns, doctype]);
 
-  const canCreate = showCreateButton && !doctype.is_single && !doctype.is_child;
+  // --------------------------------------------------
+  // Create permission
+  // --------------------------------------------------
+
+  const canCreate =
+    showCreateButton &&
+    Boolean(doctype) &&
+    !doctype?.is_single &&
+    !doctype?.is_child;
+
+  // --------------------------------------------------
+  // Table columns
+  // --------------------------------------------------
 
   const tableColumns = useMemo<ColumnDef<TRecord>[]>(
     () =>
@@ -124,8 +165,7 @@ export function DocTypeListTemplate<TRecord extends object>({
         enableSorting: field.sortable ?? Boolean(field.fieldname),
         enableHiding: field.fieldname !== "name",
         cell: ({ row }) => {
-          const record = row.original;
-          const document = toDocumentRow(record);
+          const document = toDocumentRow(row.original);
 
           if (field.render) return field.render(document);
 
@@ -154,6 +194,10 @@ export function DocTypeListTemplate<TRecord extends object>({
     [fields, onOpen],
   );
 
+  // --------------------------------------------------
+  // Table instance
+  // --------------------------------------------------
+
   const internalTableResult = useDataTable({
     data: records,
     columns: tableColumns,
@@ -168,8 +212,11 @@ export function DocTypeListTemplate<TRecord extends object>({
   const filteredRows = table.getFilteredRowModel().rows;
   const visibleRecordCount = filteredRows.length;
 
-  // Calculate totals across all filtered rows, not only the current page.
-  const totalValues = useMemo(() => {
+  // --------------------------------------------------
+  // Totals
+  // --------------------------------------------------
+
+  const totalValues = useMemo<CalculatedTotal[]>(() => {
     if (!totals?.length) return [];
 
     return totals.map((item) => {
@@ -185,45 +232,57 @@ export function DocTypeListTemplate<TRecord extends object>({
         return Number.isFinite(number) ? sum + number : sum;
       }, 0);
 
-      const value = item.currency
-        ? new Intl.NumberFormat("en-IN", {
-            style: "currency",
-            currency: "INR",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(total)
-        : new Intl.NumberFormat("en-IN", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: item.decimals ?? 2,
-          }).format(total);
-
       return {
         ...item,
-        value,
+        value: formatTotal(item, total),
       };
     });
   }, [totals, filteredRows]);
 
+  // --------------------------------------------------
+  // Toolbar actions
+  // --------------------------------------------------
+
   const toolbarActions = useMemo<GlobalToolbarAction[]>(() => {
     if (actions !== undefined) return actions;
+
     if (!canCreate || !onCreate) return [];
 
     return [
       {
         id: "create",
-        label: `Create ${doctype.name}`,
+        label: createButtonLabel ?? `Create ${listName}`,
         icon: Plus,
         variant: "default",
         onClick: onCreate,
       },
     ];
-  }, [actions, canCreate, doctype.name, onCreate]);
+  }, [actions, canCreate, createButtonLabel, listName, onCreate]);
+
+  // --------------------------------------------------
+  // Table content
+  // --------------------------------------------------
+
+  const tableContent =
+    children === undefined ? (
+      <DataTable table={table} totals={totalValues} />
+    ) : isValidElement(children) && children.type === DataTable ? (
+      cloneElement(children as ReactElement<{ totals?: DataTableTotal[] }>, {
+        totals: totalValues,
+      })
+    ) : (
+      children
+    );
+
+  // --------------------------------------------------
+  // Render
+  // --------------------------------------------------
 
   return (
     <PageContainer>
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <GlobalToolbar
-          title={title ?? doctype.name}
+          title={title ?? listName}
           description={
             description ??
             `${visibleRecordCount} ${
@@ -235,7 +294,7 @@ export function DocTypeListTemplate<TRecord extends object>({
 
         <DocTypeListToolbar
           table={table}
-          doctypeName={title ?? doctype.name}
+          doctypeName={listName}
           onRefresh={onRefresh}
           loading={loading}
         />
@@ -260,22 +319,22 @@ export function DocTypeListTemplate<TRecord extends object>({
         ) : table.getRowModel().rows.length === 0 ? (
           <div className="rounded-md border border-dashed p-8 text-center">
             <p className="font-medium">No records found</p>
+
             <p className="mt-1 text-sm text-muted-foreground">
-              Create your first {doctype.name.toLowerCase()} record or adjust
-              the filters.
+              {canCreate
+                ? `Create your first ${listName.toLowerCase()} record or adjust the filters.`
+                : "Try adjusting your filters or check again later."}
             </p>
 
             {canCreate && onCreate && (
               <Button type="button" className="mt-4" onClick={onCreate}>
                 <Plus className="mr-2 size-4" />
-                Create {doctype.name}
+                {createButtonLabel ?? `Create ${listName}`}
               </Button>
             )}
           </div>
-        ) : children !== undefined ? (
-          children
         ) : (
-          <DataTable table={table} totals={totalValues} />
+          tableContent
         )}
       </div>
     </PageContainer>

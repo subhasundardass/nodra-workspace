@@ -12,10 +12,39 @@ import {
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/format";
 import { Input } from "@/components/ui/input";
+import { callMethod } from "@/lib/call-method";
+import { toast } from "sonner";
 
 type DispatchFormProps = {
   form: any;
 };
+
+async function formatPartyAddress(
+  party: Record<string, unknown>,
+): Promise<string> {
+  const stateCode = String(party.state ?? "").trim();
+  let stateTitle = stateCode;
+
+  if (stateCode) {
+    try {
+      const result = await callMethod<{
+        document: Record<string, unknown> | null;
+      }>("document.get", {
+        doctype: "State",
+        name: stateCode,
+      });
+
+      stateTitle = String(result.document?.state_name ?? stateCode);
+    } catch (error) {
+      console.error("Failed to resolve buyer state:", error);
+    }
+  }
+
+  return [party.address, party.city, stateTitle, party.pincode]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .join(", ");
+}
 
 export function DispatchForm({ form }: DispatchFormProps) {
   return (
@@ -130,10 +159,50 @@ export function DispatchForm({ form }: DispatchFormProps) {
           <div className="col-span-2">
             <form.Field name="party">
               {(field: any) => (
-                <FieldRow label="Party" htmlFor={field.name} required>
+                <FieldRow label="Buyer" htmlFor={field.name} required>
                   <LinkField
                     value={String(field.state.value ?? "")}
-                    onChange={field.handleChange}
+                    onChange={(value: string) => {
+                      field.handleChange(value);
+
+                      form.setFieldValue("billing_address", "");
+                      form.setFieldValue("shipping_address", "");
+
+                      if (!value) return;
+
+                      void (async () => {
+                        try {
+                          const result = await callMethod<{
+                            document: Record<string, unknown> | null;
+                          }>("document.get", {
+                            doctype: "Party",
+                            name: value,
+                          });
+
+                          if (!result.document) {
+                            toast.error("Buyer details not found.");
+                            return;
+                          }
+
+                          const address = await formatPartyAddress(
+                            result.document,
+                          );
+
+                          // Ensure the selected buyer hasn't changed during lookup.
+                          if (
+                            String(form.getFieldValue("party") ?? "") !== value
+                          ) {
+                            return;
+                          }
+
+                          form.setFieldValue("billing_address", address);
+                          form.setFieldValue("shipping_address", address);
+                        } catch (error) {
+                          console.error("Buyer address loading error:", error);
+                          toast.error("Failed to load buyer address.");
+                        }
+                      })();
+                    }}
                     doctype="Party"
                     className="w-full"
                   />
@@ -228,8 +297,46 @@ export function DispatchForm({ form }: DispatchFormProps) {
               )}
             </form.Field>
           </div>
+        </div>
 
-          <div className="col-span-3">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+          <div className="col-span-1">
+            <form.Field name="billing_address">
+              {(field: any) => (
+                <FieldRow label="Billing Address" htmlFor={field.name}>
+                  <textarea
+                    id={field.name}
+                    name={field.name}
+                    value={String(field.state.value ?? "")}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    placeholder="Enter billing address"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="col-span-1">
+            <form.Field name="shipping_address">
+              {(field: any) => (
+                <FieldRow label="Shipping Address" htmlFor={field.name}>
+                  <textarea
+                    id={field.name}
+                    name={field.name}
+                    value={String(field.state.value ?? "")}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    placeholder="Enter shipping address"
+                  />
+                </FieldRow>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="col-span-2">
             <form.Field name="remarks">
               {(field: any) => (
                 <FieldRow label="Remarks" htmlFor={field.name}>

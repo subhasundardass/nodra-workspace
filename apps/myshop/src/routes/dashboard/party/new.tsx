@@ -101,7 +101,7 @@ function CreatePartyRoute() {
         },
       });
 
-      toast.success("Party created successfully.");
+      toast.success("Buyer created successfully.");
       await navigate({ to: "/dashboard/party" });
     } finally {
       setSaving(false);
@@ -110,10 +110,11 @@ function CreatePartyRoute() {
 
   return (
     <DocTypeFormTemplate
-      title="Create Party/Buyer"
+      title="Create Buyer"
       doctype={doctype}
       mode="create"
       initialValues={{
+        title: "",
         party_type: "Company",
         is_active: true,
         workflow_state: "Draft",

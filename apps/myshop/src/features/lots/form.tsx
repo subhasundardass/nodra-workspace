@@ -108,7 +108,7 @@ function NumberInput({
 
 export function LotForm({ form }: LotFormProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-2">
       {/* 1. Entry Information */}
       <FormSection
         title="Entry Information"
@@ -291,7 +291,7 @@ export function LotForm({ form }: LotFormProps) {
       </FormSection>
 
       {/* 4. Storage Information */}
-      <FormSection
+      {/* <FormSection
         title="Storage Information"
         description="Select where this tea lot will be stored."
       >
@@ -307,10 +307,10 @@ export function LotForm({ form }: LotFormProps) {
             </FieldRow>
           )}
         </form.Field>
-      </FormSection>
+      </FormSection> */}
 
       {/* 5. Workflow Status */}
-      <FormSection title="Workflow Status">
+      {/* <FormSection title="Workflow Status">
         <form.Field name="workflow_state">
           {(field) => (
             <FieldRow label="Status" htmlFor={field.name}>
@@ -326,7 +326,7 @@ export function LotForm({ form }: LotFormProps) {
             </FieldRow>
           )}
         </form.Field>
-      </FormSection>
+      </FormSection> */}
     </div>
   );
 }

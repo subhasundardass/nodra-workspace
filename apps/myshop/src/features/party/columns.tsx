@@ -9,6 +9,11 @@ export interface TableColumns {
 
   phone?: string;
   email?: string;
+  city?: string;
+  state?: string;
+  gstin?: string;
+  pan?: string;
+
   is_active: boolean | string | number;
   workflow_state: string;
   docstatus?: number;
@@ -29,7 +34,7 @@ export function createColumns(
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Party ID" />
+        <DataTableColumnHeader column={column} title="ID#" />
       ),
       enableSorting: true,
       cell: ({ row }) => (
@@ -45,14 +50,13 @@ export function createColumns(
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Party Name" />
+        <DataTableColumnHeader column={column} title="Name" />
       ),
       enableSorting: true,
       cell: ({ getValue }) => (
         <span className="font-medium">{displayValue(getValue())}</span>
       ),
     },
-
     {
       accessorKey: "phone",
       header: ({ column }) => (
@@ -62,13 +66,38 @@ export function createColumns(
       cell: ({ getValue }) => displayValue(getValue()),
     },
     {
-      accessorKey: "email",
+      accessorKey: "city",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Email" />
+        <DataTableColumnHeader column={column} title="City" />
       ),
       enableSorting: true,
       cell: ({ getValue }) => displayValue(getValue()),
     },
+    {
+      accessorKey: "state",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="State" />
+      ),
+      enableSorting: true,
+      cell: ({ getValue }) => displayValue(getValue()),
+    },
+    {
+      accessorKey: "gstin",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="GSTIN" />
+      ),
+      enableSorting: true,
+      cell: ({ getValue }) => displayValue(getValue()),
+    },
+    {
+      accessorKey: "pan",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="PAN" />
+      ),
+      enableSorting: true,
+      cell: ({ getValue }) => displayValue(getValue()),
+    },
+
     {
       accessorKey: "is_active",
       header: ({ column }) => (

@@ -54,6 +54,7 @@ function buildDoctypeJson(name: string, module: string): string {
     is_virtual: false,
     title_field: "title",
     search_fields: ["title"],
+
     fields: [
       {
         fieldname: "title",
@@ -64,7 +65,62 @@ function buildDoctypeJson(name: string, module: string): string {
         max_length: 140,
         in_list_view: true,
       },
+      {
+        fieldname: "workflow_state",
+        fieldtype: "Select",
+        label: "Workflow State",
+        options: ["Draft", "Confirmed", "Cancelled"],
+        default: "Draft",
+        read_only: true,
+        reqd: true,
+        in_list_view: true,
+        in_standard_filter: true,
+      },
     ],
+
+    workflow: {
+      state_field: "workflow_state",
+      states: [
+        {
+          state: "Draft",
+          doc_status: 0,
+          is_initial: true,
+          color: "gray",
+        },
+        {
+          state: "Confirmed",
+          doc_status: 51,
+          color: "green",
+        },
+        {
+          state: "Cancelled",
+          doc_status: 98,
+          is_final: true,
+          color: "red",
+        },
+      ],
+      transitions: [
+        {
+          from: "Draft",
+          action: "Confirm",
+          to: "Confirmed",
+          roles: ["System Manager", "Administrator"],
+        },
+        {
+          from: "Draft",
+          action: "Cancel",
+          to: "Cancelled",
+          roles: ["System Manager", "Administrator"],
+        },
+        {
+          from: "Confirmed",
+          action: "Cancel",
+          to: "Cancelled",
+          roles: ["System Manager", "Administrator"],
+        },
+      ],
+    },
+
     permissions: [
       {
         role: "System Manager",
@@ -72,9 +128,27 @@ function buildDoctypeJson(name: string, module: string): string {
         write: true,
         create: true,
         delete: true,
+        cancel: true,
+      },
+      {
+        role: "Administrator",
+        read: true,
+        write: true,
+        create: true,
+        delete: true,
+        cancel: true,
+      },
+      {
+        role: "Operator",
+        read: true,
+        write: true,
+        create: true,
+        delete: false,
+        cancel: false,
       },
     ],
   };
+
   return JSON.stringify(json, null, 2) + "\n";
 }
 

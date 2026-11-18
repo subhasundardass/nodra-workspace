@@ -5,6 +5,7 @@ import type { NodraForm } from "@/components/doctype/templates/doctype-form-temp
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LinkField } from "@/components/doctype/fields/link-field";
 
 interface BrokerFormProps {
   form: NodraForm;
@@ -52,7 +53,7 @@ function FormSection({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
         {children}
       </div>
     </section>
@@ -61,7 +62,7 @@ function FormSection({
 
 export function BrokerForm({ form }: BrokerFormProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FormSection
         title="Broker Information"
         description="Enter the broker's name and business category."
@@ -99,6 +100,34 @@ export function BrokerForm({ form }: BrokerFormProps) {
                 <option value="HUL">HUL</option>
                 <option value="AUCTION">Auction</option>
               </select>
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="gstin">
+          {(field) => (
+            <FieldRow label="GSTIN" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter GSTIN"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="pan">
+          {(field) => (
+            <FieldRow label="PAN" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Enter PAN"
+              />
             </FieldRow>
           )}
         </form.Field>
@@ -152,11 +181,12 @@ export function BrokerForm({ form }: BrokerFormProps) {
         <form.Field name="state">
           {(field) => (
             <FieldRow label="State" htmlFor={field.name} required>
-              <DataField
-                id={field.name}
-                name={field.name}
+              <LinkField
+                doctype="State"
+                titleField="state_name"
                 value={String(field.state.value ?? "")}
-                onChange={field.handleChange}
+                onChange={(value) => field.handleChange(String(value ?? ""))}
+                required
                 placeholder="Select State"
               />
             </FieldRow>

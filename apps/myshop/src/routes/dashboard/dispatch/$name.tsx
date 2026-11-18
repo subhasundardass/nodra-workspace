@@ -1,11 +1,9 @@
 import { useState } from "react";
-import type { ReactNode } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { DocTypeDefinition } from "nodra";
 import { toast } from "sonner";
 
 import { DocTypeFormTemplate } from "@/components/doctype/templates/doctype-form-template";
-
 import { callMethod } from "@/lib/call-method";
 import { DispatchForm } from "@/features/dispatch/form";
 
@@ -90,6 +88,7 @@ function RouteComponent() {
     received_date: String(
       dispatch?.received_date ?? new Date().toISOString().slice(0, 10),
     ),
+
     party: String(dispatch?.party ?? saleBook.party ?? ""),
     broker: String(dispatch?.broker ?? saleBook.broker ?? ""),
     transporter: String(dispatch?.transporter ?? ""),
@@ -105,6 +104,10 @@ function RouteComponent() {
 
     total_bags: Number(dispatch?.total_bags ?? saleBook.sold_bags ?? 0),
     total_kgs: Number(dispatch?.total_kgs ?? saleBook.sold_quantity ?? 0),
+
+    // Billing & Shipping Address
+    billing_address: String(dispatch?.billing_address ?? ""),
+    shipping_address: String(dispatch?.shipping_address ?? ""),
 
     remarks: String(dispatch?.remarks ?? ""),
     workflow_state: String(dispatch?.workflow_state ?? "Draft"),
@@ -133,7 +136,7 @@ function RouteComponent() {
       return;
     }
 
-    // 3. Party validation (manually selected)
+    // 3. Party validation
     const party = String(values.party ?? "").trim();
 
     if (!party) {
@@ -193,14 +196,21 @@ function RouteComponent() {
     // 7. Transporter (optional)
     const transporter = String(values.transporter ?? "").trim();
 
-    // 8. Prepare Dispatch document
+    // 8. Address values
+    const billingAddress = String(values.billing_address ?? "").trim();
+    const shippingAddress = String(values.shipping_address ?? "").trim();
+
+    // 9. Prepare Dispatch document
     const doc = {
       sale_book: String(saleBook.name),
       dispatch_date: dispatchDate,
       received_date: String(values.received_date ?? "").trim(),
 
-      // Party is selected manually in Dispatch
       party,
+
+      // Billing & Shipping Address
+      billing_address: billingAddress,
+      shipping_address: shippingAddress,
 
       // Broker comes from SaleBook
       broker: saleBook.broker || null,
@@ -233,7 +243,6 @@ function RouteComponent() {
 
         toast.success("Dispatch updated successfully.");
       } else {
-        console.log("Dispatch payload:", JSON.stringify(doc, null, 2));
         await callMethod("document.create", {
           doctype: doctype.name,
           doc,

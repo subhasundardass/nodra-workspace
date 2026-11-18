@@ -79,13 +79,6 @@ export const navGroups: NavGroup[] = [
             items: [],
           },
           {
-            title: "Offer Sheet List",
-            url: "/dashboard/offers",
-            icon: "page",
-            isActive: false,
-            items: [],
-          },
-          {
             title: "SaleBook",
             url: "/dashboard/salebook",
             icon: "product",
@@ -129,35 +122,35 @@ export const navGroups: NavGroup[] = [
       // 4.1. Invoice & Billing
       {
         title: "Invoice & Billing",
-        url: "#",
+        url: "/dashboard/billing",
         icon: "kanban",
         isActive: false,
         items: [
           {
             title: "Sales Invoices",
-            url: "/dashboard/offers",
+            url: "/dashboard/billing/sales-invoice",
             icon: "post",
             isActive: false,
             items: [],
           },
           {
             title: "Pending Invoices",
-            url: "/dashboard/offers",
-            icon: "page",
+            url: "/dashboard/billing/pending-invoices",
+            icon: "clock",
             isActive: false,
             items: [],
           },
           {
             title: "Sales Returns",
-            url: "/dashboard/salebook",
+            url: "/dashboard/billing/sales-returns",
             icon: "product",
             isActive: false,
             items: [],
           },
           {
             title: "Payment Receipts",
-            url: "/dashboard/salebook/pending-sale",
-            icon: "clock",
+            url: "/dashboard/billing/payment-receipts",
+            icon: "product",
             isActive: false,
             items: [],
           },
@@ -173,29 +166,29 @@ export const navGroups: NavGroup[] = [
         items: [
           {
             title: "Stock Overview",
-            url: "/dashboard/offers",
-            icon: "post",
+            url: "/dashboard/inventory/stock-overview",
+            icon: "product",
             isActive: false,
             items: [],
           },
           {
             title: "Stock by Location",
-            url: "/dashboard/offers",
-            icon: "page",
+            url: "/dashboard/inventory/stock-by-location",
+            icon: "product",
             isActive: false,
             items: [],
           },
           {
             title: "Stock Transfer",
-            url: "/dashboard/salebook",
+            url: "/dashboard/inventory/stock-transfer",
             icon: "product",
             isActive: false,
             items: [],
           },
           {
             title: "Stock Ledger",
-            url: "/dashboard/salebook/pending-sale",
-            icon: "clock",
+            url: "/dashboard/inventory/stock-ledger",
+            icon: "product",
             isActive: false,
             items: [],
           },
@@ -478,7 +471,7 @@ export const navGroups: NavGroup[] = [
         isActive: false,
         items: [
           {
-            title: "Party",
+            title: "Buyer",
             url: "/dashboard/party",
             icon: "user",
             isActive: false,
@@ -522,6 +515,13 @@ export const navGroups: NavGroup[] = [
           {
             title: "Warehouses",
             url: "/dashboard/master/warehouses",
+            icon: "workspace",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Discount Table",
+            url: "/dashboard/master/discount",
             icon: "workspace",
             isActive: false,
             items: [],

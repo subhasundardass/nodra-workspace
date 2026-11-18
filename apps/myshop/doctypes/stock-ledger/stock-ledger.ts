@@ -1,5 +1,5 @@
 /**
- * StockMovement DocType Controller
+ * StockLedger DocType Controller
  *
  * Override the lifecycle hooks below for custom validation/behavior.
  * ORM operations (app.orm.insert/update/deleteDoc) call these automatically
@@ -7,7 +7,7 @@
  */
 import { Document } from 'nodra/core/document/document';
 
-export class StockMovement extends Document {
+export class StockLedger extends Document {
   title!: string;
 
   // async beforeValidate(): Promise<void> {

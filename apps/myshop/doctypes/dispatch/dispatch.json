@@ -3,7 +3,7 @@
   "module": "App",
   "naming_series": "DPYY#####",
   "naming_rule": "series",
-  "is_submittable": false,
+  "is_submittable": true,
   "is_child": false,
   "is_single": false,
   "is_tree": false,
@@ -108,6 +108,16 @@
       "precision": 3
     },
     {
+      "fieldname": "billing_address",
+      "fieldtype": "SmallText",
+      "label": "Billing Address"
+    },
+    {
+      "fieldname": "shipping_address",
+      "fieldtype": "SmallText",
+      "label": "Shipping Address"
+    },
+    {
       "fieldname": "remarks",
       "fieldtype": "SmallText",
       "label": "Remarks"
@@ -128,6 +138,54 @@
       "in_standard_filter": true
     }
   ],
+  "workflow": {
+    "state_field": "workflow_state",
+    "states": [
+      {
+        "state": "Draft",
+        "doc_status": 0,
+        "is_initial": true
+      },
+      {
+        "state": "Confirmed",
+        "doc_status": 51
+      },
+      {
+        "state": "Cancelled",
+        "doc_status": 98,
+        "is_final": true
+      }
+    ],
+    "transitions": [
+      {
+        "action": "Confirm",
+        "from": "Draft",
+        "to": "Confirmed",
+        "roles": [
+          "System Manager",
+          "Administrator"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Draft",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      },
+      {
+        "action": "Cancel",
+        "from": "Confirmed",
+        "to": "Cancelled",
+        "roles": [
+          "Administrator",
+          "System Manager"
+        ]
+      }
+    ]
+  },
   "permissions": [
     {
       "role": "Administrator",
@@ -145,11 +203,19 @@
       "read": true,
       "write": true,
       "create": true,
-      "delete": false,
-      "submit": false,
-      "cancel": false,
-      "amend": false,
+      "delete": true,
+      "submit": true,
+      "cancel": true,
+      "amend": true,
       "if_owner": false
+    },
+    {
+      "role": "Operator",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "cancel": false
     }
   ]
 }

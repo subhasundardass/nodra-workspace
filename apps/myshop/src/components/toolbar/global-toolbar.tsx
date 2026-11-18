@@ -16,6 +16,7 @@ export type GlobalToolbarAction = {
     "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   disabled?: boolean;
   hidden?: boolean;
+
   onClick: () => void;
 };
 
