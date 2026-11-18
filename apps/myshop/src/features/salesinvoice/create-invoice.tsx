@@ -360,6 +360,7 @@ export function SalesInvoiceForm({
                 value={String(field.state.value ?? "")}
                 onChange={field.handleChange}
                 className="w-full"
+                readOnly
               />
             </FieldRow>
           )}
@@ -374,6 +375,7 @@ export function SalesInvoiceForm({
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
                 rows={3}
+                readOnly
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-none"
               />
             </FieldRow>
@@ -390,6 +392,7 @@ export function SalesInvoiceForm({
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
                 rows={3}
+                readOnly
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-none"
               />
             </FieldRow>

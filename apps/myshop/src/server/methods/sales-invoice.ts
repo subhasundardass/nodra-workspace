@@ -3,10 +3,13 @@
  *
  * Fetches confirmed Dispatch records that are pending invoicing.
  * Groups pending records by Buyer + Broker.
+ *
+ * Billing and Shipping addresses are read from Dispatch snapshots,
+ * preserving the addresses saved when each Dispatch was created.
  */
 
 import type { MethodRegistry } from "nodra";
-import type { Filters, ListOptions } from "nodra/orm/crud";
+import type { Filters } from "nodra/orm/crud";
 import { company } from "@/config/company";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
@@ -24,6 +27,25 @@ function isCancelled(data: DocumentData): boolean {
 
 function isConfirmed(data: DocumentData): boolean {
   return Number(data.docstatus) === 51 || data.workflow_state === "Confirmed";
+}
+
+function getText(value: unknown): string {
+  return String(value ?? "").trim();
+}
+
+function buildMap(records: unknown[]): Map<string, DocumentData> {
+  const map = new Map<string, DocumentData>();
+
+  for (const record of records) {
+    const data = serialise(record) as DocumentData;
+    const name = getText(data.name);
+
+    if (name) {
+      map.set(name, data);
+    }
+  }
+
+  return map;
 }
 
 export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
@@ -52,142 +74,90 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         : 0;
 
       const sortOrder =
-        String(ctx.args.sort_order ?? "asc").toLowerCase() === "desc"
-          ? "desc"
-          : "asc";
+        getText(ctx.args.sort_order).toLowerCase() === "desc" ? "desc" : "asc";
 
       const dispatchFilters: Filters = {
         docstatus: 51,
       };
 
-      const [dispatches, saleBooks, invoices, parties, brokers, lots] =
-        await Promise.all([
-          app.orm.getList("Dispatch", {
-            limit: 1000,
-            offset: 0,
-            filters: dispatchFilters,
-            orderBy: `dispatch_date ${sortOrder}`,
-          }),
+      const [
+        dispatchRecords,
+        saleBookRecords,
+        invoiceRecords,
+        partyRecords,
+        brokerRecords,
+        lotRecords,
+      ] = await Promise.all([
+        app.orm.getList("Dispatch", {
+          limit: 1000,
+          offset: 0,
+          filters: dispatchFilters,
+          orderBy: `dispatch_date ${sortOrder}`,
+        }),
 
-          app.orm.getList("SaleBook", {
-            limit: 1000,
-            offset: 0,
-            filters: {
-              docstatus: 51,
-            },
-          }),
+        app.orm.getList("SaleBook", {
+          limit: 1000,
+          offset: 0,
+          filters: { docstatus: 51 },
+        }),
 
-          app.orm.getList("SalesInvoice", {
-            limit: 1000,
-            offset: 0,
-            filters: {
-              docstatus: ["in", [0, 51]],
-            },
-          }),
+        app.orm.getList("SalesInvoice", {
+          limit: 1000,
+          offset: 0,
+          filters: {
+            docstatus: ["in", [0, 51]],
+          },
+        }),
 
-          app.orm.getList("Party", {
-            limit: 1000,
-            offset: 0,
-          }),
+        app.orm.getList("Party", {
+          limit: 1000,
+          offset: 0,
+        }),
 
-          app.orm.getList("Broker", {
-            limit: 1000,
-            offset: 0,
-          }),
+        app.orm.getList("Broker", {
+          limit: 1000,
+          offset: 0,
+        }),
 
-          app.orm.getList("Lots", {
-            limit: 1000,
-            offset: 0,
-          }),
-        ]);
+        app.orm.getList("Lots", {
+          limit: 1000,
+          offset: 0,
+        }),
+      ]);
 
       // --------------------------------------------------
-      // Map confirmed SaleBook records.
+      // Build lookup maps.
       // --------------------------------------------------
 
-      const saleBookMap = new Map<string, DocumentData>();
-
-      for (const sale of saleBooks) {
-        const data = serialise(sale) as DocumentData;
-
-        if (!isConfirmed(data) || isCancelled(data)) continue;
-
-        const saleName = String(data.name ?? "");
-
-        if (saleName) {
-          saleBookMap.set(saleName, data);
-        }
-      }
+      const saleBookMap = buildMap(saleBookRecords);
+      const partyMap = buildMap(partyRecords);
+      const brokerMap = buildMap(brokerRecords);
+      const lotMap = buildMap(lotRecords);
 
       // --------------------------------------------------
       // Identify Dispatch records already invoiced.
       //
-      // Draft and Confirmed invoices both reserve their
-      // Dispatch records.
-      // Cancelled invoices are excluded from this query.
+      // Draft and Confirmed invoices reserve Dispatches.
+      // Cancelled invoices release their Dispatches.
       // --------------------------------------------------
 
       const invoicedDispatches = new Set<string>();
 
-      for (const invoice of invoices) {
-        const data = serialise(invoice) as DocumentData;
+      for (const invoiceRecord of invoiceRecords) {
+        const invoice = serialise(invoiceRecord) as DocumentData;
 
-        if (isCancelled(data)) continue;
+        if (isCancelled(invoice)) continue;
 
-        const items = Array.isArray(data.items) ? data.items : [];
+        const items = Array.isArray(invoice.items) ? invoice.items : [];
 
         for (const item of items) {
-          const row = item as DocumentData;
-          const dispatchName = String(row.dispatch ?? "");
+          if (!item || typeof item !== "object") continue;
+
+          const dispatchName = getText((item as DocumentData).dispatch);
 
           if (dispatchName) {
             invoicedDispatches.add(dispatchName);
           }
-        }
-      }
-
-      // --------------------------------------------------
-      // Map Party details.
-      // --------------------------------------------------
-
-      const partyMap = new Map<string, DocumentData>();
-
-      for (const party of parties) {
-        const data = serialise(party) as DocumentData;
-        const partyName = String(data.name ?? "");
-
-        if (partyName) {
-          partyMap.set(partyName, data);
-        }
-      }
-
-      // --------------------------------------------------
-      // Map Broker details.
-      // --------------------------------------------------
-
-      const brokerMap = new Map<string, DocumentData>();
-
-      for (const broker of brokers) {
-        const data = serialise(broker) as DocumentData;
-        const brokerName = String(data.name ?? "");
-
-        if (brokerName) {
-          brokerMap.set(brokerName, data);
-        }
-      }
-
-      // --------------------------------------------------
-      // Map Lot details.
-      // --------------------------------------------------
-
-      const lotMap = new Map<string, DocumentData>();
-
-      for (const lot of lots) {
-        const data = serialise(lot) as DocumentData;
-        const lotName = String(data.name ?? "");
-
-        if (lotName) {
-          lotMap.set(lotName, data);
         }
       }
 
@@ -213,30 +183,26 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
       const groups = new Map<string, InvoiceGroup>();
 
-      for (const dispatch of dispatches) {
-        const data = serialise(dispatch) as DocumentData;
+      for (const dispatchRecord of dispatchRecords) {
+        const dispatch = serialise(dispatchRecord) as DocumentData;
 
-        if (!isConfirmed(data) || isCancelled(data)) continue;
+        if (!isConfirmed(dispatch) || isCancelled(dispatch)) continue;
 
-        const dispatchName = String(data.name ?? "");
-        const saleBookName = String(data.sale_book ?? "");
-        const buyerName = String(data.party ?? "");
+        const dispatchName = getText(dispatch.name);
+        const saleBookName = getText(dispatch.sale_book);
+        const buyerName = getText(dispatch.party);
 
-        if (!dispatchName || !saleBookName || !buyerName) {
-          continue;
-        }
+        if (!dispatchName || !saleBookName || !buyerName) continue;
 
-        // Exclude Dispatch records already invoiced.
-        if (invoicedDispatches.has(dispatchName)) {
-          continue;
-        }
+        // Exclude Dispatches already reserved by invoices.
+        if (invoicedDispatches.has(dispatchName)) continue;
 
         // Find the linked confirmed SaleBook.
         const sale = saleBookMap.get(saleBookName);
 
-        if (!sale) continue;
+        if (!sale || !isConfirmed(sale) || isCancelled(sale)) continue;
 
-        const brokerName = String(sale.broker ?? "");
+        const brokerName = getText(sale.broker);
 
         if (!brokerName) continue;
 
@@ -245,7 +211,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
         if (!party) continue;
 
-        const lotName = String(sale.lot ?? "");
+        const lotName = getText(sale.lot);
         const lot = lotMap.get(lotName);
 
         const groupKey = `${buyerName}::${brokerName}`;
@@ -253,31 +219,25 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         let group = groups.get(groupKey);
 
         if (!group) {
-          const addressParts = [
-            party.address,
-            party.city,
-            party.state,
-            party.pincode,
-            party.country,
-          ].filter(Boolean);
-
-          const address = addressParts.join(", ");
-
           group = {
             name: groupKey,
 
             buyer: buyerName,
-            buyer_name: String(party.title ?? buyerName),
+            buyer_name: getText(party.party_name || party.title || buyerName),
 
             broker: brokerName,
-            broker_name: String(broker?.title ?? brokerName),
+            broker_name: getText(
+              broker?.broker_name || broker?.title || brokerName,
+            ),
 
-            buyer_gstin: String(party.gstin ?? ""),
+            buyer_gstin: getText(party.gstin),
 
-            billing_address: address,
-            shipping_address: address,
+            // Addresses come from the Dispatch snapshot.
+            billing_address: getText(dispatch.billing_address),
+            shipping_address: getText(dispatch.shipping_address),
 
-            place_of_supply: String(party.state ?? ""),
+            // GST state remains sourced from Party master.
+            place_of_supply: getText(party.state),
 
             dispatch_count: 0,
             total_bags: 0,
@@ -289,8 +249,8 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
           groups.set(groupKey, group);
         }
 
-        const bags = toNumber(data.total_bags);
-        const kgs = toNumber(data.total_kgs);
+        const bags = toNumber(dispatch.total_bags);
+        const kgs = toNumber(dispatch.total_kgs);
 
         group.dispatch_count += 1;
         group.total_bags += bags;
@@ -300,8 +260,12 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
           // Dispatch information.
           name: dispatchName,
           dispatch: dispatchName,
-          dispatch_date: data.dispatch_date,
-          received_date: data.received_date,
+          dispatch_date: dispatch.dispatch_date,
+          received_date: dispatch.received_date,
+
+          // Dispatch address snapshots.
+          billing_address: getText(dispatch.billing_address),
+          shipping_address: getText(dispatch.shipping_address),
 
           // SaleBook reference.
           sale_book: saleBookName,
@@ -322,8 +286,8 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
           rate: toNumber(sale.rate),
 
           // Additional information.
-          payment_type: data.payment_type,
-          discount_percentage: toNumber(data.discount_percentage),
+          payment_type: dispatch.payment_type,
+          discount_percentage: toNumber(dispatch.discount_percentage),
         });
       }
 
@@ -358,14 +322,19 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
     { requireAuth: true },
   );
 
-  //Priview
+  /**
+   * Get invoice preview.
+   *
+   * Returns eligible Dispatch records for the selected Buyer + Broker.
+   * Billing and Shipping addresses come from the Dispatch snapshots.
+   */
   registry.register(
     "salesinvoice.get_invoice_preview",
     async (ctx) => {
       const app = await getNodra();
 
-      const buyer = String(ctx.args.buyer ?? "");
-      const broker = String(ctx.args.broker ?? "");
+      const buyer = getText(ctx.args.buyer);
+      const broker = getText(ctx.args.broker);
 
       if (!buyer || !broker) {
         throw new Error("Buyer and Broker are required.");
@@ -379,31 +348,40 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         partyRecords,
         brokerRecords,
       ] = await Promise.all([
-        app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
-        app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
-        app.orm.getList("Lots", { limit: 1000, offset: 0 }),
-        app.orm.getList("SalesInvoice", { limit: 1000, offset: 0 }),
-        app.orm.getList("Party", { limit: 1000, offset: 0 }),
-        app.orm.getList("Broker", { limit: 1000, offset: 0 }),
+        app.orm.getList("Dispatch", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("SaleBook", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("Lots", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("SalesInvoice", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("Party", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("Broker", {
+          limit: 1000,
+          offset: 0,
+        }),
       ]);
 
       // --------------------------------------------------
-      // Build document lookup maps
+      // Build lookup maps.
       // --------------------------------------------------
-
-      const buildMap = (records: any[]) => {
-        const map = new Map<string, DocumentData>();
-
-        for (const record of records) {
-          const data = serialise(record) as DocumentData;
-
-          if (data.name) {
-            map.set(String(data.name), data);
-          }
-        }
-
-        return map;
-      };
 
       const saleBooks = buildMap(saleBookRecords);
       const lots = buildMap(lotRecords);
@@ -411,7 +389,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
       const brokers = buildMap(brokerRecords);
 
       // --------------------------------------------------
-      // Resolve Buyer and Broker
+      // Resolve Buyer and Broker.
       // --------------------------------------------------
 
       const buyerRecord = parties.get(buyer);
@@ -425,25 +403,25 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         throw new Error(`Broker ${broker} not found.`);
       }
 
-      const buyerName = String(
-        buyerRecord.party_name ??
-          buyerRecord.title ??
-          buyerRecord.name ??
+      const buyerName = getText(
+        buyerRecord.party_name ||
+          buyerRecord.title ||
+          buyerRecord.name ||
           buyer,
       );
 
-      const brokerName = String(
-        brokerRecord.broker_name ??
-          brokerRecord.title ??
-          brokerRecord.name ??
+      const brokerName = getText(
+        brokerRecord.broker_name ||
+          brokerRecord.title ||
+          brokerRecord.name ||
           broker,
       );
 
       // --------------------------------------------------
-      // Resolve Buyer State
+      // Resolve Buyer State.
       // --------------------------------------------------
 
-      const stateName = String(buyerRecord.state ?? "").trim();
+      const stateName = getText(buyerRecord.state);
 
       const stateRecord = stateName
         ? await app.orm.getDoc("State", stateName)
@@ -453,82 +431,178 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         ? (serialise(stateRecord) as DocumentData)
         : {};
 
-      const stateTitle = String(stateData.state_name ?? stateName);
+      const stateTitle = getText(stateData.state_name) || stateName;
 
-      // Prefer the explicit GST code.
-      // Fall back to Party.state when it already contains a
-      // two-digit Indian GST state code, e.g. "19".
-      const storedGstCode = String(stateData.gst_state_code ?? "").trim();
+      const storedGstCode = getText(stateData.gst_state_code);
 
       const buyerStateCode = /^\d{2}$/.test(stateName)
         ? stateName
         : storedGstCode;
 
       // --------------------------------------------------
-      // Buyer Address and Details
+      // Find Dispatches Already Reserved by Invoices.
+      //
+      // Draft and Confirmed invoices reserve Dispatches.
+      // Cancelled invoices release their Dispatches.
       // --------------------------------------------------
 
-      const buyerAddress = [
-        buyerRecord.address,
-        buyerRecord.city,
-        buyerRecord.pincode,
-        stateTitle,
-      ]
-        .map((value) => String(value ?? "").trim())
-        .filter(Boolean)
-        .join(", ");
+      const reservedDispatches = new Set<string>();
+
+      for (const invoiceRecord of invoiceRecords) {
+        const invoice = serialise(invoiceRecord) as DocumentData;
+
+        if (isCancelled(invoice)) continue;
+
+        const items = Array.isArray(invoice.items) ? invoice.items : [];
+
+        for (const item of items) {
+          if (!item || typeof item !== "object") continue;
+
+          const dispatchName = getText((item as DocumentData).dispatch);
+
+          if (dispatchName) {
+            reservedDispatches.add(dispatchName);
+          }
+        }
+      }
+
+      // --------------------------------------------------
+      // Find Eligible Dispatches for Buyer + Broker.
+      // --------------------------------------------------
+
+      const documents = dispatchRecords
+        .map((record) => serialise(record) as DocumentData)
+        .filter((dispatch) => {
+          if (!isConfirmed(dispatch) || isCancelled(dispatch)) {
+            return false;
+          }
+
+          const dispatchName = getText(dispatch.name);
+
+          if (!dispatchName || reservedDispatches.has(dispatchName)) {
+            return false;
+          }
+
+          // Buyer must match the Dispatch Party.
+          if (getText(dispatch.party) !== buyer) {
+            return false;
+          }
+
+          const saleBook = saleBooks.get(getText(dispatch.sale_book));
+
+          if (!saleBook || !isConfirmed(saleBook) || isCancelled(saleBook)) {
+            return false;
+          }
+
+          // Broker is linked through the SaleBook.
+          return getText(saleBook.broker) === broker;
+        })
+        .map((dispatch) => {
+          const saleBook = saleBooks.get(getText(dispatch.sale_book))!;
+
+          const lotName = getText(saleBook.lot);
+          const lot = lots.get(lotName);
+
+          const bags = toNumber(dispatch.total_bags);
+          const kgs = toNumber(dispatch.total_kgs);
+          const rate = toNumber(saleBook.rate);
+
+          return {
+            // Dispatch identity.
+            name: getText(dispatch.name),
+            dispatch: getText(dispatch.name),
+            dispatch_date: getText(dispatch.dispatch_date),
+
+            // Address snapshots from Dispatch.
+            billing_address: getText(dispatch.billing_address),
+            shipping_address: getText(dispatch.shipping_address),
+
+            // Linked documents.
+            sale_book: getText(saleBook.name),
+            lot: lotName,
+            lot_no: getText(lot?.lot_no) || lotName,
+
+            // Lot details.
+            mark_brand: getText(lot?.mark_brand),
+            grade: getText(lot?.grade),
+
+            // Dispatch quantities.
+            bags,
+            kgs,
+
+            // Final agreed SaleBook rate.
+            rate,
+            amount: kgs * rate,
+          };
+        });
+
+      // --------------------------------------------------
+      // Buyer Address and Details.
+      //
+      // Use the first eligible Dispatch as the invoice
+      // address source. Never rebuild it from Party master.
+      // --------------------------------------------------
+
+      const firstDispatch = documents[0];
+
+      const billingAddress = getText(firstDispatch?.billing_address);
+
+      const shippingAddress = getText(firstDispatch?.shipping_address);
 
       const buyerDetails = {
         name: buyer,
         title: buyerName,
 
-        gstin: String(buyerRecord.gstin ?? ""),
-        pan: String(buyerRecord.pan ?? ""),
+        gstin: getText(buyerRecord.gstin),
+        pan: getText(buyerRecord.pan),
 
-        address: buyerAddress,
+        // Compatibility field for existing invoice UI.
+        address: billingAddress,
 
+        billing_address: billingAddress,
+        shipping_address: shippingAddress,
+
+        // Party master remains the source for GST state.
         state: stateName,
         state_name: stateTitle,
         state_code: buyerStateCode,
 
-        city: String(buyerRecord.city ?? ""),
-        pincode: String(buyerRecord.pincode ?? ""),
-        country: String(buyerRecord.country ?? "India"),
+        city: getText(buyerRecord.city),
+        pincode: getText(buyerRecord.pincode),
+        country: getText(buyerRecord.country) || "India",
 
-        phone: String(buyerRecord.phone ?? ""),
-        email: String(buyerRecord.email ?? ""),
+        phone: getText(buyerRecord.phone),
+        email: getText(buyerRecord.email),
       };
 
       // --------------------------------------------------
-      // Seller / Company GST Details
+      // Seller / Company GST Details.
       // --------------------------------------------------
 
       const sellerDetails = {
         name: company.name,
         gstin: company.gstin,
+
         address: [company.address1, company.address2]
           .filter(Boolean)
           .join(", "),
 
         state: company.state,
-        state_code: String(company.state_code ?? ""),
+        state_code: getText(company.state_code),
         phone: company.phone,
         email: company.email,
         website: company.website,
       };
 
       // --------------------------------------------------
-      // Place of Supply and GST Type
+      // Place of Supply and GST Type.
       // --------------------------------------------------
 
-      // Buyer state is the initial default.
-      // Verify the actual Place of Supply based on the
-      // delivery details and applicable GST rules.
       const placeOfSupply = stateName;
       const placeOfSupplyName = stateTitle;
       const placeOfSupplyCode = buyerStateCode;
 
-      const sellerStateCode = String(company.state_code ?? "").trim();
+      const sellerStateCode = getText(company.state_code);
 
       let isIntraState: boolean | null = null;
       let gstType = "";
@@ -539,106 +613,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
       }
 
       // --------------------------------------------------
-      // Find Dispatches Already Reserved by Invoices
-      // Draft and Confirmed invoices reserve Dispatches.
-      // Cancelled invoices release their Dispatches.
-      // --------------------------------------------------
-
-      const reservedDispatches = new Set<string>();
-
-      for (const record of invoiceRecords) {
-        const invoice = serialise(record) as DocumentData;
-
-        const isCancelled =
-          invoice.workflow_state === "Cancelled" ||
-          Number(invoice.docstatus) === 98;
-
-        if (isCancelled) continue;
-
-        const items = Array.isArray(invoice.items) ? invoice.items : [];
-
-        for (const item of items) {
-          if (!item || typeof item !== "object") continue;
-
-          const dispatchName = String((item as DocumentData).dispatch ?? "");
-
-          if (dispatchName) {
-            reservedDispatches.add(dispatchName);
-          }
-        }
-      }
-
-      // --------------------------------------------------
-      // Find Eligible Dispatches for Buyer + Broker
-      // --------------------------------------------------
-
-      const documents = dispatchRecords
-        .map((record) => serialise(record) as DocumentData)
-        .filter((dispatch) => {
-          const isConfirmed =
-            dispatch.workflow_state === "Confirmed" ||
-            Number(dispatch.docstatus) === 51;
-
-          if (!isConfirmed) return false;
-
-          const dispatchName = String(dispatch.name ?? "");
-
-          if (!dispatchName || reservedDispatches.has(dispatchName)) {
-            return false;
-          }
-
-          // Buyer must match the Dispatch Party.
-          if (String(dispatch.party ?? "") !== buyer) {
-            return false;
-          }
-
-          const saleBook = saleBooks.get(String(dispatch.sale_book ?? ""));
-
-          if (!saleBook) return false;
-
-          // Broker can be linked through SaleBook or Dispatch.
-          const saleBookBroker = String(saleBook.broker ?? "");
-          const dispatchBroker = String(dispatch.broker ?? "");
-
-          return saleBookBroker === broker || dispatchBroker === broker;
-        })
-        .map((dispatch) => {
-          const saleBook = saleBooks.get(String(dispatch.sale_book ?? ""))!;
-
-          const lotName = String(saleBook.lot ?? "");
-          const lot = lots.get(lotName);
-
-          const bags = toNumber(dispatch.total_bags);
-          const kgs = toNumber(dispatch.total_kgs);
-          const rate = toNumber(saleBook.rate);
-
-          return {
-            // Dispatch identity
-            name: String(dispatch.name ?? ""),
-            dispatch: String(dispatch.name ?? ""),
-            dispatch_date: String(dispatch.dispatch_date ?? ""),
-
-            // Linked documents
-            sale_book: String(saleBook.name ?? ""),
-            lot: lotName,
-            lot_no: String(lot?.lot_no ?? lotName),
-
-            // Lot details
-            mark_brand: String(lot?.mark_brand ?? ""),
-            grade: String(lot?.grade ?? ""),
-
-            // Dispatch quantities
-            bags,
-            kgs,
-
-            // Final agreed SaleBook rate
-            rate,
-            amount: kgs * rate,
-          };
-        });
-
-      // --------------------------------------------------
-      // Return Invoice Preview
+      // Return Invoice Preview.
       // --------------------------------------------------
 
       return {
@@ -651,7 +626,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         buyer_details: buyerDetails,
         seller_details: sellerDetails,
 
-        // GST information
+        // GST information.
         place_of_supply: placeOfSupply,
         place_of_supply_name: placeOfSupplyName,
         place_of_supply_code: placeOfSupplyCode,
@@ -660,7 +635,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
         is_intra_state: isIntraState,
         gst_type: gstType,
-        gst_rate: 5, //This is static becouse we are working only on Tea
+        gst_rate: 5, // Tea GST rate.
 
         dispatches: documents,
         total_count: documents.length,
