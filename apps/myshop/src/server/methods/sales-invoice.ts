@@ -359,6 +359,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
   );
 
   //Priview
+
   registry.register(
     "salesinvoice.get_invoice_preview",
     async (ctx) => {
@@ -371,57 +372,121 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         throw new Error("Buyer and Broker are required.");
       }
 
-      const [dispatchRecords, saleBookRecords, lotRecords, invoiceRecords] =
-        await Promise.all([
-          app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
-          app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
-          app.orm.getList("Lots", { limit: 1000, offset: 0 }),
-          app.orm.getList("SalesInvoice", { limit: 1000, offset: 0 }),
-        ]);
+      const [
+        dispatchRecords,
+        saleBookRecords,
+        lotRecords,
+        invoiceRecords,
+        partyRecords,
+        brokerRecords,
+      ] = await Promise.all([
+        app.orm.getList("Dispatch", { limit: 1000, offset: 0 }),
+        app.orm.getList("SaleBook", { limit: 1000, offset: 0 }),
+        app.orm.getList("Lots", { limit: 1000, offset: 0 }),
+        app.orm.getList("SalesInvoice", { limit: 1000, offset: 0 }),
+        app.orm.getList("Party", { limit: 1000, offset: 0 }),
+        app.orm.getList("Broker", { limit: 1000, offset: 0 }),
+      ]);
+
+      // --------------------------------------------------
+      // Build document lookup maps
+      // --------------------------------------------------
 
       const saleBooks = new Map<string, DocumentData>();
+
       for (const record of saleBookRecords) {
         const data = serialise(record) as DocumentData;
+
         if (data.name) {
           saleBooks.set(String(data.name), data);
         }
       }
 
       const lots = new Map<string, DocumentData>();
+
       for (const record of lotRecords) {
         const data = serialise(record) as DocumentData;
+
         if (data.name) {
           lots.set(String(data.name), data);
         }
       }
 
-      // Dispatches already reserved by Draft or Confirmed invoices.
+      const parties = new Map<string, DocumentData>();
+
+      for (const record of partyRecords) {
+        const data = serialise(record) as DocumentData;
+
+        if (data.name) {
+          parties.set(String(data.name), data);
+        }
+      }
+
+      const brokers = new Map<string, DocumentData>();
+
+      for (const record of brokerRecords) {
+        const data = serialise(record) as DocumentData;
+
+        if (data.name) {
+          brokers.set(String(data.name), data);
+        }
+      }
+
+      // --------------------------------------------------
+      // Resolve Buyer and Broker display names
+      // --------------------------------------------------
+
+      const buyerRecord = parties.get(buyer);
+      const brokerRecord = brokers.get(broker);
+
+      const buyerName = String(
+        buyerRecord?.party_name ??
+          buyerRecord?.title ??
+          buyerRecord?.name ??
+          buyer,
+      );
+
+      const brokerName = String(
+        brokerRecord?.broker_name ??
+          brokerRecord?.title ??
+          brokerRecord?.name ??
+          broker,
+      );
+
+      // --------------------------------------------------
+      // Find Dispatches already reserved by invoices
+      // Draft and Confirmed invoices both reserve Dispatches.
+      // Cancelled invoices release their Dispatches.
+      // --------------------------------------------------
+
       const reservedDispatches = new Set<string>();
 
       for (const record of invoiceRecords) {
         const invoice = serialise(record) as DocumentData;
 
-        if (
+        const isCancelled =
           invoice.workflow_state === "Cancelled" ||
-          Number(invoice.docstatus) === 98
-        ) {
-          continue;
-        }
+          Number(invoice.docstatus) === 98;
+
+        if (isCancelled) continue;
 
         const items = Array.isArray(invoice.items) ? invoice.items : [];
 
         for (const item of items) {
           if (!item || typeof item !== "object") continue;
 
-          const dispatch = String((item as DocumentData).dispatch ?? "");
+          const dispatchName = String((item as DocumentData).dispatch ?? "");
 
-          if (dispatch) {
-            reservedDispatches.add(dispatch);
+          if (dispatchName) {
+            reservedDispatches.add(dispatchName);
           }
         }
       }
 
-      // Find eligible Dispatch records for this Buyer + Broker.
+      // --------------------------------------------------
+      // Find eligible Dispatches for Buyer + Broker
+      // --------------------------------------------------
+
       const documents = dispatchRecords
         .map((record) => serialise(record) as DocumentData)
         .filter((dispatch) => {
@@ -431,10 +496,13 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
           if (!isConfirmed) return false;
 
-          if (reservedDispatches.has(String(dispatch.name ?? ""))) {
+          const dispatchName = String(dispatch.name ?? "");
+
+          if (!dispatchName || reservedDispatches.has(dispatchName)) {
             return false;
           }
 
+          // Buyer must match the Dispatch Party.
           if (String(dispatch.party ?? "") !== buyer) {
             return false;
           }
@@ -443,10 +511,11 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
           if (!saleBook) return false;
 
+          // Broker can be linked through SaleBook or Dispatch.
           const saleBookBroker = String(saleBook.broker ?? "");
           const dispatchBroker = String(dispatch.broker ?? "");
 
-          return (saleBookBroker || dispatchBroker) === broker;
+          return saleBookBroker === broker || dispatchBroker === broker;
         })
         .map((dispatch) => {
           const saleBook = saleBooks.get(String(dispatch.sale_book ?? ""))!;
@@ -460,8 +529,8 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
 
           return {
             // Dispatch identity
-            name: String(dispatch.name),
-            dispatch: String(dispatch.name),
+            name: String(dispatch.name ?? ""),
+            dispatch: String(dispatch.name ?? ""),
             dispatch_date: String(dispatch.dispatch_date ?? ""),
 
             // Linked documents
@@ -477,7 +546,7 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
             bags,
             kgs,
 
-            // SaleBook agreed rate
+            // Final agreed SaleBook rate
             rate,
             amount: kgs * rate,
           };
@@ -486,6 +555,8 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
       return {
         buyer,
         broker,
+        buyer_name: buyerName,
+        broker_name: brokerName,
         dispatches: documents,
         total_count: documents.length,
       };

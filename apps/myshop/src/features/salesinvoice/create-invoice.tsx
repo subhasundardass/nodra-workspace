@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Input } from "@/components/ui/input";
-import { DataField } from "@/components/doctype/fields/data-field";
 import { DateField } from "@/components/doctype/fields/date-field";
 import { LinkField } from "@/components/doctype/fields/link-field";
 
@@ -30,13 +29,20 @@ interface SalesInvoiceFormProps {
   form: NodraForm;
   buyer: string;
   broker: string;
+  buyerName: string;
+  brokerName: string;
 }
 
-type DocumentRecord = Record<string, unknown>;
-
 type InvoicePreviewResponse = {
+  buyer_name?: string;
+  broker_name?: string;
   dispatches: InvoiceDispatch[];
   total_count: number;
+};
+
+type PreviewNames = {
+  buyerName: string;
+  brokerName: string;
 };
 
 function FieldRow({
@@ -56,6 +62,7 @@ function FieldRow({
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </label>
+
       <div className="min-w-0 *:w-full">{children}</div>
     </div>
   );
@@ -84,6 +91,10 @@ function FormSection({
   );
 }
 
+/**
+ * Display-only field.
+ * This is deliberately not connected to the DocType form state.
+ */
 function ReadOnlyField({
   label,
   name,
@@ -91,17 +102,17 @@ function ReadOnlyField({
 }: {
   label: string;
   name: string;
-  value: unknown;
+  value: string;
 }) {
   return (
     <FieldRow label={label} htmlFor={name}>
-      <DataField
+      <Input
         id={name}
         name={name}
-        value={String(value ?? "")}
-        onChange={() => undefined}
+        value={value}
         readOnly
-        className="w-full"
+        tabIndex={-1}
+        className="w-full bg-muted/50 shadow-none"
       />
     </FieldRow>
   );
@@ -111,13 +122,26 @@ export function SalesInvoiceForm({
   form,
   buyer,
   broker,
+  buyerName,
+  brokerName,
 }: SalesInvoiceFormProps) {
   const [dispatches, setDispatches] = React.useState<InvoiceDispatch[]>([]);
   const [selectedDispatches, setSelectedDispatches] = React.useState<string[]>(
     [],
   );
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Names returned by the preview method can be used as a fallback
+  // if the route does not provide them.
+  const [previewNames, setPreviewNames] = React.useState<PreviewNames>({
+    buyerName: "",
+    brokerName: "",
+  });
+
+  const displayBuyerName = buyerName || previewNames.buyerName;
+  const displayBrokerName = brokerName || previewNames.brokerName;
 
   // Load eligible Dispatch records for the selected Buyer and Broker.
   React.useEffect(() => {
@@ -127,16 +151,19 @@ export function SalesInvoiceForm({
       if (!buyer || !broker) {
         setDispatches([]);
         setSelectedDispatches([]);
+        setPreviewNames({ buyerName: "", brokerName: "" });
         setError(null);
+        setLoading(false);
         return;
       }
 
-      try {
-        setLoading(true);
-        setError(null);
-        setDispatches([]);
-        setSelectedDispatches([]);
+      setLoading(true);
+      setError(null);
+      setDispatches([]);
+      setSelectedDispatches([]);
+      setPreviewNames({ buyerName: "", brokerName: "" });
 
+      try {
         const result = await callMethod<InvoicePreviewResponse>(
           "salesinvoice.get_invoice_preview",
           {
@@ -148,15 +175,20 @@ export function SalesInvoiceForm({
         if (cancelled) return;
 
         setDispatches(result.dispatches ?? []);
+
+        setPreviewNames({
+          buyerName: result.buyer_name ?? "",
+          brokerName: result.broker_name ?? "",
+        });
       } catch (err) {
-        if (!cancelled) {
-          setDispatches([]);
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load eligible Dispatch records.",
-          );
-        }
+        if (cancelled) return;
+
+        setDispatches([]);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load eligible Dispatch records.",
+        );
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -188,7 +220,7 @@ export function SalesInvoiceForm({
       }));
   }, [dispatches, selectedDispatches]);
 
-  // Keep the DocType form's child table synchronized.
+  // Keep the SalesInvoice child table synchronized with selected Dispatches.
   React.useEffect(() => {
     form.setFieldValue("items", selectedItems);
   }, [form, selectedItems]);
@@ -203,8 +235,17 @@ export function SalesInvoiceForm({
         title="Invoice Details"
         description="Review the buyer, broker and invoice date."
       >
-        <ReadOnlyField label="Buyer" name="buyer_display" value={buyer} />
-        <ReadOnlyField label="Broker" name="broker_display" value={broker} />
+        <ReadOnlyField
+          label="Buyer"
+          name="buyer_display"
+          value={displayBuyerName}
+        />
+
+        <ReadOnlyField
+          label="Broker"
+          name="broker_display"
+          value={displayBrokerName}
+        />
 
         <form.Field name="invoice_date">
           {(field) => (
