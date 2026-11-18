@@ -75,7 +75,7 @@ function DashboardLayout() {
           <Header />
           <InfobarProvider defaultOpen={false}>
             <Outlet />
-            <InfoSidebar side="right" />
+            {/* <InfoSidebar side="right" /> */}
           </InfobarProvider>
         </SidebarInset>
       </SidebarProvider>

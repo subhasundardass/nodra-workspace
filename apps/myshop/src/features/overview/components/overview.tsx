@@ -546,7 +546,7 @@ export default function TeaDashboard() {
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-7">
         {/* Financial Year Performance */}
-        <Card className="gap-4 rounded-md py-4 shadow-none xl:col-span-4">
+        <Card className="min-w-0 w-full gap-4 rounded-md py-4 shadow-none xl:col-span-4">
           <CardHeader className="px-4">
             <CardTitle className="text-base">Business Performance</CardTitle>
             <CardDescription>
@@ -554,7 +554,7 @@ export default function TeaDashboard() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="px-2 sm:px-4">
+          <CardContent className="min-w-0 w-full px-2 sm:px-4">
             <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 px-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-blue-600" />
@@ -574,8 +574,14 @@ export default function TeaDashboard() {
               </div>
             </div>
 
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="relative h-[300px] w-full min-w-0">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={0}
+                debounce={100}
+              >
                 <LineChart
                   data={yearlyPerformance}
                   margin={{ top: 8, right: 8, left: -16, bottom: 0 }}

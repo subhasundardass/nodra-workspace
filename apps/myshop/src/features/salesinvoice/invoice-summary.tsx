@@ -32,13 +32,6 @@ export function InvoiceSummary({
   gstRate,
   gstType,
 }: InvoiceSummaryProps) {
-  console.log("GST DEBUG:", {
-    gstType,
-    gstRate,
-    selectedDispatches,
-    dispatches,
-  });
-
   const summary = useMemo(() => {
     const selected = dispatches.filter((item) =>
       selectedDispatches.includes(item.name),

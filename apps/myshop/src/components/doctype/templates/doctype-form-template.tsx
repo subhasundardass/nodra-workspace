@@ -524,8 +524,8 @@ export function DocTypeFormTemplate({
           Loading document...
         </div>
       ) : (
-        <div className="grid w-full min-w-0 grid-cols-1 items-start gap-6 md:grid-cols-3">
-          <div className="min-w-0 rounded-sm border bg-blue-50 p-6 dark:bg-muted/30 md:col-span-2">
+        <div className="grid w-full min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-[3fr_1fr]">
+          <div className="min-w-0 rounded-sm border bg-blue-50 p-5 dark:bg-muted/30">
             <form
               id={`doctype-form-${doctype.name}`}
               onSubmit={(event) => {
