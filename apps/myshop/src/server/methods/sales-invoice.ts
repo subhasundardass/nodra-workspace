@@ -538,16 +538,6 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
         gstType = isIntraState ? "Intra-State" : "Inter-State";
       }
 
-      console.log("GST FINAL CHECK:", {
-        buyerState: stateTitle,
-        buyerStateCode,
-        sellerState: company.state,
-        sellerStateCode,
-        placeOfSupplyCode,
-        isIntraState,
-        gstType,
-      });
-
       // --------------------------------------------------
       // Find Dispatches Already Reserved by Invoices
       // Draft and Confirmed invoices reserve Dispatches.
