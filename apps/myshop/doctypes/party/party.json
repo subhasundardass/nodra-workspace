@@ -27,6 +27,7 @@
       "description": "Name of the company or individual.",
       "reqd": true,
       "max_length": 140,
+      "unique": true,
       "in_list_view": true
     },
     {
@@ -82,6 +83,18 @@
       "label": "PAN",
       "reqd": true,
       "description": "Permanent Account Number, if applicable."
+    },
+    {
+      "fieldname": "billing_name",
+      "fieldtype": "Data",
+      "label": "Billing Name",
+      "description": "Name to be used for billing purposes."
+    },
+    {
+      "fieldname": "tmco_number",
+      "fieldtype": "Data",
+      "label": "TMCO Number",
+      "description": "Tea Marketing Control Order (TMCO) registration number."
     },
     {
       "fieldname": "state",

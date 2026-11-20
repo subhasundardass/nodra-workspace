@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 export interface TransporterFormValues {
   title: string;
   phone: string;
+  gstin: string;
   contact_person: string;
   address: string;
 }
@@ -28,6 +29,7 @@ interface TransporterFormSheetProps {
 const defaultValues: TransporterFormValues = {
   title: "",
   phone: "",
+  gstin: "",
   contact_person: "",
   address: "",
 };
@@ -115,6 +117,25 @@ export default function TransporterFormSheet({
                   onBlur={field.handleBlur}
                   onChange={(event) => field.handleChange(event.target.value)}
                   placeholder="Enter phone number"
+                />
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="gstin">
+            {(field) => (
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>GSTIN</Label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) =>
+                    field.handleChange(event.target.value.toUpperCase())
+                  }
+                  maxLength={15}
+                  placeholder="Enter GSTIN"
                 />
               </div>
             )}

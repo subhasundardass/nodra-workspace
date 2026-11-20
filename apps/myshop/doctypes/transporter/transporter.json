@@ -20,6 +20,7 @@
       "label": "Transporter Name",
       "fieldtype": "Data",
       "reqd": true,
+      "unique": true,
       "in_list_view": true
     },
     {
@@ -27,6 +28,13 @@
       "label": "Phone",
       "fieldtype": "Data",
       "in_list_view": true
+    },
+    {
+      "fieldname": "gstin",
+      "fieldtype": "Data",
+      "label": "GSTIN",
+      "max_length": 15,
+      "in_list_view": false
     },
     {
       "fieldname": "contact_person",

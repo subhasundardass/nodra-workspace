@@ -20,6 +20,7 @@ export interface ColumnInfo {
   data_type: string;
   is_nullable: string; // 'YES' or 'NO'
   column_default: string | null;
+  is_unique: boolean;
 }
 
 // --- Reserved words that need quoting ---
@@ -184,23 +185,34 @@ export class SchemaSync {
     }
 
     const tableName = toTableName(doctype.name);
-    const existingColumnNames = new Set(
-      existingColumns.map((column) => column.column_name),
+    const existingColumnMap = new Map(
+      existingColumns.map((column) => [column.column_name, column]),
     );
 
     const alterStatements: string[] = [];
 
-    // doctype.fields is the complete field list after standard-field
-    // injection.
     for (const field of doctype.fields) {
       if (!isDataField(field.fieldtype)) {
         continue;
       }
 
-      if (existingColumnNames.has(field.fieldname)) {
+      const existingColumn = existingColumnMap.get(field.fieldname);
+
+      // Existing column: add UNIQUE constraint if missing.
+      if (existingColumn) {
+        if (field.unique && !existingColumn.is_unique) {
+          const indexName = `uq_${tableName}_${field.fieldname}`;
+
+          alterStatements.push(
+            `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ` +
+              `ON ${tableName} (${quoteIdent(field.fieldname)})`,
+          );
+        }
+
         continue;
       }
 
+      // New column.
       const pgType = getPgType(field.fieldtype, field.max_length);
 
       if (!pgType) {

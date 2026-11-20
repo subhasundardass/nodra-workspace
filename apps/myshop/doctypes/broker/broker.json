@@ -32,7 +32,8 @@
       "options": [
         "PRIVATE",
         "TATA",
-        "HUL"
+        "HUL",
+        "AUCTION"
       ],
       "reqd": false
     },
