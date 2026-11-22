@@ -141,11 +141,9 @@ export class SchemaSync {
     // Standard indexes.
     indexes.push(this.createIndexSql(tableName, "modified"));
     indexes.push(this.createIndexSql(tableName, "owner"));
+    indexes.push(this.createIndexSql(tableName, "docstatus"));
 
     // Child table indexes.
-    //
-    // These fields are already present in doctype.fields when
-    // injectStandardFields() has been applied.
     if (doctype.is_child) {
       indexes.push(this.createIndexSql(tableName, "parent"));
       indexes.push(this.createIndexSql(tableName, "parenttype"));
@@ -167,7 +165,8 @@ export class SchemaSync {
       }
     }
 
-    return indexes;
+    // Remove duplicate index statements.
+    return [...new Set(indexes)];
   }
 
   /**
@@ -185,8 +184,13 @@ export class SchemaSync {
     }
 
     const tableName = toTableName(doctype.name);
+
+    // PostgreSQL normalizes unquoted identifiers to lowercase.
     const existingColumnMap = new Map(
-      existingColumns.map((column) => [column.column_name, column]),
+      existingColumns.map((column) => [
+        column.column_name.toLowerCase(),
+        column,
+      ]),
     );
 
     const alterStatements: string[] = [];
@@ -196,12 +200,13 @@ export class SchemaSync {
         continue;
       }
 
-      const existingColumn = existingColumnMap.get(field.fieldname);
+      const fieldName = field.fieldname.toLowerCase();
+      const existingColumn = existingColumnMap.get(fieldName);
 
-      // Existing column: add UNIQUE constraint if missing.
+      // Existing column: add UNIQUE index if missing.
       if (existingColumn) {
         if (field.unique && !existingColumn.is_unique) {
-          const indexName = `uq_${tableName}_${field.fieldname}`;
+          const indexName = `uq_${tableName}_${fieldName}`;
 
           alterStatements.push(
             `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ` +
