@@ -57,6 +57,55 @@
       "label": "Phone",
       "reqd": false,
       "max_length": 30
+    },
+    {
+      "fieldname": "bank_name",
+      "fieldtype": "Data",
+      "label": "Bank Name",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "bank_account_no",
+      "fieldtype": "Data",
+      "label": "Account No",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "tmco_no",
+      "fieldtype": "Data",
+      "label": "TMCO No",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "pan",
+      "fieldtype": "Data",
+      "label": "PAN",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "cin",
+      "fieldtype": "Data",
+      "label": "CIN",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "gstin",
+      "fieldtype": "Data",
+      "label": "GST",
+      "reqd": true,
+      "max_length": 30
+    },
+    {
+      "fieldname": "fssai",
+      "fieldtype": "Data",
+      "label": "FSSAI",
+      "reqd": true,
+      "max_length": 30
     }
   ],
   "permissions": [
