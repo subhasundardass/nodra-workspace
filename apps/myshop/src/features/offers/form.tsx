@@ -186,7 +186,8 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                 lot.factory,
                 lot.grade,
                 lot.original_brand,
-                lot.warehouse,
+                // lot.warehouse,
+                lot.original_brand,
               ].some((value) =>
                 String(value ?? "")
                   .toLowerCase()
@@ -219,7 +220,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                   lot_no: lot.lot_no ?? "",
                   grade: lot.grade ?? "",
                   original_brand: lot.original_brand ?? "",
-                  warehouse: lot.warehouse ?? "",
+                  // warehouse: lot.warehouse ?? "",
                   bags: lot.bags ?? 0,
                   bag_from_serial_no: lot.bag_from_serial_no,
                   bag_to_serial_no: lot.bag_to_serial_no,
@@ -264,12 +265,13 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                 {/* Selected Lots Table */}
                 {rows.length > 0 ? (
                   <div className="overflow-x-auto rounded-md border">
-                    <table className="w-full min-w-[850px] text-sm">
+                    <table className="w-full min-w-212.5 text-sm">
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr className="text-left">
                           <th className="px-2 py-2 font-medium">Lot No</th>
                           <th className="px-2 py-2 font-medium">Factory</th>
                           <th className="px-2 py-2 font-medium">Grade</th>
+                          <th className="px-2 py-2 font-medium">Brand</th>
                           <th className="px-2 py-2 font-medium">Bags</th>
                           <th className="px-2 py-2 font-medium">Total KG</th>
                           <th className="px-2 py-2 font-medium">Asking Rate</th>
@@ -286,6 +288,9 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                             </td>
                             <td className="px-2 py-2">{row.factory || "-"}</td>
                             <td className="px-2 py-2">{row.grade || "-"}</td>
+                            <td className="px-2 py-2">
+                              {row.original_brand || "-"}
+                            </td>
                             <td className="px-2 py-2 tabular-nums">
                               {Number(row.bags ?? 0).toLocaleString("en-IN")}
                             </td>
@@ -294,6 +299,8 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                 maximumFractionDigits: 2,
                               })}
                             </td>
+
+                            {/* add brand here */}
                             <td className="px-2 py-2">
                               <form.Field
                                 name={`offer_lots[${index}].asking_rate`}
@@ -339,7 +346,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                       )
                                     }
                                     placeholder="Enter remarks"
-                                    className="min-h-8 min-w-[180px] resize-y"
+                                    className="min-h-8 min-w-45 resize-y"
                                     rows={1}
                                   />
                                 )}
@@ -447,7 +454,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                           </p>
                         ) : (
                           <div className="overflow-x-auto rounded-md border">
-                            <table className="w-full min-w-[650px] text-xs">
+                            <table className="w-full min-w-162.5 text-sm">
                               <thead className="bg-muted/50 text-muted-foreground">
                                 <tr className="text-left">
                                   <th className="w-10 px-2 py-2 font-medium">
@@ -463,7 +470,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                     Grade
                                   </th>
                                   <th className="px-2 py-2 font-medium">
-                                    Warehouse
+                                    Brand
                                   </th>
                                   <th className="px-2 py-2 font-medium">
                                     Bags
@@ -510,7 +517,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                         {lot.grade || "-"}
                                       </td>
                                       <td className="px-2 py-2">
-                                        {lot.warehouse || "-"}
+                                        {lot.original_brand || "-"}
                                       </td>
                                       <td className="px-2 py-2 tabular-nums">
                                         {Number(lot.bags ?? 0).toLocaleString(
