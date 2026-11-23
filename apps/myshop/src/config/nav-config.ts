@@ -205,32 +205,9 @@ export const navGroups: NavGroup[] = [
           // Lot Reports
           {
             title: "Lot Reports",
-            url: "#",
+            url: "/dashboard/reports/lot",
             icon: "product",
             isActive: false,
-            items: [
-              {
-                title: "Lot Registration",
-                url: "/dashboard/reports/lots",
-                icon: "page",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Lot Arrival Report",
-                url: "#",
-                icon: "calendar",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Mark / Grade-wise Lots",
-                url: "#",
-                icon: "forms",
-                isActive: false,
-                items: [],
-              },
-            ],
           },
 
           // Quality & Valuation Reports

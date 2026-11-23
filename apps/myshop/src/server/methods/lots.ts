@@ -11,4 +11,75 @@ import { Lots } from "../../../doctypes/lots/lots";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
-export function registerLotsMethods(registry: MethodRegistry): void {}
+type LotReportArgs = {
+  limit?: number;
+  offset?: number;
+  sort_order?: "asc" | "desc";
+  factory?: string;
+  original_brand?: string;
+  workflow_state?: string;
+};
+
+export function registerLotsMethods(registry: MethodRegistry): void {
+  registry.register(
+    "lots.report.index",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const args = (ctx.args ?? {}) as LotReportArgs;
+      const limit = Math.min(Math.max(Number(args.limit) || 100, 1), 1000);
+      const offset = Math.max(Number(args.offset) || 0, 0);
+      const sortOrder = args.sort_order === "asc" ? "asc" : "desc";
+      const filters: Filters = {};
+
+      if (args.factory) {
+        filters.factory = args.factory;
+      }
+
+      if (args.original_brand) {
+        filters.original_brand = args.original_brand;
+      }
+
+      if (args.workflow_state) {
+        filters.workflow_state = args.workflow_state;
+      }
+
+      const options: ListOptions = {
+        limit,
+        offset,
+        orderBy: `entry_date ${sortOrder}`,
+      };
+
+      const documents = await app.orm.getList("Lots", {
+        ...options,
+        filters,
+      });
+
+      const totalCount = await app.orm.getCount("Lots", filters);
+
+      const records = documents.map((document) => {
+        const record = serialise(document);
+
+        const bags = Number(record.bags ?? 0);
+        const netKgPerBag = Number(record.net_kg_per_bag ?? 0);
+
+        return {
+          ...record,
+          bags,
+          net_kg_per_bag: netKgPerBag,
+          total_kgs: bags * netKgPerBag,
+        };
+      });
+
+      return {
+        documents: records,
+        total_count: totalCount,
+        limit,
+        offset,
+      };
+    },
+    {
+      requireAuth: true,
+    },
+  );
+}
