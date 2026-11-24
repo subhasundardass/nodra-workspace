@@ -219,7 +219,7 @@ export const navGroups: NavGroup[] = [
           // Sales Reports
           {
             title: "Sale Reports",
-            url: "/dashboard/reports/offer",
+            url: "/dashboard/reports/sale",
             icon: "product",
             isActive: false,
           },

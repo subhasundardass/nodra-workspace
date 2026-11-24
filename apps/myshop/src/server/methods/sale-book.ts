@@ -585,4 +585,140 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
     },
     { requireAuth: true },
   );
+
+  /**
+   * Sale Report.
+   *
+   * Displays one row per confirmed SaleBook entry.
+   * Lot and Broker information are included in each row.
+   */
+  registry.register(
+    "sale.report.index",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const requestedLimit = Number(ctx.args.limit);
+      const requestedOffset = Number(ctx.args.offset);
+
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(1000, Math.max(1, Math.trunc(requestedLimit)))
+        : 100;
+
+      const offset = Number.isFinite(requestedOffset)
+        ? Math.max(0, Math.trunc(requestedOffset))
+        : 0;
+
+      const sortOrder =
+        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
+          ? "asc"
+          : "desc";
+
+      const filters: Filters = {
+        docstatus: 51,
+      };
+
+      const options: ListOptions = {
+        limit,
+        offset,
+        orderBy: `sale_date ${sortOrder}`,
+      };
+
+      const [saleEntries, totalCount, lots, brokers] = await Promise.all([
+        app.orm.getList("SaleBook", {
+          ...options,
+          filters,
+        }),
+
+        app.orm.getCount("SaleBook", filters),
+
+        app.orm.getList("Lots", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("Broker", {
+          limit: 1000,
+          offset: 0,
+        }),
+      ]);
+
+      // Map Lot information.
+      const lotMap = new Map<string, DocumentData>();
+
+      for (const lot of lots) {
+        const data = serialise(lot) as DocumentData;
+        const name = String(data.name ?? "");
+
+        if (name) {
+          lotMap.set(name, data);
+        }
+      }
+
+      // Map Broker titles.
+      const brokerMap = new Map<string, string>();
+
+      for (const broker of brokers) {
+        const data = serialise(broker) as DocumentData;
+        const name = String(data.name ?? "");
+
+        if (name) {
+          brokerMap.set(name, String(data.title || name));
+        }
+      }
+
+      // One report row per confirmed SaleBook entry.
+      const documents = saleEntries.map((entry) => {
+        const sale = serialise(entry) as DocumentData;
+
+        const lotName = String(sale.lot ?? "");
+        const lot = lotMap.get(lotName) ?? {};
+
+        const broker = String(sale.broker ?? "");
+
+        const soldBags = toNumber(sale.sold_bags);
+        const soldQuantity = toNumber(sale.sold_quantity);
+        const rate = toNumber(sale.rate);
+
+        return {
+          // SaleBook identity.
+          name: String(sale.name ?? ""),
+          sale_book_name: String(sale.name ?? ""),
+
+          // Lot information.
+          lot: lotName,
+          lot_no: String(lot.lot_no ?? ""),
+          factory: lot.factory ?? null,
+          original_brand: lot.original_brand ?? null,
+          grade: sale.grade ?? lot.grade ?? null,
+          arrival_date: lot.arrival_date ?? null,
+
+          // Sale information.
+          sale_date: sale.sale_date ?? null,
+          sale_type: sale.sale_type ?? null,
+          sold_bags: soldBags,
+          sold_quantity: soldQuantity,
+          rate,
+
+          total_amount: soldQuantity * rate,
+
+          // Broker information.
+          broker: broker || null,
+          broker_name: brokerMap.get(broker) ?? "",
+
+          remarks: sale.remarks ?? "",
+          tf: sale.tf ?? null,
+
+          workflow_state: sale.workflow_state ?? "Confirmed",
+        };
+      });
+
+      return {
+        documents,
+        total_count: totalCount,
+        limit,
+        offset,
+      };
+    },
+    { requireAuth: true },
+  );
 }
