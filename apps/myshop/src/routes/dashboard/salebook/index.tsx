@@ -22,7 +22,7 @@ export const Route = createFileRoute("/dashboard/salebook/")({
         name: "SaleBook",
       }),
       callMethod<{ documents: SaleBookRecord[] }>("salebook.get_list", {
-        limit: 100,
+        limit: 1000,
         offset: 0,
       }),
     ]);
@@ -56,7 +56,7 @@ function RouteComponent() {
   const { table } = useDataTable({
     data: records,
     columns: createColumns(openSaleBook),
-    pageCount: 1,
+    pageCount: Math.max(1, Math.ceil(records.length / 20)),
     initialState: {
       pagination: {
         pageIndex: 0,
@@ -80,10 +80,8 @@ function RouteComponent() {
       totals={[
         { fieldname: "bags", label: "Total Bags" },
         { fieldname: "total_kg", label: "Total Kgs", decimals: 2 },
-
         { fieldname: "sold_bags", label: "Sold Bags" },
         { fieldname: "sold_quantity", label: "Sold Kgs", decimals: 2 },
-
         {
           fieldname: "total_amount",
           label: "Total Amount",
