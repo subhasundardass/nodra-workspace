@@ -42,6 +42,9 @@ export interface LinkFieldProps {
   pageSize?: number;
   allowCreate?: boolean;
   className?: string;
+
+  // Optional custom search method
+  searchMethod?: string;
 }
 
 export function LinkField({
@@ -59,6 +62,7 @@ export function LinkField({
   filters,
   pageSize = 20,
   className,
+  searchMethod = "links.search",
 }: LinkFieldProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -70,8 +74,12 @@ export function LinkField({
   const filtersKey = JSON.stringify(filters ?? {});
   const isDisabled = disabled || readOnly;
 
-  // Load the selected record when the value is provided externally.
-  // This supports default values, edit forms, and programmatic updates.
+  console.log("LINK FIELD RENDER:", {
+    value,
+    selected,
+  });
+
+  // Resolve selected value.
   useEffect(() => {
     let cancelled = false;
 
@@ -80,9 +88,14 @@ export function LinkField({
       return;
     }
 
+    // Keep the currently selected label if it already matches the value.
+    setSelected((current) =>
+      current?.name === value ? current : { name: value, label: value },
+    );
+
     async function loadSelectedItem() {
       try {
-        const result = await callMethod<LinkSearchResponse>("links.search", {
+        const result = await callMethod<LinkSearchResponse>(searchMethod, {
           doctype,
           query: "",
           selectedName: value,
@@ -95,10 +108,12 @@ export function LinkField({
 
         const item = result.items.find((candidate) => candidate.name === value);
 
-        setSelected(item ?? null);
+        // Update only if the lookup actually found the selected record.
+        if (item) {
+          setSelected((current) => (current?.name === value ? item : current));
+        }
       } catch (cause) {
         if (!cancelled) {
-          setSelected(null);
           console.error("Unable to resolve LinkField value:", cause);
         }
       }
@@ -109,9 +124,9 @@ export function LinkField({
     return () => {
       cancelled = true;
     };
-  }, [value, doctype, titleField, filtersKey, pageSize]);
+  }, [value, doctype, titleField, filtersKey, pageSize, searchMethod]);
 
-  // Search records when the dropdown is open.
+  // Search records when dropdown is open.
   useEffect(() => {
     let cancelled = false;
 
@@ -129,7 +144,7 @@ export function LinkField({
 
     const timer = window.setTimeout(
       () => {
-        callMethod<LinkSearchResponse>("links.search", {
+        callMethod<LinkSearchResponse>(searchMethod, {
           doctype,
           query: searchQuery,
           titleField,
@@ -164,9 +179,10 @@ export function LinkField({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [open, query, doctype, titleField, filtersKey, pageSize]);
+  }, [open, query, doctype, titleField, filtersKey, pageSize, searchMethod]);
 
   function selectItem(item: LinkItem) {
+    console.log("LOT SELECTED:", item);
     setSelected(item);
     onChange(item.name);
     setQuery("");
@@ -210,7 +226,9 @@ export function LinkField({
               disabled={isDisabled}
               className="w-full min-w-0 justify-between font-normal"
             >
-              <span className="truncate">{selected?.label || placeholder}</span>
+              <span className="truncate">
+                {selected?.label || value || placeholder}
+              </span>
 
               <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
@@ -240,12 +258,9 @@ export function LinkField({
                   </div>
                 )}
 
-                {!loading &&
-                  !error &&
-                  query.trim() !== "" &&
-                  items.length === 0 && (
-                    <CommandEmpty>No records found.</CommandEmpty>
-                  )}
+                {!loading && !error && items.length === 0 && (
+                  <CommandEmpty>No records found.</CommandEmpty>
+                )}
 
                 {!loading &&
                   !error &&
