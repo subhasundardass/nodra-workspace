@@ -6,8 +6,8 @@ import SearchInput from "../search-input";
 import { ThemeSelector } from "../themes/theme-selector";
 import { ThemeModeToggle } from "../themes/theme-mode-toggle";
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentUser } from "@/lib/auth-current-user";
 import { UserNav } from "./user-nav";
+import { getCurrentUser, type CurrentUser } from "@/lib/auth-current-user";
 
 export default function Header() {
   const { data: user } = useQuery({

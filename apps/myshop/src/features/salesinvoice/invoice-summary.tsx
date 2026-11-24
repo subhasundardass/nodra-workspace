@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Separator } from "@/components/ui/separator";
 import { InvoiceDispatch } from "./create-invoice";
+import { Button } from "@/components/ui/button";
+import { InvoicePreviewSheet } from "./invoice-preview-sheet";
 
 type InvoiceSummaryProps = {
   dispatches: InvoiceDispatch[];
@@ -32,11 +34,15 @@ export function InvoiceSummary({
   gstRate,
   gstType,
 }: InvoiceSummaryProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const handlePreview = () => {
+    setPreviewOpen(true);
+  };
+  const selected = useMemo(
+    () => dispatches.filter((item) => selectedDispatches.includes(item.name)),
+    [dispatches, selectedDispatches],
+  );
   const summary = useMemo(() => {
-    const selected = dispatches.filter((item) =>
-      selectedDispatches.includes(item.name),
-    );
-
     const bags = selected.reduce((total, item) => total + item.bags, 0);
 
     const kgs = selected.reduce((total, item) => total + item.kgs, 0);
@@ -46,9 +52,7 @@ export function InvoiceSummary({
     const validRate = Math.max(0, Number(gstRate) || 0);
 
     const cgstRate = gstType === "Intra-State" ? validRate / 2 : 0;
-
     const sgstRate = gstType === "Intra-State" ? validRate / 2 : 0;
-
     const igstRate = gstType === "Inter-State" ? validRate : 0;
 
     const cgstAmount = (subtotal * cgstRate) / 100;
@@ -62,19 +66,16 @@ export function InvoiceSummary({
       bags,
       kgs,
       subtotal,
-
       cgstRate,
       sgstRate,
       igstRate,
-
       cgstAmount,
       sgstAmount,
       igstAmount,
-
       totalTax,
       grandTotal: subtotal + totalTax,
     };
-  }, [dispatches, selectedDispatches, gstRate, gstType]);
+  }, [selected, gstRate, gstType]);
 
   return (
     <div className="space-y-3">
@@ -106,54 +107,93 @@ export function InvoiceSummary({
 
       <Separator />
 
-      <div className="ml-auto max-w-md space-y-3">
-        <SummaryRow
-          label="Taxable Amount"
-          value={formatAmount(summary.subtotal)}
-        />
-
-        {gstType === "Intra-State" && (
-          <>
-            <SummaryRow
-              label={`CGST (${summary.cgstRate}%)`}
-              value={formatAmount(summary.cgstAmount)}
-            />
-            <SummaryRow
-              label={`SGST (${summary.sgstRate}%)`}
-              value={formatAmount(summary.sgstAmount)}
-            />
-          </>
-        )}
-
-        {gstType === "Inter-State" && (
-          <SummaryRow
-            label={`IGST (${summary.igstRate}%)`}
-            value={formatAmount(summary.igstAmount)}
-          />
-        )}
-
-        {!gstType && (
-          <p className="text-xs text-destructive">
-            GST type could not be determined. Please check Place of Supply.
+      <div className="flex items-end justify-between gap-6 mt-4">
+        {/* Left side: Disclaimer + Preview */}
+        <div className="space-y-3">
+          <p className="max-w-md text-xs text-muted-foreground">
+            GST shown is a preview. Final GST rates and amounts will be
+            recalculated and validated by the invoice backend.
           </p>
-        )}
 
-        <Separator />
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" size="sm" onClick={handlePreview}>
+              Preview
+            </Button>
 
-        <SummaryRow label="Total GST" value={formatAmount(summary.totalTax)} />
+            {/* <Button variant="secondary" size="sm">
+              Generate Invoice
+            </Button>
 
-        <div className="flex items-center justify-between gap-4">
-          <span className="font-semibold">Grand Total</span>
-          <span className="text-xl font-bold tabular-nums">
-            {formatAmount(summary.grandTotal)}
-          </span>
+            <Button variant="default" size="sm">
+              Confirm
+            </Button> */}
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+            >
+              Print Invoice
+            </Button>
+          </div>
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          GST shown is a preview. Final GST rates and amounts will be
-          recalculated and validated by the invoice backend.
-        </p>
+        {/* Right side: Amount Summary */}
+        <div className="ml-auto max-w-md space-y-3">
+          <SummaryRow
+            label="Taxable Amount"
+            value={formatAmount(summary.subtotal)}
+          />
+
+          {gstType === "Intra-State" && (
+            <>
+              <SummaryRow
+                label={`CGST (${summary.cgstRate}%)`}
+                value={formatAmount(summary.cgstAmount)}
+              />
+              <SummaryRow
+                label={`SGST (${summary.sgstRate}%)`}
+                value={formatAmount(summary.sgstAmount)}
+              />
+            </>
+          )}
+
+          {gstType === "Inter-State" && (
+            <SummaryRow
+              label={`IGST (${summary.igstRate}%)`}
+              value={formatAmount(summary.igstAmount)}
+            />
+          )}
+
+          {!gstType && (
+            <p className="text-xs text-destructive">
+              GST type could not be determined. Please check Place of Supply.
+            </p>
+          )}
+
+          <Separator />
+
+          <SummaryRow
+            label="Total GST"
+            value={formatAmount(summary.totalTax)}
+          />
+
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-semibold">Grand Total</span>
+            <span className="text-xl font-bold tabular-nums">
+              {formatAmount(summary.grandTotal)}
+            </span>
+          </div>
+        </div>
       </div>
+
+      <InvoicePreviewSheet
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        dispatches={selected}
+        summary={summary}
+        gstType={gstType}
+      />
     </div>
   );
 }
