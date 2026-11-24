@@ -3,14 +3,12 @@ import type { ColumnDef } from "@tanstack/react-table";
 export type LotReportRecord = {
   name: string;
   lot_no: string;
-  // entry_date: string;
   arrival_date?: string | null;
   factory: string;
   original_brand?: string | null;
   grade?: string | null;
   bags: number;
   net_kg_per_bag: number;
-  // warehouse?: string | null;
   workflow_state: "Draft" | "Confirmed" | "Cancelled";
   total_kgs: number;
 };
@@ -41,41 +39,46 @@ export function createLotReportColumns(): ColumnDef<LotReportRecord>[] {
       header: "Lot No",
       enableSorting: true,
       cell: ({ row }) => (
-        <span className="font-medium text-primary">{row.original.lot_no}</span>
+        <span className="font-bold text-primary">{row.original.lot_no}</span>
       ),
     },
-    // {
-    //   accessorKey: "entry_date",
-    //   header: "Entry Date",
-    //   enableSorting: true,
-    //   cell: ({ row }) => formatDate(row.original.entry_date),
-    // },
     {
       accessorKey: "arrival_date",
       header: "Arrival Date",
       enableSorting: true,
-      cell: ({ row }) => formatDate(row.original.arrival_date),
+      cell: ({ row }) => (
+        <div className="text-left tabular-nums">
+          {formatDate(row.original.arrival_date)}
+        </div>
+      ),
     },
     {
       accessorKey: "factory",
       header: "Factory",
       enableSorting: true,
+      cell: ({ row }) => (
+        <div className="text-left">{row.original.factory || "—"}</div>
+      ),
     },
     {
       accessorKey: "original_brand",
       header: "Brand",
       enableSorting: true,
-      cell: ({ row }) => row.original.original_brand || "—",
+      cell: ({ row }) => (
+        <div className="text-left">{row.original.original_brand || "—"}</div>
+      ),
     },
     {
       accessorKey: "grade",
       header: "Grade",
       enableSorting: true,
-      cell: ({ row }) => row.original.grade || "—",
+      cell: ({ row }) => (
+        <div className="text-left">{row.original.grade || "—"}</div>
+      ),
     },
     {
       accessorKey: "bags",
-      header: "Bags",
+      header: () => <div className="text-right">Bags</div>,
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
@@ -85,7 +88,7 @@ export function createLotReportColumns(): ColumnDef<LotReportRecord>[] {
     },
     {
       accessorKey: "net_kg_per_bag",
-      header: "Net KG/Bag",
+      header: () => <div className="text-right">Net KG/Bag</div>,
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
@@ -95,23 +98,17 @@ export function createLotReportColumns(): ColumnDef<LotReportRecord>[] {
     },
     {
       accessorKey: "total_kgs",
-      header: "Total Kgs",
+      header: () => <div className="text-right">Total Kgs</div>,
       enableSorting: true,
       cell: ({ row }) => (
-        <div className="text-right font-medium tabular-nums">
+        <div className="text-right font-semibold tabular-nums">
           {formatNumber(row.original.total_kgs, 2)}
         </div>
       ),
     },
-    // {
-    //   accessorKey: "warehouse",
-    //   header: "Warehouse",
-    //   enableSorting: true,
-    //   cell: ({ row }) => row.original.warehouse || "—",
-    // },
     {
       accessorKey: "workflow_state",
-      header: "Status",
+      header: () => <div className="text-center">Status</div>,
       enableSorting: true,
       cell: ({ row }) => {
         const status = row.original.workflow_state;
@@ -124,11 +121,13 @@ export function createLotReportColumns(): ColumnDef<LotReportRecord>[] {
               : "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300";
 
         return (
-          <span
-            className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${statusClass}`}
-          >
-            {status}
-          </span>
+          <div className="text-center">
+            <span
+              className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${statusClass}`}
+            >
+              {status}
+            </span>
+          </div>
         );
       },
     },

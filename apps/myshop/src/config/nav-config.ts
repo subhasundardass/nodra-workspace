@@ -209,6 +209,20 @@ export const navGroups: NavGroup[] = [
             icon: "product",
             isActive: false,
           },
+          // Offer Reports
+          {
+            title: "Offer Reports",
+            url: "/dashboard/reports/offer",
+            icon: "product",
+            isActive: false,
+          },
+          // Sales Reports
+          {
+            title: "Offer Reports",
+            url: "/dashboard/reports/offer",
+            icon: "product",
+            isActive: false,
+          },
 
           // Quality & Valuation Reports
           {
@@ -228,89 +242,6 @@ export const navGroups: NavGroup[] = [
                 title: "Tea Valuation",
                 url: "/dashboard/reports/tea-valuation",
                 icon: "scale",
-                isActive: false,
-                items: [],
-              },
-            ],
-          },
-
-          // Offer Reports
-          {
-            title: "Offer Reports",
-            url: "#",
-            icon: "post",
-            isActive: false,
-            items: [
-              {
-                title: "Offer Register",
-                url: "#",
-                icon: "page",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Offered Lots",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Unoffered Lots",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Asking Rate Report",
-                url: "#",
-                icon: "scale",
-                isActive: false,
-                items: [],
-              },
-            ],
-          },
-
-          // Sales Reports
-          {
-            title: "Sales Reports",
-            url: "#",
-            icon: "creditCard",
-            isActive: false,
-            items: [
-              {
-                title: "Daily Sales Register",
-                url: "#",
-                icon: "calendar",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Broker-wise Sales",
-                url: "#",
-                icon: "user",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Buyer-wise Sales",
-                url: "#",
-                icon: "user",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Lot-wise Sales History",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Asking Rate vs Sale Rate",
-                url: "#",
-                icon: "trendingUp",
                 isActive: false,
                 items: [],
               },

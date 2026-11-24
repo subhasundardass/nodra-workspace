@@ -1,3 +1,4 @@
+import DateField from "@/components/doctype/fields/date-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,23 +51,13 @@ export function LotReportFilter({
         {/* From Date */}
         <div className="min-w-0 flex-1 space-y-2">
           <label className="text-sm font-medium">From Date</label>
-          <Input
-            type="date"
-            value={fromDate}
-            max={toDate || undefined}
-            onChange={(event) => onFromDateChange(event.target.value)}
-          />
+          <DateField value={fromDate} onChange={onFromDateChange} />
         </div>
 
         {/* To Date */}
         <div className="min-w-0 flex-1 space-y-2">
           <label className="text-sm font-medium">To Date</label>
-          <Input
-            type="date"
-            value={toDate}
-            min={fromDate || undefined}
-            onChange={(event) => onToDateChange(event.target.value)}
-          />
+          <DateField value={toDate} onChange={onToDateChange} />
         </div>
 
         {/* Factory */}
