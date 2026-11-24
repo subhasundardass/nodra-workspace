@@ -106,6 +106,14 @@ function NumberInput({
   );
 }
 
+function calculateTotalBags(from: number, to: number): number {
+  if (from <= 0 || to <= 0 || to < from) {
+    return 0;
+  }
+
+  return to - from + 1;
+}
+
 export function LotForm({ form }: LotFormProps) {
   return (
     <div className="space-y-2">
@@ -237,7 +245,14 @@ export function LotForm({ form }: LotFormProps) {
                 name={field.name}
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
-                onChange={field.handleChange}
+                onChange={(value) => {
+                  field.handleChange(value);
+
+                  const to = Number(
+                    form.getFieldValue("bag_to_serial_no") ?? 0,
+                  );
+                  form.setFieldValue("bags", calculateTotalBags(value, to));
+                }}
                 placeholder="Starting serial number"
               />
             </FieldRow>
@@ -252,12 +267,20 @@ export function LotForm({ form }: LotFormProps) {
                 name={field.name}
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
-                onChange={field.handleChange}
+                onChange={(value) => {
+                  field.handleChange(value);
+
+                  const from = Number(
+                    form.getFieldValue("bag_from_serial_no") ?? 0,
+                  );
+                  form.setFieldValue("bags", calculateTotalBags(from, value));
+                }}
                 placeholder="Ending serial number"
               />
             </FieldRow>
           )}
         </form.Field>
+
         <form.Field name="bags">
           {(field) => (
             <FieldRow label="Total Bags" htmlFor={field.name} required>
@@ -267,7 +290,7 @@ export function LotForm({ form }: LotFormProps) {
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
                 onChange={field.handleChange}
-                placeholder="Enter number of bags"
+                placeholder="Automatically calculated"
               />
             </FieldRow>
           )}
