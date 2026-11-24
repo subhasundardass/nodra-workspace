@@ -200,10 +200,17 @@ export function DocTypeListTemplate<TRecord extends object>({
   // Table instance
   // --------------------------------------------------
 
+  // const internalTableResult = useDataTable({
+  //   data: records,
+  //   columns: tableColumns,
+  //   pageCount: Math.max(1, Math.ceil(records.length / pageSize)),
+  //   initialState: {
+  //     pagination: { pageIndex: 0, pageSize },
+  //   },
+  // });
   const internalTableResult = useDataTable({
     data: records,
     columns: tableColumns,
-    pageCount: Math.max(1, Math.ceil(records.length / pageSize)),
     initialState: {
       pagination: { pageIndex: 0, pageSize },
     },
