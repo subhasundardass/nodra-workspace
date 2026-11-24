@@ -74,11 +74,6 @@ export function LinkField({
   const filtersKey = JSON.stringify(filters ?? {});
   const isDisabled = disabled || readOnly;
 
-  console.log("LINK FIELD RENDER:", {
-    value,
-    selected,
-  });
-
   // Resolve selected value.
   useEffect(() => {
     let cancelled = false;
