@@ -117,33 +117,31 @@ export function SaleEntryForm({
         {isEdit ? (
           <ReadOnlyField label="Lot No" name="lot" value={lot.lot_no} />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <form.Field name="lot">
-              {(field) => (
-                <FieldRow label="Select" htmlFor={field.name} required>
-                  <LinkField
-                    doctype="Lots"
-                    titleField="lot_no"
-                    value={String(field.state.value ?? "")}
-                    onChange={async (value) => {
-                      const lotName = String(value ?? "");
-                      field.handleChange(lotName);
+          <form.Field name="lot">
+            {(field) => (
+              <FieldRow label="Select" htmlFor={field.name} required>
+                <LinkField
+                  doctype="Lots"
+                  titleField="lot_no"
+                  value={String(field.state.value ?? "")}
+                  onChange={async (value) => {
+                    const lotName = String(value ?? "");
+                    field.handleChange(lotName);
 
-                      const valid = await onLotChange?.(lotName);
+                    const valid = await onLotChange?.(lotName);
 
-                      if (valid === false) {
-                        field.handleChange("");
-                      }
-                    }}
-                    filters={{ docstatus: 51 }}
-                    searchMethod="salebook.search_available_lots"
-                    className="w-full"
-                    placeholder="Select"
-                  />
-                </FieldRow>
-              )}
-            </form.Field>
-          </div>
+                    if (valid === false) {
+                      field.handleChange("");
+                    }
+                  }}
+                  filters={{ docstatus: 51 }}
+                  searchMethod="salebook.search_available_lots"
+                  className="w-full"
+                  placeholder="Select"
+                />
+              </FieldRow>
+            )}
+          </form.Field>
         )}
 
         <div className="flex h-10 items-center justify-end">
