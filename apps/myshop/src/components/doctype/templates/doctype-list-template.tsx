@@ -44,6 +44,7 @@ export type DocTypeListTemplateProps<TRecord extends object> = {
   totals?: DocTypeListTotal[];
   title?: string;
   createButtonLabel?: string;
+  beforeTable?: ReactNode;
   description?: string;
   actions?: GlobalToolbarAction[];
   showCreateButton?: boolean;
@@ -119,6 +120,7 @@ export function DocTypeListTemplate<TRecord extends object>({
   onOpen,
   onRefresh,
   pageSize = 20,
+  beforeTable,
 }: DocTypeListTemplateProps<TRecord>) {
   const listName = doctype?.name ?? title ?? "Records";
 
@@ -298,6 +300,9 @@ export function DocTypeListTemplate<TRecord extends object>({
           onRefresh={onRefresh}
           loading={loading}
         />
+
+        {/* Before Table start */}
+        {beforeTable}
 
         {error && (
           <div

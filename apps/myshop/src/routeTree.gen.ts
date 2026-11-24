@@ -52,6 +52,7 @@ import { Route as DashboardPartyNewRouteImport } from './routes/dashboard/party/
 import { Route as DashboardPaymentReceiptsIndexRouteImport } from './routes/dashboard/payment-receipts/index'
 import { Route as DashboardPaymentReceiptsNameRouteImport } from './routes/dashboard/payment-receipts/$name'
 import { Route as DashboardPaymentReceiptsNewRouteImport } from './routes/dashboard/payment-receipts/new'
+import { Route as DashboardReportsLotRouteRouteImport } from './routes/dashboard/reports/lot/route'
 import { Route as DashboardSalebookIndexRouteImport } from './routes/dashboard/salebook/index'
 import { Route as DashboardSalebookNameRouteImport } from './routes/dashboard/salebook/$name'
 import { Route as DashboardSalebookNewRouteImport } from './routes/dashboard/salebook/new'
@@ -73,6 +74,7 @@ import { Route as DashboardInventoryStockTransferNewRouteImport } from './routes
 import { Route as DashboardMasterDiscountIndexRouteImport } from './routes/dashboard/master/discount/index'
 import { Route as DashboardMasterDiscountNameRouteImport } from './routes/dashboard/master/discount/$name'
 import { Route as DashboardMasterDiscountNewRouteImport } from './routes/dashboard/master/discount/new'
+import { Route as DashboardReportsLotIndexRouteImport } from './routes/dashboard/reports/lot/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -300,6 +302,12 @@ const DashboardPaymentReceiptsNewRoute =
     path: '/payment-receipts/new',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardReportsLotRouteRoute =
+  DashboardReportsLotRouteRouteImport.update({
+    id: '/reports/lot',
+    path: '/reports/lot',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardSalebookIndexRoute = DashboardSalebookIndexRouteImport.update({
   id: '/salebook/',
   path: '/salebook/',
@@ -419,6 +427,12 @@ const DashboardMasterDiscountNewRoute =
     path: '/master/discount/new',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardReportsLotIndexRoute =
+  DashboardReportsLotIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardReportsLotRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -431,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing': typeof DashboardBillingRouteRouteWithChildren
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
+  '/dashboard/reports/lot': typeof DashboardReportsLotRouteRouteWithChildren
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
   '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
@@ -485,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing/sales-invoice/': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
+  '/dashboard/reports/lot/': typeof DashboardReportsLotIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -549,6 +565,7 @@ export interface FileRoutesByTo {
   '/dashboard/billing/sales-invoice': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount': typeof DashboardMasterDiscountIndexRoute
+  '/dashboard/reports/lot': typeof DashboardReportsLotIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -562,6 +579,7 @@ export interface FileRoutesById {
   '/dashboard/billing': typeof DashboardBillingRouteRouteWithChildren
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/auth/': typeof AuthIndexRoute
+  '/dashboard/reports/lot': typeof DashboardReportsLotRouteRouteWithChildren
   '/api/method/$methodPath': typeof ApiMethodMethodPathRoute
   '/dashboard/broker/$name': typeof DashboardBrokerNameRoute
   '/dashboard/broker/new': typeof DashboardBrokerNewRoute
@@ -616,6 +634,7 @@ export interface FileRoutesById {
   '/dashboard/billing/sales-invoice/': typeof DashboardBillingSalesInvoiceIndexRoute
   '/dashboard/inventory/stock-transfer/': typeof DashboardInventoryStockTransferIndexRoute
   '/dashboard/master/discount/': typeof DashboardMasterDiscountIndexRoute
+  '/dashboard/reports/lot/': typeof DashboardReportsLotIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -630,6 +649,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/overview'
     | '/auth/'
+    | '/dashboard/reports/lot'
     | '/api/method/$methodPath'
     | '/dashboard/broker/$name'
     | '/dashboard/broker/new'
@@ -684,6 +704,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing/sales-invoice/'
     | '/dashboard/inventory/stock-transfer/'
     | '/dashboard/master/discount/'
+    | '/dashboard/reports/lot/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -748,6 +769,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing/sales-invoice'
     | '/dashboard/inventory/stock-transfer'
     | '/dashboard/master/discount'
+    | '/dashboard/reports/lot'
   id:
     | '__root__'
     | '/'
@@ -760,6 +782,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/overview'
     | '/auth/'
+    | '/dashboard/reports/lot'
     | '/api/method/$methodPath'
     | '/dashboard/broker/$name'
     | '/dashboard/broker/new'
@@ -814,6 +837,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing/sales-invoice/'
     | '/dashboard/inventory/stock-transfer/'
     | '/dashboard/master/discount/'
+    | '/dashboard/reports/lot/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1130,6 +1154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPaymentReceiptsNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/reports/lot': {
+      id: '/dashboard/reports/lot'
+      path: '/reports/lot'
+      fullPath: '/dashboard/reports/lot'
+      preLoaderRoute: typeof DashboardReportsLotRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/salebook/': {
       id: '/dashboard/salebook/'
       path: '/salebook'
@@ -1277,6 +1308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMasterDiscountNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/reports/lot/': {
+      id: '/dashboard/reports/lot/'
+      path: '/'
+      fullPath: '/dashboard/reports/lot/'
+      preLoaderRoute: typeof DashboardReportsLotIndexRouteImport
+      parentRoute: typeof DashboardReportsLotRouteRoute
+    }
   }
 }
 
@@ -1303,9 +1341,24 @@ const DashboardBillingRouteRouteWithChildren =
     DashboardBillingRouteRouteChildren,
   )
 
+interface DashboardReportsLotRouteRouteChildren {
+  DashboardReportsLotIndexRoute: typeof DashboardReportsLotIndexRoute
+}
+
+const DashboardReportsLotRouteRouteChildren: DashboardReportsLotRouteRouteChildren =
+  {
+    DashboardReportsLotIndexRoute: DashboardReportsLotIndexRoute,
+  }
+
+const DashboardReportsLotRouteRouteWithChildren =
+  DashboardReportsLotRouteRoute._addFileChildren(
+    DashboardReportsLotRouteRouteChildren,
+  )
+
 interface DashboardRouteRouteChildren {
   DashboardBillingRouteRoute: typeof DashboardBillingRouteRouteWithChildren
   DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardReportsLotRouteRoute: typeof DashboardReportsLotRouteRouteWithChildren
   DashboardBrokerNameRoute: typeof DashboardBrokerNameRoute
   DashboardBrokerNewRoute: typeof DashboardBrokerNewRoute
   DashboardDispatchNameRoute: typeof DashboardDispatchNameRoute
@@ -1357,6 +1410,7 @@ interface DashboardRouteRouteChildren {
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBillingRouteRoute: DashboardBillingRouteRouteWithChildren,
   DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardReportsLotRouteRoute: DashboardReportsLotRouteRouteWithChildren,
   DashboardBrokerNameRoute: DashboardBrokerNameRoute,
   DashboardBrokerNewRoute: DashboardBrokerNewRoute,
   DashboardDispatchNameRoute: DashboardDispatchNameRoute,

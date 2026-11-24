@@ -40,23 +40,26 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
 });
 
-// const checkDashboardAuth = createServerFn({ method: "GET" }).handler(async () =>
-//   callMethod({
-//     data: { method: "auth.me", args: {} },
-//   }),
-// );
+const checkDashboardAuth = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const headers = getRequestHeaders();
+  const cookie = headers.get("cookie");
 
-const checkDashboardAuth = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const cookie = getRequestHeaders().get("cookie");
+  if (!cookie) {
+    return { authenticated: false };
+  }
 
-    return nodraCallMethod<{ authenticated: boolean }>(
-      "auth.me",
-      {},
-      { headers: cookie ? { cookie } : {} },
-    );
-  },
-);
+  return nodraCallMethod<AuthMeResult>(
+    "auth.me",
+    {},
+    {
+      headers: {
+        cookie,
+      },
+    },
+  );
+});
 
 function DashboardLayout() {
   return (
