@@ -6,7 +6,7 @@
 
 import type { MethodRegistry } from "nodra";
 import type { Filters, ListOptions } from "nodra/orm/crud";
-
+import { StockService } from "../services/stock.service";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
 
@@ -464,6 +464,123 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         limit,
         offset,
         total_count: totalCount,
+      };
+    },
+    { requireAuth: true },
+  );
+
+  /**
+   * Search available Lots for SaleBook.
+   *
+   * Only returns:
+   * - Confirmed Lots (docstatus 51)
+   * - Lots with available Factory stock
+   * - Lots without Warehouse stock
+   *
+   * Response format is compatible with LinkField.
+   */
+  registry.register(
+    "salebook.search_available_lots",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const query = String(ctx.args.query ?? "")
+        .trim()
+        .toLowerCase();
+      const selectedName = String(ctx.args.selectedName ?? "").trim();
+      const titleField = String(ctx.args.titleField ?? "lot_no");
+
+      const requestedLimit = Number(ctx.args.limit);
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
+        : 20;
+
+      // Always restrict to Confirmed Lots.
+      const lots = await app.orm.getList("Lots", {
+        limit: 1000,
+        offset: 0,
+        filters: {
+          docstatus: 51,
+        },
+      });
+
+      const candidates = lots
+        .map((lot) => serialise(lot) as DocumentData)
+        .filter((lot) => {
+          const name = String(lot.name ?? "");
+
+          // Resolve an externally selected Lot.
+          if (selectedName) {
+            return name === selectedName;
+          }
+
+          if (!query) return true;
+
+          const title = String(lot[titleField] ?? "");
+
+          return (
+            name.toLowerCase().includes(query) ||
+            title.toLowerCase().includes(query)
+          );
+        });
+
+      const stockService = new StockService(app.orm);
+
+      const items: Array<{ name: string; label: string }> = [];
+
+      const batchSize = 20;
+
+      for (let i = 0; i < candidates.length; i += batchSize) {
+        const batch = candidates.slice(i, i + batchSize);
+
+        const results = await Promise.all(
+          batch.map(async (lot) => {
+            try {
+              const lotName = String(lot.name ?? "");
+
+              if (!lotName) return null;
+
+              const stock = await stockService.getLotStockBalance(lotName);
+
+              // Must have available Factory stock.
+              if (
+                toNumber(stock.factory_bags) <= 0 ||
+                toNumber(stock.factory_quantity) <= 0
+              ) {
+                return null;
+              }
+
+              // Exclude Lots having any Warehouse stock.
+              if (
+                toNumber(stock.warehouse_bags) !== 0 ||
+                toNumber(stock.warehouse_quantity) > 0.000001
+              ) {
+                return null;
+              }
+
+              return {
+                name: lotName,
+                label: String(lot[titleField] || lotName),
+              };
+            } catch {
+              // Do not display a Lot if its stock cannot be verified.
+              return null;
+            }
+          }),
+        );
+
+        for (const item of results) {
+          if (item) items.push(item);
+        }
+
+        // Stop once enough matching Lots have been found.
+        if (!selectedName && items.length >= limit) {
+          break;
+        }
+      }
+
+      return {
+        items: selectedName ? items : items.slice(0, limit),
       };
     },
     { requireAuth: true },

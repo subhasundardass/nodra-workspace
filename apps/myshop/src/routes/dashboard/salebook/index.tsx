@@ -51,9 +51,6 @@ function RouteComponent() {
   const createSaleBook = () =>
     navigate({
       to: "/dashboard/salebook/new",
-      search: {
-        lot: "",
-      },
     });
 
   const { table } = useDataTable({
