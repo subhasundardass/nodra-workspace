@@ -207,14 +207,16 @@ export default function WarehouseFormSheet({
               {(field) => (
                 <div className="min-w-0 space-y-2">
                   <Label htmlFor={field.name}>State</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="Enter state"
-                    maxLength={100}
+
+                  <LinkField
+                    doctype="State"
+                    titleField="state_name"
+                    value={String(field.state.value ?? "")}
+                    onChange={(value) =>
+                      field.handleChange(String(value ?? ""))
+                    }
+                    required
+                    placeholder="Select State"
                   />
                 </div>
               )}

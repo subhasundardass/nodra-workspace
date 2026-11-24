@@ -70,6 +70,18 @@ export function createColumns(
       ),
     },
     {
+      accessorKey: "stock_location",
+      header: "Stock Location",
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.original.broker_name}</div>
+          <div className="text-xs text-muted-foreground">
+            {row.original.broker}
+          </div>
+        </div>
+      ),
+    },
+    {
       accessorKey: "dispatch_count",
       header: () => <div className="text-right">Dispatches</div>,
       cell: ({ row }) => (

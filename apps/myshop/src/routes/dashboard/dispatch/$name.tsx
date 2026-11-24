@@ -15,6 +15,12 @@ type DispatchData = {
   saleBook: DocumentRecord;
   lot: DocumentRecord | null;
   dispatch: DocumentRecord | null;
+  stockLocation: StockLocation | null;
+};
+
+type StockLocation = {
+  type: "Factory" | "Warehouse";
+  name: string;
 };
 
 export const Route = createFileRoute("/dashboard/dispatch/$name")({
@@ -47,21 +53,28 @@ export const Route = createFileRoute("/dashboard/dispatch/$name")({
       throw new Error(`SaleBook "${params.name}" was not found.`);
     }
 
-    // Fetch linked Lot document.
+    // Fetch linked Lot document and its current stock location.
     const lotName = String(saleBook.lot ?? "");
 
-    const lotResult = lotName
-      ? await callMethod<{ document: DocumentRecord | null }>("document.get", {
-          doctype: "Lots",
-          name: lotName,
-        })
-      : null;
+    const [lotResult, stockLocationResult] = lotName
+      ? await Promise.all([
+          callMethod<{ document: DocumentRecord | null }>("document.get", {
+            doctype: "Lots",
+            name: lotName,
+          }),
+
+          callMethod<StockLocation | null>("stock.get_lot_stock_info", {
+            lot: lotName,
+          }),
+        ])
+      : [null, null];
 
     return {
       doctype: doctypeResult.doctype,
       saleBook,
       lot: lotResult?.document ?? null,
       dispatch: dispatchResult.document,
+      stockLocation: stockLocationResult ?? null,
     };
   },
 
@@ -69,7 +82,8 @@ export const Route = createFileRoute("/dashboard/dispatch/$name")({
 });
 
 function RouteComponent() {
-  const { doctype, dispatch, saleBook, lot } = Route.useLoaderData();
+  const { doctype, dispatch, saleBook, lot, stockLocation } =
+    Route.useLoaderData();
 
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -81,6 +95,10 @@ function RouteComponent() {
     sale_date: String(saleBook.sale_date ?? ""),
     lot_id: String(saleBook.lot ?? ""),
     lot_no: String(lot?.lot_no ?? ""),
+
+    // Stock Location
+    stock_location_type: String(stockLocation?.type ?? ""),
+    stock_location_name: String(stockLocation?.name ?? ""),
 
     dispatch_date: String(
       dispatch?.dispatch_date ?? new Date().toISOString().slice(0, 10),
@@ -112,6 +130,8 @@ function RouteComponent() {
     remarks: String(dispatch?.remarks ?? ""),
     workflow_state: String(dispatch?.workflow_state ?? "Draft"),
   };
+
+  console.log(initialValues);
 
   async function handleSubmit(values: FormValues): Promise<void> {
     // 1. SaleBook validation

@@ -187,9 +187,7 @@ export class StockService {
       this.validateLocation(location);
 
       const locationKey = locationType === "Factory" ? factory : warehouse;
-
       const key = `${locationType}:${locationKey}`;
-
       const current = locationBalances.get(key) ?? {
         location,
         bags: 0,
@@ -628,5 +626,92 @@ export class StockService {
         const bName = b.location.factory ?? b.location.warehouse ?? "";
         return aName.localeCompare(bName);
       });
+  }
+
+  // -------------------------------------------------------------------------
+  // Stock Location
+  // -------------------------------------------------------------------------
+
+  async stockLocation(lot: string) {
+    type StockLocation = {
+      location_type: LocationType;
+      location_id: string;
+      name: string;
+      address: string;
+      city: string;
+      state: string;
+      pincode: string;
+      country: string;
+      gstin: string;
+      fssai: string;
+      cin: string;
+      pan: string;
+    };
+
+    const lotName = lot?.trim();
+
+    if (!lotName) {
+      throw new Error("Lot is required.");
+    }
+
+    const balance = await this.getLotStockBalance(lotName);
+    console.log("Lot stock balance:", JSON.stringify(balance, null, 2));
+
+    const locations = balance.locations.filter(
+      (item) => item.bags > 0 && item.quantity > EPSILON,
+    );
+
+    if (locations.length === 0) return null;
+
+    if (locations.length > 1) {
+      throw new Error(`Lot ${lotName} has stock in multiple locations.`);
+    }
+
+    const firstLocation = locations[0];
+    if (!firstLocation) return null;
+    const location = firstLocation.location;
+
+    const isFactory = location.location_type === "Factory";
+    const locationId = isFactory ? location.factory! : location.warehouse!;
+
+    const locationDoc = await this.orm.getDoc(
+      isFactory ? "Factory" : "Warehouse",
+      locationId,
+    );
+
+    if (!locationDoc) {
+      throw new Error(`${location.location_type} ${locationId} not found.`);
+    }
+
+    const factoryId = isFactory
+      ? locationId
+      : String(locationDoc.get("factory") ?? "").trim();
+
+    if (!factoryId) {
+      throw new Error(`Warehouse ${locationId} is not linked to a Factory.`);
+    }
+
+    const factoryDoc = isFactory
+      ? locationDoc
+      : await this.orm.getDoc("Factory", factoryId);
+
+    if (!factoryDoc) {
+      throw new Error(`Factory ${factoryId} not found.`);
+    }
+
+    return {
+      location_type: location.location_type,
+      location_id: locationId,
+      name: String(locationDoc.get("title") ?? ""),
+      address: String(locationDoc.get("address") ?? ""),
+      city: String(locationDoc.get("city") ?? ""),
+      state: String(locationDoc.get("state") ?? ""),
+      pincode: String(locationDoc.get("postal_code") ?? ""),
+      country: String(locationDoc.get("country") ?? ""),
+      gstin: String(factoryDoc.get("gstin") ?? ""),
+      fssai: String(factoryDoc.get("fssai") ?? ""),
+      cin: String(factoryDoc.get("cin") ?? ""),
+      pan: String(factoryDoc.get("pan") ?? ""),
+    } satisfies StockLocation;
   }
 }
