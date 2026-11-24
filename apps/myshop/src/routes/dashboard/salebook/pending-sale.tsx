@@ -25,7 +25,7 @@ export const Route = createFileRoute("/dashboard/salebook/pending-sale")({
         name: "SaleBook",
       }),
       callMethod<{ documents: SaleBookRecord[] }>("salebook.get_pending_lots", {
-        limit: 100,
+        limit: 500,
         offset: 0,
       }),
     ]);
@@ -57,7 +57,7 @@ function PendingSaleRoute() {
   const { table } = useDataTable({
     data: records,
     columns: createColumns(openLot),
-    pageCount: 1,
+    pageCount: Math.max(1, Math.ceil(records.length / 20)),
     initialState: {
       pagination: { pageIndex: 0, pageSize: 20 },
     },
@@ -73,16 +73,27 @@ function PendingSaleRoute() {
       onOpen={openLot}
       onRefresh={() => router.invalidate()}
       totals={[
-        { fieldname: "bags", label: "Total Bags" },
-        { fieldname: "total_kg", label: "Total Kgs", decimals: 2 },
+        { fieldname: "bags", label: "Total Bags", align: "right" },
+        {
+          fieldname: "total_kg",
+          label: "Total Kgs",
+          decimals: 2,
+          align: "right",
+        },
 
-        { fieldname: "sold_bags", label: "Sold Bags" },
-        { fieldname: "sold_quantity", label: "Sold Kgs", decimals: 2 },
+        { fieldname: "sold_bags", label: "Sold Bags", align: "right" },
+        {
+          fieldname: "sold_quantity",
+          label: "Sold Kgs",
+          decimals: 2,
+          align: "right",
+        },
 
         {
           fieldname: "total_amount",
           label: "Total Amount",
           currency: true,
+          align: "right",
         },
       ]}
     />
