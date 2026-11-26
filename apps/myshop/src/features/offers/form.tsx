@@ -1,10 +1,17 @@
 import { useState, type ReactNode } from "react";
-
+import { History } from "lucide-react";
 import DateField from "@/components/doctype/fields/date-field";
 import type { NodraForm } from "@/components/doctype/templates/doctype-form-template";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
+import { LinkField } from "@/components/doctype/fields/link-field";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LotOption {
   name: string;
@@ -287,9 +294,34 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                               {row.lot_no || row.lot}
                             </td>
                             <td className="px-2 py-2">{row.factory || "-"}</td>
-                            <td className="px-2 py-2">{row.grade || "-"}</td>
                             <td className="px-2 py-2">
-                              {row.original_brand || "-"}
+                              <form.Field name={`offer_lots[${index}].grade`}>
+                                {(field) => (
+                                  <LinkField
+                                    value={String(field.state.value ?? "")}
+                                    onChange={field.handleChange}
+                                    doctype="Grades"
+                                    titleField="grade_code"
+                                    pageSize={10}
+                                    clearable={false}
+                                    className="w-full min-w-32"
+                                  />
+                                )}
+                              </form.Field>
+                            </td>
+                            <td className="px-2 py-2">
+                              <form.Field
+                                name={`offer_lots[${index}].original_brand`}
+                              >
+                                {(field) => (
+                                  <LinkField
+                                    value={String(field.state.value ?? "")}
+                                    onChange={field.handleChange}
+                                    doctype="Brand"
+                                    className="w-full min-w-32"
+                                  />
+                                )}
+                              </form.Field>
                             </td>
                             <td className="px-2 py-2 tabular-nums">
                               {Number(row.bags ?? 0).toLocaleString("en-IN")}
@@ -302,33 +334,88 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
 
                             {/* add brand here */}
                             <td className="px-2 py-2">
-                              <form.Field
-                                name={`offer_lots[${index}].asking_rate`}
-                              >
-                                {(rateField) => (
-                                  <input
-                                    id={rateField.name}
-                                    name={rateField.name}
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    value={String(
-                                      Math.round(
-                                        Number(rateField.state.value ?? 0),
-                                      ),
-                                    )}
-                                    onBlur={rateField.handleBlur}
-                                    onChange={(event) => {
-                                      const value = event.target.value;
-                                      rateField.handleChange(
-                                        value === "" ? 0 : Number(value),
-                                      );
-                                    }}
-                                    placeholder="Rate"
-                                    className="h-8 w-28 rounded-md border border-input bg-background px-2 text-sm"
-                                  />
-                                )}
-                              </form.Field>
+                              <div className="flex items-center gap-1.5">
+                                <form.Field
+                                  name={`offer_lots[${index}].asking_rate`}
+                                >
+                                  {(rateField) => (
+                                    <input
+                                      id={rateField.name}
+                                      name={rateField.name}
+                                      type="number"
+                                      min="0"
+                                      step="1"
+                                      value={String(
+                                        Math.round(
+                                          Number(rateField.state.value ?? 0),
+                                        ),
+                                      )}
+                                      onBlur={rateField.handleBlur}
+                                      onChange={(event) => {
+                                        const value = event.target.value;
+                                        rateField.handleChange(
+                                          value === "" ? 0 : Number(value),
+                                        );
+                                      }}
+                                      placeholder="Rate"
+                                      className="h-8 w-28 rounded-md border border-input bg-background px-2 text-sm"
+                                    />
+                                  )}
+                                </form.Field>
+
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                                      >
+                                        <History className="h-4 w-4" />
+                                      </button>
+                                    </TooltipTrigger>
+
+                                    <TooltipContent
+                                      side="top"
+                                      className="max-w-sm"
+                                    >
+                                      <div className="space-y-2">
+                                        <p className="font-semibold">
+                                          Previous Offers
+                                        </p>
+
+                                        {[
+                                          {
+                                            offer_date: "25/11/2026",
+                                            rate: 245 + index * 10,
+                                          },
+                                          {
+                                            offer_date: "20/11/2026",
+                                            rate: 238 + index * 10,
+                                          },
+                                          {
+                                            offer_date: "15/11/2026",
+                                            rate: 230 + index * 10,
+                                          },
+                                        ].map((offer, i) => (
+                                          <div
+                                            key={i}
+                                            className="flex justify-between gap-4 border-b pb-1 text-xs last:border-0"
+                                          >
+                                            <span>{offer.offer_date}</span>
+
+                                            <span className="font-medium">
+                                              ₹
+                                              {offer.rate.toLocaleString(
+                                                "en-IN",
+                                              )}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                             </td>
                             <td className="px-2 py-2">
                               <form.Field name={`offer_lots[${index}].remarks`}>
