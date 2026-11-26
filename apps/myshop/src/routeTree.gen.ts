@@ -57,6 +57,7 @@ import { Route as DashboardReportsOfferRouteRouteImport } from './routes/dashboa
 import { Route as DashboardReportsSaleRouteRouteImport } from './routes/dashboard/reports/sale/route'
 import { Route as DashboardSalebookIndexRouteImport } from './routes/dashboard/salebook/index'
 import { Route as DashboardSalebookNameRouteImport } from './routes/dashboard/salebook/$name'
+import { Route as DashboardSalebookBatchSaleRouteImport } from './routes/dashboard/salebook/batch-sale'
 import { Route as DashboardSalebookNewRouteImport } from './routes/dashboard/salebook/new'
 import { Route as DashboardSalebookPendingSaleRouteImport } from './routes/dashboard/salebook/pending-sale'
 import { Route as DashboardTeaTestingIndexRouteImport } from './routes/dashboard/tea-testing/index'
@@ -334,6 +335,12 @@ const DashboardSalebookNameRoute = DashboardSalebookNameRouteImport.update({
   path: '/salebook/$name',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardSalebookBatchSaleRoute =
+  DashboardSalebookBatchSaleRouteImport.update({
+    id: '/salebook/batch-sale',
+    path: '/salebook/batch-sale',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardSalebookNewRoute = DashboardSalebookNewRouteImport.update({
   id: '/salebook/new',
   path: '/salebook/new',
@@ -500,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
   '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
+  '/dashboard/salebook/batch-sale': typeof DashboardSalebookBatchSaleRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
@@ -567,6 +575,7 @@ export interface FileRoutesByTo {
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
   '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
+  '/dashboard/salebook/batch-sale': typeof DashboardSalebookBatchSaleRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
@@ -640,6 +649,7 @@ export interface FileRoutesById {
   '/dashboard/payment-receipts/$name': typeof DashboardPaymentReceiptsNameRoute
   '/dashboard/payment-receipts/new': typeof DashboardPaymentReceiptsNewRoute
   '/dashboard/salebook/$name': typeof DashboardSalebookNameRoute
+  '/dashboard/salebook/batch-sale': typeof DashboardSalebookBatchSaleRoute
   '/dashboard/salebook/new': typeof DashboardSalebookNewRoute
   '/dashboard/salebook/pending-sale': typeof DashboardSalebookPendingSaleRoute
   '/dashboard/tea-testing/$name': typeof DashboardTeaTestingNameRoute
@@ -714,6 +724,7 @@ export interface FileRouteTypes {
     | '/dashboard/payment-receipts/$name'
     | '/dashboard/payment-receipts/new'
     | '/dashboard/salebook/$name'
+    | '/dashboard/salebook/batch-sale'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
     | '/dashboard/tea-testing/$name'
@@ -781,6 +792,7 @@ export interface FileRouteTypes {
     | '/dashboard/payment-receipts/$name'
     | '/dashboard/payment-receipts/new'
     | '/dashboard/salebook/$name'
+    | '/dashboard/salebook/batch-sale'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
     | '/dashboard/tea-testing/$name'
@@ -853,6 +865,7 @@ export interface FileRouteTypes {
     | '/dashboard/payment-receipts/$name'
     | '/dashboard/payment-receipts/new'
     | '/dashboard/salebook/$name'
+    | '/dashboard/salebook/batch-sale'
     | '/dashboard/salebook/new'
     | '/dashboard/salebook/pending-sale'
     | '/dashboard/tea-testing/$name'
@@ -1237,6 +1250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSalebookNameRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/salebook/batch-sale': {
+      id: '/dashboard/salebook/batch-sale'
+      path: '/salebook/batch-sale'
+      fullPath: '/dashboard/salebook/batch-sale'
+      preLoaderRoute: typeof DashboardSalebookBatchSaleRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/salebook/new': {
       id: '/dashboard/salebook/new'
       path: '/salebook/new'
@@ -1488,6 +1508,7 @@ interface DashboardRouteRouteChildren {
   DashboardPaymentReceiptsNameRoute: typeof DashboardPaymentReceiptsNameRoute
   DashboardPaymentReceiptsNewRoute: typeof DashboardPaymentReceiptsNewRoute
   DashboardSalebookNameRoute: typeof DashboardSalebookNameRoute
+  DashboardSalebookBatchSaleRoute: typeof DashboardSalebookBatchSaleRoute
   DashboardSalebookNewRoute: typeof DashboardSalebookNewRoute
   DashboardSalebookPendingSaleRoute: typeof DashboardSalebookPendingSaleRoute
   DashboardTeaTestingNameRoute: typeof DashboardTeaTestingNameRoute
@@ -1543,6 +1564,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardPaymentReceiptsNameRoute: DashboardPaymentReceiptsNameRoute,
   DashboardPaymentReceiptsNewRoute: DashboardPaymentReceiptsNewRoute,
   DashboardSalebookNameRoute: DashboardSalebookNameRoute,
+  DashboardSalebookBatchSaleRoute: DashboardSalebookBatchSaleRoute,
   DashboardSalebookNewRoute: DashboardSalebookNewRoute,
   DashboardSalebookPendingSaleRoute: DashboardSalebookPendingSaleRoute,
   DashboardTeaTestingNameRoute: DashboardTeaTestingNameRoute,

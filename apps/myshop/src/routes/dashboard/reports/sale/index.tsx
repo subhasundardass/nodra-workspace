@@ -9,9 +9,12 @@ import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 import { Printer } from "lucide-react";
 
 import { SaleReportFilter } from "@/features/reports/sale/sale-report-filter";
-import { createSaleReportColumns } from "@/features/reports/sale/sale-report-columns";
+import {
+  createSaleReportColumns,
+  type SaleReportRecord,
+} from "@/features/reports/sale/sale-report-columns";
 
-import type { SaleReportRecord } from "@/features/reports/sale/sale-report-columns";
+import { generateSaleReportPdf } from "@/features/reports/sale/sale-report-pdf";
 
 type SaleListResponse = {
   documents: SaleReportRecord[];
@@ -74,11 +77,21 @@ function RouteComponent() {
 
   const filteredRecords = useMemo(() => {
     return records.filter((sale) => {
-      if (appliedFilters.fromDate && sale.sale_date < appliedFilters.fromDate) {
+      const saleDate = sale.sale_date
+        ? String(sale.sale_date).slice(0, 10)
+        : "";
+
+      if (
+        appliedFilters.fromDate &&
+        (!saleDate || saleDate < appliedFilters.fromDate)
+      ) {
         return false;
       }
 
-      if (appliedFilters.toDate && sale.sale_date > appliedFilters.toDate) {
+      if (
+        appliedFilters.toDate &&
+        (!saleDate || saleDate > appliedFilters.toDate)
+      ) {
         return false;
       }
 
@@ -154,10 +167,32 @@ function RouteComponent() {
   const toolbarActions: GlobalToolbarAction[] = [
     {
       id: "print",
-      label: "Print",
+      label: "Export PDF",
       icon: Printer,
       variant: "outline",
-      onClick: () => window.print(),
+      onClick: () => {
+        generateSaleReportPdf({
+          rows: filteredRecords.map((sale) => ({
+            lot_no: sale.lot_no ?? "",
+            brand: sale.original_brand ?? "",
+            grade: sale.grade ?? "",
+            bags: Number(sale.sold_bags ?? 0),
+            net_kg_per_bag: Number(sale.net_kg_per_bag ?? 0),
+            total_kgs: Number(sale.sold_quantity ?? 0),
+            arrival_date: sale.arrival_date ?? "",
+
+            tf: sale.tf ?? "",
+            sale_type: sale.sale_type ?? "",
+
+            rate: Number(sale.rate ?? 0),
+            broker_name: sale.broker_name ?? "",
+          })),
+
+          fromDate: appliedFilters.fromDate,
+          toDate: appliedFilters.toDate,
+          factory: appliedFilters.factory,
+        });
+      },
     },
   ];
 

@@ -29,6 +29,36 @@ function isCancelled(data: DocumentData): boolean {
   return Number(data.docstatus) === 98 || data.workflow_state === "Cancelled";
 }
 
+function getSortOrder(value: unknown): "asc" | "desc" {
+  return String(value ?? "desc").toLowerCase() === "asc" ? "asc" : "desc";
+}
+
+function getLimit(value: unknown, defaultValue = 100, max = 1000): number {
+  const requested = Number(value);
+
+  return Number.isFinite(requested)
+    ? Math.min(max, Math.max(1, Math.trunc(requested)))
+    : defaultValue;
+}
+
+function getOffset(value: unknown): number {
+  const requested = Number(value);
+
+  return Number.isFinite(requested) ? Math.max(0, Math.trunc(requested)) : 0;
+}
+
+function getLatestFirst(a: DocumentData, b: DocumentData): number {
+  const dateDifference = toDateValue(b.sale_date) - toDateValue(a.sale_date);
+
+  if (dateDifference !== 0) return dateDifference;
+
+  return String(b.name ?? "").localeCompare(String(a.name ?? ""));
+}
+
+function getLatestTestingFirst(a: DocumentData, b: DocumentData): number {
+  return toDateValue(b.sample_date) - toDateValue(a.sample_date);
+}
+
 export function registerSaleBookMethods(registry: MethodRegistry): void {
   /**
    * SaleBook list.
@@ -41,21 +71,9 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
     async (ctx) => {
       const app = await getNodra();
 
-      const requestedLimit = Number(ctx.args.limit);
-      const requestedOffset = Number(ctx.args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 100;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      const sortOrder =
-        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
-          ? "asc"
-          : "desc";
+      const limit = getLimit(ctx.args.limit, 100, 100);
+      const offset = getOffset(ctx.args.offset);
+      const sortOrder = getSortOrder(ctx.args.sort_order);
 
       const lotFilters: Filters = {
         docstatus: 51,
@@ -106,7 +124,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           }),
         ]);
 
-      // Group all active SaleBook entries by Lot.
+      // Group active SaleBook entries by Lot.
       const salesByLot = new Map<string, DocumentData[]>();
 
       for (const sale of saleEntries) {
@@ -115,31 +133,20 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         if (isCancelled(data)) continue;
 
         const lotName = String(data.lot ?? "");
-
         if (!lotName) continue;
 
-        const existing = salesByLot.get(lotName) ?? [];
+        const entries = salesByLot.get(lotName) ?? [];
+        entries.push(data);
 
-        existing.push(data);
-
-        salesByLot.set(lotName, existing);
+        salesByLot.set(lotName, entries);
       }
 
-      // Sort entries so the latest SaleBook entry is first.
+      // Sort SaleBook entries newest first.
       for (const entries of salesByLot.values()) {
-        entries.sort((a, b) => {
-          const dateDifference =
-            toDateValue(b.sale_date) - toDateValue(a.sale_date);
-
-          if (dateDifference !== 0) {
-            return dateDifference;
-          }
-
-          return String(b.name ?? "").localeCompare(String(a.name ?? ""));
-        });
+        entries.sort(getLatestFirst);
       }
 
-      // Map Broker IDs to Broker titles.
+      // Broker ID to title.
       const brokerMap = new Map<string, string>();
 
       for (const broker of brokers) {
@@ -151,7 +158,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }
       }
 
-      // Map asking rates from confirmed OfferLots.
+      // Asking price from confirmed OfferLots.
       const askingPriceByLot = new Map<string, number>();
 
       for (const offer of offerSheets) {
@@ -171,8 +178,9 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }
       }
 
-      // Tea Testing data is not currently used in the merged output, but it can be processed similarly if needed.
+      // Latest completed TeaTesting entry by Lot.
       const testingByLot = new Map<string, DocumentData>();
+
       for (const testing of teaTestings) {
         const data = serialise(testing) as DocumentData;
         const lotName = String(data.lot ?? "");
@@ -181,25 +189,20 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
 
         const existing = testingByLot.get(lotName);
 
-        if (
-          !existing ||
-          toDateValue(data.sample_date) > toDateValue(existing.sample_date)
-        ) {
+        if (!existing || getLatestTestingFirst(data, existing) < 0) {
           testingByLot.set(lotName, data);
         }
       }
 
-      // Merge Lot, SaleBook and Offer data.
+      // Merge Lot, SaleBook and related information.
       const documents = lots.map((lot) => {
         const data = serialise(lot) as DocumentData;
         const lotName = String(data.name ?? "");
+
         const testing = testingByLot.get(lotName) ?? null;
         const sales = salesByLot.get(lotName) ?? [];
-
-        // Latest SaleBook entry for displaying individual fields.
         const latestSale = sales[0] ?? null;
 
-        // Aggregate quantities across all active SaleBook entries.
         const totalSoldBags = sales.reduce(
           (total, sale) => total + toNumber(sale.sold_bags),
           0,
@@ -214,12 +217,11 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         const netKgPerBag = toNumber(data.net_kg_per_bag);
 
         return {
-          // Lot identity.
           name: lotName,
           lot: lotName,
           lot_no: String(data.lot_no ?? ""),
 
-          // Testing information from the latest TeaTesting entry for this Lot.
+          // Tea Testing.
           tea_testing: testing?.name ?? null,
           tested_grade: testing?.tested_grade ?? null,
           test_information: testing
@@ -236,12 +238,13 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
             : null,
 
           tf: latestSale?.tf ?? null,
+
           // Latest SaleBook identity.
-          // Use individual SaleBook document name for updates.
           sale_book_name: latestSale?.name ? String(latestSale.name) : null,
 
-          // All SaleBook records belonging to this Lot.
           sale_book_count: sales.length,
+
+          // All active SaleBook entries.
           sale_book_entries: sales.map((sale) => ({
             name: sale.name,
             sale_date: sale.sale_date,
@@ -273,7 +276,6 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           sale_type: latestSale?.sale_type ?? null,
           rate: toNumber(latestSale?.rate),
 
-          // Aggregate sale quantities.
           sold_bags: totalSoldBags,
           sold_quantity: totalSoldKg,
 
@@ -323,16 +325,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
       const documents = entries
         .map((entry) => serialise(entry) as DocumentData)
         .filter((entry) => !isCancelled(entry))
-        .sort((a, b) => {
-          const dateDifference =
-            toDateValue(b.sale_date) - toDateValue(a.sale_date);
-
-          if (dateDifference !== 0) {
-            return dateDifference;
-          }
-
-          return String(b.name ?? "").localeCompare(String(a.name ?? ""));
-        });
+        .sort(getLatestFirst);
 
       return {
         documents,
@@ -343,32 +336,18 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
   );
 
   /**
-   * Pending SaleBook entries for Lots that are confirmed but not yet sold.
+   * Pending SaleBook entries for confirmed Lots.
    *
    * Displays one row per confirmed Lot.
-   * Multiple SaleBook entries are grouped by Lot.  
    */
-
   registry.register(
     "salebook.get_pending_lots",
     async (ctx) => {
       const app = await getNodra();
 
-      const requestedLimit = Number(ctx.args.limit);
-      const requestedOffset = Number(ctx.args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 100;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      const sortOrder =
-        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
-          ? "asc"
-          : "desc";
+      const limit = getLimit(ctx.args.limit, 100, 100);
+      const offset = getOffset(ctx.args.offset);
+      const sortOrder = getSortOrder(ctx.args.sort_order);
 
       const lotFilters: Filters = {
         docstatus: 51,
@@ -397,7 +376,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }),
       ]);
 
-      // Map the latest completed TeaTesting record by Lot.
+      // Latest completed TeaTesting entry by Lot.
       const testingByLot = new Map<string, DocumentData>();
 
       for (const testing of teaTestings) {
@@ -408,10 +387,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
 
         const existing = testingByLot.get(lotName);
 
-        if (
-          !existing ||
-          toDateValue(data.sample_date) > toDateValue(existing.sample_date)
-        ) {
+        if (!existing || getLatestTestingFirst(data, existing) < 0) {
           testingByLot.set(lotName, data);
         }
       }
@@ -419,8 +395,10 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
       const documents = lots.map((lot) => {
         const data = serialise(lot) as DocumentData;
         const lotName = String(data.name ?? "");
-
         const testing = testingByLot.get(lotName) ?? null;
+
+        const bags = toNumber(data.bags);
+        const netKgPerBag = toNumber(data.net_kg_per_bag);
 
         return {
           name: lotName,
@@ -434,16 +412,15 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           original_grade: data.grade ?? null,
           grade: data.grade ?? null,
 
-          bags: toNumber(data.bags),
-          net_kg_per_bag: toNumber(data.net_kg_per_bag),
-          total_kg: toNumber(data.bags) * toNumber(data.net_kg_per_bag),
+          bags,
+          net_kg_per_bag: netKgPerBag,
+          total_kg: bags * netKgPerBag,
 
           arrival_date: data.arrival_date || null,
 
-          // Tea Testing Information
+          // Tea Testing.
           tea_testing: testing?.name ?? null,
           tested_grade: testing?.tested_grade ?? null,
-
           test_information: testing
             ? [
                 testing.appearance,
@@ -472,12 +449,8 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
   /**
    * Search available Lots for SaleBook.
    *
-   * Only returns:
-   * - Confirmed Lots (docstatus 51)
-   * - Lots with available Factory stock
-   * - Lots without Warehouse stock
-   *
-   * Response format is compatible with LinkField.
+   * Only returns confirmed Lots with Factory stock
+   * and without Warehouse stock.
    */
   registry.register(
     "salebook.search_available_lots",
@@ -487,15 +460,13 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
       const query = String(ctx.args.query ?? "")
         .trim()
         .toLowerCase();
+
       const selectedName = String(ctx.args.selectedName ?? "").trim();
+
       const titleField = String(ctx.args.titleField ?? "lot_no");
 
-      const requestedLimit = Number(ctx.args.limit);
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
-        : 20;
+      const limit = getLimit(ctx.args.limit, 20, 100);
 
-      // Always restrict to Confirmed Lots.
       const lots = await app.orm.getList("Lots", {
         limit: 1000,
         offset: 0,
@@ -509,7 +480,6 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         .filter((lot) => {
           const name = String(lot.name ?? "");
 
-          // Resolve an externally selected Lot.
           if (selectedName) {
             return name === selectedName;
           }
@@ -527,7 +497,6 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
       const stockService = new StockService(app.orm);
 
       const items: Array<{ name: string; label: string }> = [];
-
       const batchSize = 20;
 
       for (let i = 0; i < candidates.length; i += batchSize) {
@@ -542,7 +511,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
 
               const stock = await stockService.getLotStockBalance(lotName);
 
-              // Must have available Factory stock.
+              // Require available Factory stock.
               if (
                 toNumber(stock.factory_bags) <= 0 ||
                 toNumber(stock.factory_quantity) <= 0
@@ -550,7 +519,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
                 return null;
               }
 
-              // Exclude Lots having any Warehouse stock.
+              // Exclude Lots with Warehouse stock.
               if (
                 toNumber(stock.warehouse_bags) !== 0 ||
                 toNumber(stock.warehouse_quantity) > 0.000001
@@ -563,7 +532,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
                 label: String(lot[titleField] || lotName),
               };
             } catch {
-              // Do not display a Lot if its stock cannot be verified.
+              // Exclude Lots when stock cannot be verified.
               return null;
             }
           }),
@@ -573,7 +542,6 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           if (item) items.push(item);
         }
 
-        // Stop once enough matching Lots have been found.
         if (!selectedName && items.length >= limit) {
           break;
         }
@@ -590,28 +558,16 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
    * Sale Report.
    *
    * Displays one row per confirmed SaleBook entry.
-   * Lot and Broker information are included in each row.
+   * Includes Lot and Broker information.
    */
   registry.register(
     "sale.report.index",
     async (ctx) => {
       const app = await getNodra();
 
-      const requestedLimit = Number(ctx.args.limit);
-      const requestedOffset = Number(ctx.args.offset);
-
-      const limit = Number.isFinite(requestedLimit)
-        ? Math.min(1000, Math.max(1, Math.trunc(requestedLimit)))
-        : 100;
-
-      const offset = Number.isFinite(requestedOffset)
-        ? Math.max(0, Math.trunc(requestedOffset))
-        : 0;
-
-      const sortOrder =
-        String(ctx.args.sort_order ?? "desc").toLowerCase() === "asc"
-          ? "asc"
-          : "desc";
+      const limit = getLimit(ctx.args.limit, 100, 1000);
+      const offset = getOffset(ctx.args.offset);
+      const sortOrder = getSortOrder(ctx.args.sort_order);
 
       const filters: Filters = {
         docstatus: 51,
@@ -642,7 +598,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }),
       ]);
 
-      // Map Lot information.
+      // Lot ID to Lot document.
       const lotMap = new Map<string, DocumentData>();
 
       for (const lot of lots) {
@@ -654,7 +610,7 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         }
       }
 
-      // Map Broker titles.
+      // Broker ID to Broker title.
       const brokerMap = new Map<string, string>();
 
       for (const broker of brokers) {
@@ -662,11 +618,11 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         const name = String(data.name ?? "");
 
         if (name) {
-          brokerMap.set(name, String(data.title || name));
+          brokerMap.set(name, String(data.broker_name || data.title || name));
         }
       }
 
-      // One report row per confirmed SaleBook entry.
+      // One row per confirmed SaleBook entry.
       const documents = saleEntries.map((entry) => {
         const sale = serialise(entry) as DocumentData;
 
@@ -678,6 +634,8 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
         const soldBags = toNumber(sale.sold_bags);
         const soldQuantity = toNumber(sale.sold_quantity);
         const rate = toNumber(sale.rate);
+
+        const netKgPerBag = toNumber(lot.net_kg_per_bag);
 
         return {
           // SaleBook identity.
@@ -691,22 +649,26 @@ export function registerSaleBookMethods(registry: MethodRegistry): void {
           original_brand: lot.original_brand ?? null,
           grade: sale.grade ?? lot.grade ?? null,
           arrival_date: lot.arrival_date ?? null,
+          net_kg_per_bag: netKgPerBag,
+          total_kg: toNumber(lot.bags) * netKgPerBag,
 
           // Sale information.
           sale_date: sale.sale_date ?? null,
-          sale_type: sale.sale_type ?? null,
+          sale_type: sale.sale_type ?? null, // Bid / Advance
           sold_bags: soldBags,
           sold_quantity: soldQuantity,
           rate,
-
           total_amount: soldQuantity * rate,
+
+          // Test Information
+          app_inv_liq: sale.app_inv_liq ?? null, // APP / INV / LIQ
+          tf: sale.tf ?? null, // T / F
 
           // Broker information.
           broker: broker || null,
           broker_name: brokerMap.get(broker) ?? "",
 
           remarks: sale.remarks ?? "",
-          tf: sale.tf ?? null,
 
           workflow_state: sale.workflow_state ?? "Confirmed",
         };

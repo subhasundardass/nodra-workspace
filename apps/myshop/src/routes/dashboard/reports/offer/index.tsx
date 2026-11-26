@@ -4,7 +4,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { callMethod } from "@/lib/call-method";
 import { useDataTable } from "@/hooks/use-data-table";
 import { DocTypeListTemplate } from "@/components/doctype/templates/doctype-list-template";
-
+import { generateOfferReportPdf } from "@/features/reports/offer/offer-report-pdf";
 import { Printer } from "lucide-react";
 import type { GlobalToolbarAction } from "@/components/toolbar/global-toolbar";
 
@@ -39,18 +39,17 @@ function RouteComponent() {
   const { records } = Route.useLoaderData();
   const router = useRouter();
 
-  const today = new Date().toLocaleDateString("en-CA");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
-  const [fromDate, setFromDate] = useState(today);
-  const [toDate, setToDate] = useState(today);
   const [factory, setFactory] = useState("All");
   const [brand, setBrand] = useState("All");
   const [brokerType, setBrokerType] = useState("All");
   const [status, setStatus] = useState("All");
 
   const [appliedFilters, setAppliedFilters] = useState({
-    fromDate: today,
-    toDate: today,
+    fromDate: "",
+    toDate: "",
     factory: "All",
     brand: "All",
     brokerType: "All",
@@ -79,14 +78,21 @@ function RouteComponent() {
 
   const filteredRecords = useMemo(() => {
     return records.filter((offer) => {
+      const offerDate = offer.offer_date
+        ? String(offer.offer_date).slice(0, 10)
+        : "";
+
       if (
         appliedFilters.fromDate &&
-        offer.offer_date < appliedFilters.fromDate
+        (!offerDate || offerDate < appliedFilters.fromDate)
       ) {
         return false;
       }
 
-      if (appliedFilters.toDate && offer.offer_date > appliedFilters.toDate) {
+      if (
+        appliedFilters.toDate &&
+        (!offerDate || offerDate > appliedFilters.toDate)
+      ) {
         return false;
       }
 
@@ -150,16 +156,16 @@ function RouteComponent() {
   };
 
   const resetFilters = () => {
-    setFromDate(today);
-    setToDate(today);
+    setFromDate("");
+    setToDate("");
     setFactory("All");
     setBrand("All");
     setBrokerType("All");
     setStatus("All");
 
     setAppliedFilters({
-      fromDate: today,
-      toDate: today,
+      fromDate: "",
+      toDate: "",
       factory: "All",
       brand: "All",
       brokerType: "All",
@@ -172,10 +178,36 @@ function RouteComponent() {
   const toolbarActions: GlobalToolbarAction[] = [
     {
       id: "print",
-      label: "Print",
+      label: "Export PDF",
       icon: Printer,
       variant: "outline",
-      onClick: () => window.print(),
+      onClick: () => {
+        generateOfferReportPdf({
+          rows: filteredRecords.map((offer) => ({
+            lot_no: offer.lot_no ?? "",
+            brand: offer.original_brand ?? "",
+            grade: offer.grade ?? "",
+            bags: Number(offer.bags ?? 0),
+            net_kg_per_bag: Number(offer.net_kg_per_bag ?? 0),
+            total_kgs: Number(offer.total_kgs ?? 0),
+            arrival_date: offer.arrival_date ?? "",
+
+            appearance: offer.appearance ?? "",
+            infusion: offer.infusion ?? "",
+            liquor: offer.liquor ?? "",
+
+            sale_type: offer.sale_type ?? "",
+            tf: offer.tf ?? "",
+
+            asking_rate: Number(offer.asking_rate ?? 0),
+            broker_type: offer.broker_type ?? "",
+            remarks: offer.remarks ?? "",
+          })),
+
+          fromDate: appliedFilters.fromDate,
+          toDate: appliedFilters.toDate,
+        });
+      },
     },
   ];
 
