@@ -230,6 +230,13 @@ export const navGroups: NavGroup[] = [
             icon: "product",
             isActive: false,
           },
+          // Stock Reports
+          {
+            title: "Stock Reports",
+            url: "/dashboard/reports/sale",
+            icon: "product",
+            isActive: false,
+          },
 
           // Quality & Valuation Reports
           {
@@ -287,58 +294,6 @@ export const navGroups: NavGroup[] = [
                 title: "Transporter-wise Dispatch",
                 url: "#",
                 icon: "product",
-                isActive: false,
-                items: [],
-              },
-            ],
-          },
-
-          // Stock Reports
-          {
-            title: "Stock Reports",
-            url: "#",
-            icon: "product",
-            isActive: false,
-            items: [
-              {
-                title: "Current Stock Position",
-                url: "/dashboard/reports/warehouse-stock",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Available Stock",
-                url: "#",
-                icon: "checks",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Lot-wise Stock Ledger",
-                url: "#",
-                icon: "page",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Sold but Not Dispatched",
-                url: "#",
-                icon: "clock",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Dispatched Quantity",
-                url: "#",
-                icon: "trendingUp",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Stock Movements",
-                url: "/dashboard/reports/stock-movements",
-                icon: "adjustments",
                 isActive: false,
                 items: [],
               },
