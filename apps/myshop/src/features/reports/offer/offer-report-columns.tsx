@@ -3,9 +3,15 @@ import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export type OfferReportRecord = {
+  // OfferSheet
   offer_no: string;
   offer_date: string;
   broker_type: string;
+  asking_rate: number;
+  remarks?: string | null;
+  workflow_state: "Draft" | "Confirmed" | "Cancelled";
+
+  // Lots
   lot_no: string;
   factory: string;
   original_brand?: string | null;
@@ -13,9 +19,21 @@ export type OfferReportRecord = {
   bags: number;
   net_kg_per_bag: number;
   total_kgs: number;
-  asking_rate: number;
-  remarks?: string | null;
-  workflow_state: "Draft" | "Confirmed" | "Cancelled";
+  arrival_date?: string | null;
+
+  // SaleBook
+  sale_type?: string | null;
+  tf?: string | null;
+
+  // TeaTesting
+  tested_grade?: string | null;
+  sample_date?: string | null;
+  appearance?: string | null;
+  infusion?: string | null;
+  liquor?: string | null;
+  taste?: string | null;
+  defects?: string | null;
+  test_remarks?: string | null;
 };
 
 // function formatNumber(value: unknown, decimals = 0): string {

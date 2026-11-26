@@ -43,24 +43,37 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
       const offset = Math.max(Number(args.offset) || 0, 0);
       const sortOrder = args.sort_order === "asc" ? "asc" : "desc";
 
-      // Fetch Lots as the primary records.
-      const options: ListOptions = {
-        limit,
-        offset,
-        orderBy: `entry_date ${sortOrder}`,
-      };
-
-      const [lotDocuments, offerDocuments, totalCount] = await Promise.all([
-        app.orm.getList("Lots", options),
+      const [
+        lotDocuments,
+        offerDocuments,
+        saleBookDocuments,
+        teaTestingDocuments,
+        totalCount,
+      ] = await Promise.all([
+        app.orm.getList("Lots", {
+          limit,
+          offset,
+          orderBy: `entry_date ${sortOrder}`,
+        }),
         app.orm.getList("OfferSheet", {
           limit: 1000,
           offset: 0,
-          orderBy: `offer_date desc`,
+          orderBy: "offer_date desc",
+        }),
+        app.orm.getList("SaleBook", {
+          limit: 1000,
+          offset: 0,
+          orderBy: "modified desc",
+        }),
+        app.orm.getList("TeaTesting", {
+          limit: 1000,
+          offset: 0,
+          orderBy: "sample_date desc",
         }),
         app.orm.getCount("Lots"),
       ]);
 
-      // Build a lookup: Lot name -> matching offer rows.
+      // OfferSheet rows grouped by Lot.
       const offersByLot = new Map<string, Array<Record<string, unknown>>>();
 
       for (const document of offerDocuments) {
@@ -72,13 +85,15 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
 
         for (const item of offerLots) {
           const offerLot = item as Record<string, unknown>;
-          const lotName = String(offerLot.lot ?? "");
+
+          // Use Link field, not the display field lot_no.
+          const lotName = String(offerLot.lot ?? "").trim();
 
           if (!lotName) continue;
 
-          const matchedOffers = offersByLot.get(lotName) ?? [];
+          const matched = offersByLot.get(lotName) ?? [];
 
-          matchedOffers.push({
+          matched.push({
             ...offerLot,
             offer_no: offer.name,
             offer_date: offer.offer_date,
@@ -86,32 +101,84 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
             offer_status: offer.workflow_state,
           });
 
-          offersByLot.set(lotName, matchedOffers);
+          offersByLot.set(lotName, matched);
         }
       }
 
-      // Every Lot appears, even when it has no offer.
+      // SaleBook grouped by Lot.
+      // Records are ordered newest first, so the first record per Lot wins.
+      const saleBookByLot = new Map<string, Record<string, unknown>>();
+
+      for (const document of saleBookDocuments) {
+        const sale = serialise(document);
+        const lotName = String(sale.lot ?? "");
+
+        if (!lotName || saleBookByLot.has(lotName)) continue;
+
+        saleBookByLot.set(lotName, sale);
+      }
+
+      // Latest completed TeaTesting record grouped by Lot.
+      const teaTestingByLot = new Map<string, Record<string, unknown>>();
+
+      for (const document of teaTestingDocuments) {
+        const testing = serialise(document);
+
+        if (Number(testing.docstatus) !== 51) continue;
+
+        const lotName = String(testing.lot ?? "");
+
+        if (!lotName || teaTestingByLot.has(lotName)) continue;
+
+        teaTestingByLot.set(lotName, testing);
+      }
+
       const records = lotDocuments.flatMap((document) => {
         const lot = serialise(document);
+        const lotName = String(lot.name);
 
         const bags = Number(lot.bags ?? 0);
         const netKgPerBag = Number(lot.net_kg_per_bag ?? 0);
 
-        const matchedOffers = offersByLot.get(String(lot.name)) ?? [];
+        const matchedOffers = offersByLot.get(lotName) ?? [];
 
-        // Exclude lots that are not present in any OfferLots.
         if (matchedOffers.length === 0) {
           return [];
         }
 
+        const sale = saleBookByLot.get(lotName);
+        const testing = teaTestingByLot.get(lotName);
+
         return matchedOffers.map((offer) => ({
           ...lot,
-          offer_no: offer.offer_no,
-          offer_date: offer.offer_date,
-          broker_type: offer.broker_type,
+
+          // OfferSheet fields
+          offer_no: String(offer.offer_no ?? ""),
+          offer_date: offer.offer_date ?? null,
+          broker_type: String(offer.broker_type ?? ""),
           asking_rate: Number(offer.asking_rate ?? 0),
           remarks: offer.remarks ?? null,
-          offer_status: offer.offer_status,
+
+          // Use OfferSheet workflow state for report filtering
+          workflow_state: offer.offer_status ?? null,
+
+          // Lots fields
+          arrival_date: lot.arrival_date ?? null,
+
+          // SaleBook fields
+          sale_type: sale?.sale_type ?? null,
+          tf: sale?.tf ?? null,
+
+          // TeaTesting fields
+          tested_grade: testing?.tested_grade ?? null,
+          sample_date: testing?.sample_date ?? null,
+          appearance: testing?.appearance ?? null,
+          infusion: testing?.infusion ?? null,
+          liquor: testing?.liquor ?? null,
+          taste: testing?.taste ?? null,
+          defects: testing?.defects ?? null,
+          test_remarks: testing?.test_remarks ?? null,
+
           bags,
           net_kg_per_bag: netKgPerBag,
           total_kgs: bags * netKgPerBag,

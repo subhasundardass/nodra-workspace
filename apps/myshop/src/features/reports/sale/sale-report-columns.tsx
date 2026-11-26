@@ -9,12 +9,14 @@ export type SaleReportRecord = {
   factory: string;
   original_brand?: string | null;
   grade?: string | null;
-  bags: number;
+
+  sold_bags: number;
   net_kg_per_bag: number;
-  total_kgs: number;
+  sold_quantity: number;
+
   sale_type?: string | null;
   tf?: string | null;
-  app_inv_liq?: string | null;
+
   rate: number;
   broker?: string | null;
   broker_name?: string | null;
@@ -88,12 +90,12 @@ export function createSaleReportColumns(): ColumnDef<SaleReportRecord>[] {
       cell: ({ row }) => row.original.grade || "—",
     },
     {
-      accessorKey: "bags",
+      accessorKey: "sold_bags",
       header: () => <div className="text-right">Bags</div>,
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
-          {formatNumber(row.original.bags)}
+          {formatNumber(row.original.sold_bags)}
         </div>
       ),
     },
@@ -108,12 +110,12 @@ export function createSaleReportColumns(): ColumnDef<SaleReportRecord>[] {
       ),
     },
     {
-      accessorKey: "total_kgs",
+      accessorKey: "sold_quantity",
       header: () => <div className="text-right">Total Kgs</div>,
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-right font-semibold tabular-nums">
-          {formatNumber(row.original.total_kgs, 2)}
+          {formatNumber(row.original.sold_quantity, 2)}
         </div>
       ),
     },
@@ -125,21 +127,15 @@ export function createSaleReportColumns(): ColumnDef<SaleReportRecord>[] {
     },
     {
       accessorKey: "sale_type",
-      header: "Type",
-      enableSorting: true,
-      cell: ({ row }) => row.original.sale_type || "—",
+      header: "Sale Type",
     },
     {
       accessorKey: "app_inv_liq",
       header: "APP/INV/LIQ",
-      enableSorting: true,
-      cell: ({ row }) => row.original.app_inv_liq || "—",
     },
     {
       accessorKey: "tf",
       header: "T/F",
-      enableSorting: true,
-      cell: ({ row }) => row.original.tf || "—",
     },
     {
       accessorKey: "rate",

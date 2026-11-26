@@ -79,8 +79,15 @@ export const navGroups: NavGroup[] = [
             items: [],
           },
           {
-            title: "SaleBook",
+            title: "Sale Book",
             url: "/dashboard/salebook",
+            icon: "product",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Sale Entry (Batch)",
+            url: "/dashboard/salebook/batch-sale",
             icon: "product",
             isActive: false,
             items: [],
