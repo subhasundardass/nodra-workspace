@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { callMethod } from "@/lib/call-method";
 
 interface LotOption {
   name: string;
@@ -25,6 +26,8 @@ interface LotOption {
   bag_to_serial_no?: number;
   net_kg_per_bag?: number;
   total_kg?: number;
+  test?: string;
+  liquor?: string;
 }
 
 interface OfferLotRow {
@@ -41,6 +44,19 @@ interface OfferLotRow {
   total_kg?: number;
   asking_rate?: number;
   remarks?: string;
+}
+
+interface PreviousOffer {
+  offer_name: string;
+  offer_date: string;
+  broker_type: string;
+  asking_rate: number;
+  remarks?: string;
+}
+
+interface PreviousOffersResponse {
+  documents: PreviousOffer[];
+  total_count: number;
 }
 
 interface OfferFormProps {
@@ -115,11 +131,60 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
   const [lotModalOpen, setLotModalOpen] = useState(false);
   const [selectedLotNames, setSelectedLotNames] = useState<string[]>([]);
   const [lotSearch, setLotSearch] = useState("");
-
+  const [selectedFactory, setSelectedFactory] = useState("all");
   const closeLotModal = () => {
     setLotModalOpen(false);
     setSelectedLotNames([]);
     setLotSearch("");
+  };
+  const factories = Array.from(
+    new Set(
+      lots
+        .map((lot) => lot.factory)
+        .filter((factory): factory is string => Boolean(factory)),
+    ),
+  ).sort();
+  const [previousOffers, setPreviousOffers] = useState<
+    Record<string, PreviousOffer[]>
+  >({});
+
+  const [loadingHistory, setLoadingHistory] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const loadPreviousOffers = async (lotName: string) => {
+    if (previousOffers[lotName] !== undefined || loadingHistory[lotName]) {
+      return;
+    }
+
+    setLoadingHistory((current) => ({
+      ...current,
+      [lotName]: true,
+    }));
+
+    try {
+      const result = await callMethod<PreviousOffersResponse>(
+        "offers.get_previous_by_lot",
+        { lot: lotName },
+      );
+
+      setPreviousOffers((current) => ({
+        ...current,
+        [lotName]: result.documents ?? [],
+      }));
+    } catch (error) {
+      console.error("Failed to load previous offers:", error);
+
+      setPreviousOffers((current) => ({
+        ...current,
+        [lotName]: [],
+      }));
+    } finally {
+      setLoadingHistory((current) => ({
+        ...current,
+        [lotName]: false,
+      }));
+    }
   };
 
   return (
@@ -183,23 +248,28 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
             );
 
             const filteredLots = availableLots.filter((lot) => {
-              const search = lotSearch.trim().toLowerCase();
+              const matchesFactory =
+                selectedFactory === "all" || lot.factory === selectedFactory;
 
-              if (!search) return true;
+              const search = lotSearch.toLowerCase();
 
-              return [
-                lot.name,
-                lot.lot_no,
-                lot.factory,
-                lot.grade,
-                lot.original_brand,
-                // lot.warehouse,
-                lot.original_brand,
-              ].some((value) =>
-                String(value ?? "")
-                  .toLowerCase()
-                  .includes(search),
-              );
+              const matchesSearch =
+                !search ||
+                [
+                  lot.lot_no,
+                  lot.factory,
+                  lot.grade,
+                  lot.original_brand,
+                  lot.warehouse,
+                  lot.test,
+                  lot.liquor,
+                ].some((value) =>
+                  String(value ?? "")
+                    .toLowerCase()
+                    .includes(search),
+                );
+
+              return matchesFactory && matchesSearch;
             });
 
             const totalBags = rows.reduce(
@@ -276,7 +346,7 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                       <thead className="bg-muted/50 text-xs text-muted-foreground">
                         <tr className="text-left">
                           <th className="px-2 py-2 font-medium">Lot No</th>
-                          <th className="px-2 py-2 font-medium">Factory</th>
+                          {/* <th className="px-2 py-2 font-medium">Factory</th> */}
                           <th className="px-2 py-2 font-medium">Grade</th>
                           <th className="px-2 py-2 font-medium">Brand</th>
                           <th className="px-2 py-2 font-medium">Bags</th>
@@ -288,172 +358,217 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                       </thead>
 
                       <tbody className="divide-y">
-                        {rows.map((row, index) => (
-                          <tr key={row.lot}>
-                            <td className="px-2 py-2 font-medium">
-                              {row.lot_no || row.lot}
-                            </td>
-                            <td className="px-2 py-2">{row.factory || "-"}</td>
-                            <td className="px-2 py-2">
-                              <form.Field name={`offer_lots[${index}].grade`}>
-                                {(field) => (
-                                  <LinkField
-                                    value={String(field.state.value ?? "")}
-                                    onChange={field.handleChange}
-                                    doctype="Grades"
-                                    titleField="grade_code"
-                                    pageSize={10}
-                                    clearable={false}
-                                    className="w-full min-w-32"
-                                  />
-                                )}
-                              </form.Field>
-                            </td>
-                            <td className="px-2 py-2">
-                              <form.Field
-                                name={`offer_lots[${index}].original_brand`}
-                              >
-                                {(field) => (
-                                  <LinkField
-                                    value={String(field.state.value ?? "")}
-                                    onChange={field.handleChange}
-                                    doctype="Brand"
-                                    className="w-full min-w-32"
-                                  />
-                                )}
-                              </form.Field>
-                            </td>
-                            <td className="px-2 py-2 tabular-nums">
-                              {Number(row.bags ?? 0).toLocaleString("en-IN")}
-                            </td>
-                            <td className="px-2 py-2 tabular-nums">
-                              {getLotTotalKg(row).toLocaleString("en-IN", {
-                                maximumFractionDigits: 2,
-                              })}
-                            </td>
+                        {rows.map((row, index) => {
+                          const lotHistory = previousOffers[row.lot] ?? [];
 
-                            {/* add brand here */}
-                            <td className="px-2 py-2">
-                              <div className="flex items-center gap-1.5">
-                                <form.Field
-                                  name={`offer_lots[${index}].asking_rate`}
-                                >
-                                  {(rateField) => (
-                                    <input
-                                      id={rateField.name}
-                                      name={rateField.name}
-                                      type="number"
-                                      min="0"
-                                      step="1"
-                                      value={String(
-                                        Math.round(
-                                          Number(rateField.state.value ?? 0),
-                                        ),
-                                      )}
-                                      onBlur={rateField.handleBlur}
-                                      onChange={(event) => {
-                                        const value = event.target.value;
-                                        rateField.handleChange(
-                                          value === "" ? 0 : Number(value),
-                                        );
-                                      }}
-                                      placeholder="Rate"
-                                      className="h-8 w-28 rounded-md border border-input bg-background px-2 text-sm"
+                          return (
+                            <tr key={row.lot}>
+                              <td className="px-2 py-2 font-medium">
+                                {row.lot_no || row.lot}
+                              </td>
+                              {/* 
+                              <td className="px-2 py-2">
+                                {row.factory || "-"}
+                              </td> */}
+
+                              <td className="px-2 py-2">
+                                <form.Field name={`offer_lots[${index}].grade`}>
+                                  {(field) => (
+                                    <LinkField
+                                      value={String(field.state.value ?? "")}
+                                      onChange={field.handleChange}
+                                      doctype="Grades"
+                                      titleField="grade_code"
+                                      pageSize={10}
+                                      clearable={false}
+                                      className="w-full min-w-32"
                                     />
                                   )}
                                 </form.Field>
+                              </td>
 
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        type="button"
-                                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                                      >
-                                        <History className="h-4 w-4" />
-                                      </button>
-                                    </TooltipTrigger>
+                              <td className="px-2 py-2">
+                                <form.Field
+                                  name={`offer_lots[${index}].original_brand`}
+                                >
+                                  {(field) => (
+                                    <LinkField
+                                      value={String(field.state.value ?? "")}
+                                      onChange={field.handleChange}
+                                      doctype="Brand"
+                                      className="w-full min-w-32"
+                                    />
+                                  )}
+                                </form.Field>
+                              </td>
 
-                                    <TooltipContent
-                                      side="top"
-                                      className="max-w-sm"
-                                    >
-                                      <div className="space-y-2">
-                                        <p className="font-semibold">
-                                          Previous Offers
-                                        </p>
+                              <td className="px-2 py-2 tabular-nums">
+                                {Number(row.bags ?? 0).toLocaleString("en-IN")}
+                              </td>
 
-                                        {[
-                                          {
-                                            offer_date: "25/11/2026",
-                                            rate: 245 + index * 10,
-                                          },
-                                          {
-                                            offer_date: "20/11/2026",
-                                            rate: 238 + index * 10,
-                                          },
-                                          {
-                                            offer_date: "15/11/2026",
-                                            rate: 230 + index * 10,
-                                          },
-                                        ].map((offer, i) => (
-                                          <div
-                                            key={i}
-                                            className="flex justify-between gap-4 border-b pb-1 text-xs last:border-0"
-                                          >
-                                            <span>{offer.offer_date}</span>
+                              <td className="px-2 py-2 tabular-nums">
+                                {getLotTotalKg(row).toLocaleString("en-IN", {
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
 
-                                            <span className="font-medium">
-                                              ₹
-                                              {offer.rate.toLocaleString(
-                                                "en-IN",
-                                              )}
-                                            </span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </div>
-                            </td>
-                            <td className="px-2 py-2">
-                              <form.Field name={`offer_lots[${index}].remarks`}>
-                                {(remarksField) => (
-                                  <Textarea
-                                    id={remarksField.name}
-                                    name={remarksField.name}
-                                    value={String(
-                                      remarksField.state.value ?? "",
+                              {/* Asking Rate and Previous Offers */}
+                              <td className="px-2 py-2">
+                                <div className="flex items-center gap-1.5">
+                                  <form.Field
+                                    name={`offer_lots[${index}].asking_rate`}
+                                  >
+                                    {(rateField) => (
+                                      <input
+                                        id={rateField.name}
+                                        name={rateField.name}
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value={String(
+                                          Math.round(
+                                            Number(rateField.state.value ?? 0),
+                                          ),
+                                        )}
+                                        onBlur={rateField.handleBlur}
+                                        onChange={(event) => {
+                                          const value = event.target.value;
+                                          rateField.handleChange(
+                                            value === "" ? 0 : Number(value),
+                                          );
+                                        }}
+                                        placeholder="Rate"
+                                        className="h-8 w-28 rounded-md border border-input bg-background px-2 text-sm"
+                                      />
                                     )}
-                                    onBlur={remarksField.handleBlur}
-                                    onChange={(event) =>
-                                      remarksField.handleChange(
-                                        event.target.value,
-                                      )
-                                    }
-                                    placeholder="Enter remarks"
-                                    className="min-h-8 min-w-45 resize-y"
-                                    rows={1}
-                                  />
-                                )}
-                              </form.Field>
-                            </td>
-                            <td className="px-2 py-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateRows(rows.filter((_, i) => i !== index))
-                                }
-                                title="Remove lot"
-                                aria-label="Remove lot"
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                                  </form.Field>
+
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          onMouseEnter={() =>
+                                            loadPreviousOffers(row.lot)
+                                          }
+                                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                                          aria-label="View previous offers"
+                                          title="Previous Offers"
+                                        >
+                                          <History className="h-4 w-4" />
+                                        </button>
+                                      </TooltipTrigger>
+
+                                      <TooltipContent
+                                        side="top"
+                                        className="w-72 max-w-sm border border-border bg-popover p-3 text-popover-foreground shadow-md"
+                                      >
+                                        <div className="space-y-2">
+                                          <p className="font-semibold">
+                                            Previous Offers
+                                          </p>
+
+                                          {loadingHistory[row.lot] ? (
+                                            <p className="text-xs text-muted-foreground">
+                                              Loading previous offers...
+                                            </p>
+                                          ) : lotHistory.length > 0 ? (
+                                            <div className="max-h-56 space-y-2 overflow-y-auto">
+                                              {lotHistory.map((offer, i) => (
+                                                <div
+                                                  key={`${offer.offer_name}-${i}`}
+                                                  className="space-y-1 border-b pb-2 text-xs last:border-0"
+                                                >
+                                                  <div className="flex items-center justify-between gap-3">
+                                                    <span className="font-medium">
+                                                      {offer.offer_name}
+                                                    </span>
+
+                                                    <span className="font-semibold">
+                                                      ₹
+                                                      {Number(
+                                                        offer.asking_rate,
+                                                      ).toLocaleString("en-IN")}
+                                                    </span>
+                                                  </div>
+
+                                                  <p className="text-muted-foreground">
+                                                    {offer.offer_date
+                                                      ? new Date(
+                                                          offer.offer_date,
+                                                        ).toLocaleDateString(
+                                                          "en-IN",
+                                                        )
+                                                      : "-"}
+                                                    {" · "}
+                                                    {offer.broker_type}
+                                                  </p>
+
+                                                  {offer.remarks && (
+                                                    <p className="text-muted-foreground">
+                                                      {offer.remarks}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <p className="text-xs text-muted-foreground">
+                                              No previous offers found.
+                                            </p>
+                                          )}
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </td>
+
+                              {/* Remarks */}
+                              <td className="px-2 py-2">
+                                <form.Field
+                                  name={`offer_lots[${index}].remarks`}
+                                >
+                                  {(remarksField) => (
+                                    <Textarea
+                                      id={remarksField.name}
+                                      name={remarksField.name}
+                                      value={String(
+                                        remarksField.state.value ?? "",
+                                      )}
+                                      onBlur={remarksField.handleBlur}
+                                      onChange={(event) =>
+                                        remarksField.handleChange(
+                                          event.target.value,
+                                        )
+                                      }
+                                      placeholder="Enter remarks"
+                                      className="min-h-8 min-w-45 resize-y"
+                                      rows={1}
+                                    />
+                                  )}
+                                </form.Field>
+                              </td>
+
+                              {/* Action */}
+                              <td className="px-2 py-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateRows(
+                                      rows.filter((_, i) => i !== index),
+                                    )
+                                  }
+                                  title="Remove lot"
+                                  aria-label="Remove lot"
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -520,14 +635,58 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                       </div>
 
                       {/* Search and Lot List */}
-                      <div className="space-y-2 overflow-auto p-3">
-                        <input
+                      <div className="space-y-3 overflow-auto p-3">
+                        {/* Factory Filter */}
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Factory Filter */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Factory
+                            </label>
+
+                            <select
+                              value={selectedFactory}
+                              onChange={(event) =>
+                                setSelectedFactory(event.target.value)
+                              }
+                              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="all">All Factories</option>
+
+                              {factories.map((factory) => (
+                                <option key={factory} value={factory}>
+                                  {factory}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Search */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Search Lots
+                            </label>
+
+                            <input
+                              type="search"
+                              value={lotSearch}
+                              onChange={(event) =>
+                                setLotSearch(event.target.value)
+                              }
+                              placeholder="Search Lot No, Grade, Brand..."
+                              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Search */}
+                        {/* <input
                           type="search"
                           value={lotSearch}
                           onChange={(event) => setLotSearch(event.target.value)}
-                          placeholder="Search Lot No, Factory, Grade, Warehouse..."
+                          placeholder="Search Lot No, Grade, Brand, Warehouse..."
                           className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                        />
+                        /> */}
 
                         {availableLots.length === 0 ? (
                           <p className="py-6 text-center text-xs text-muted-foreground">
@@ -551,9 +710,6 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                     Lot No
                                   </th>
                                   <th className="px-2 py-2 font-medium">
-                                    Factory
-                                  </th>
-                                  <th className="px-2 py-2 font-medium">
                                     Grade
                                   </th>
                                   <th className="px-2 py-2 font-medium">
@@ -565,8 +721,15 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                   <th className="px-2 py-2 font-medium">
                                     Total KG
                                   </th>
+                                  <th className="px-2 py-2 font-medium">
+                                    Test
+                                  </th>
+                                  <th className="px-2 py-2 font-medium">
+                                    Liquor
+                                  </th>
                                 </tr>
                               </thead>
+
                               <tbody className="divide-y">
                                 {filteredLots.map((lot) => {
                                   const checked = selectedLotNames.includes(
@@ -594,23 +757,24 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                           }}
                                         />
                                       </td>
+
                                       <td className="px-2 py-2 font-medium">
                                         {lot.lot_no || lot.name}
                                       </td>
-                                      <td className="px-2 py-2">
-                                        {lot.factory || "-"}
-                                      </td>
+
                                       <td className="px-2 py-2">
                                         {lot.grade || "-"}
                                       </td>
                                       <td className="px-2 py-2">
                                         {lot.original_brand || "-"}
                                       </td>
+
                                       <td className="px-2 py-2 tabular-nums">
                                         {Number(lot.bags ?? 0).toLocaleString(
                                           "en-IN",
                                         )}
                                       </td>
+
                                       <td className="px-2 py-2 tabular-nums">
                                         {getLotTotalKg(lot).toLocaleString(
                                           "en-IN",
@@ -618,6 +782,13 @@ export function OfferForm({ form, lots = [] }: OfferFormProps) {
                                             maximumFractionDigits: 2,
                                           },
                                         )}
+                                      </td>
+
+                                      <td className="px-2 py-2">
+                                        {lot.test || "-"}
+                                      </td>
+                                      <td className="px-2 py-2">
+                                        {lot.liquor || "-"}
                                       </td>
                                     </tr>
                                   );

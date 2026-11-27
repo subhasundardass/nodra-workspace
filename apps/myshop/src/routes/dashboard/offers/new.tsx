@@ -55,9 +55,10 @@ export const Route = createFileRoute("/dashboard/offers/new")({
         name: "OfferSheet",
       }),
 
-      callMethod<{ documents: LotRecord[] }>("document.list", {
-        doctype: "Lots",
-      }),
+      // callMethod<{ documents: LotRecord[] }>("document.list", {
+      //   doctype: "Lots",
+      // }),
+      callMethod<{ documents: LotRecord[] }>("offers.available_lots"),
     ]);
 
     return {
