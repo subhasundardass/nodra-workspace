@@ -274,49 +274,40 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
   /**
    * Avaiable lots
    */
+
   registry.register(
     "offers.available_lots",
     async () => {
       const app = await getNodra();
       const stockService = new StockService(app.orm);
 
-      const [lotDocuments, teaTestingDocuments] = await Promise.all([
-        app.orm.getList("Lots", {
-          limit: 1000,
-          offset: 0,
-          filters: {
-            docstatus: 51,
+      const lotDocuments = await app.orm.getAll("Lots", {
+        limit: 1000,
+        offset: 0,
+        filters: {
+          docstatus: 51,
+        },
+        withRelations: {
+          test_report: {
+            doctype: "TeaTesting",
+            linkField: "lot",
+            type: "one",
+            orderBy: "sample_date desc",
+            filters: {
+              docstatus: 51,
+            },
+            fields: ["appearance", "infusion", "liquor", "sample_date"],
           },
-        }),
-
-        app.orm.getList("TeaTesting", {
-          limit: 1000,
-          offset: 0,
-          orderBy: "sample_date desc",
-          filters: {
-            docstatus: 51,
-          },
-        }),
-      ]);
-
-      // Latest confirmed TeaTesting record for each Lot.
-      const testingByLot = new Map<string, RecordData>();
-
-      for (const document of teaTestingDocuments) {
-        const testing = serialise(document);
-        const lotName = String(testing.lot ?? "").trim();
-
-        if (!lotName || testingByLot.has(lotName)) {
-          continue;
-        }
-
-        testingByLot.set(lotName, testing);
-      }
+        },
+      });
 
       // Check actual stock balance for each confirmed Lot.
       const availableLots = await Promise.all(
         lotDocuments.map(async (document) => {
-          const lot = serialise(document);
+          const lot = document as RecordData & {
+            test_report?: RecordData | null;
+          };
+
           const lotName = String(lot.name ?? "").trim();
 
           if (!lotName) return null;
@@ -333,19 +324,23 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
             return null;
           }
 
-          const testing = testingByLot.get(lotName);
+          const testing = lot.test_report;
 
           const bags = toNumber(lot.bags);
           const netKgPerBag = toNumber(lot.net_kg_per_bag);
 
+          // Remove relation property from the parent Lot data.
+          const { test_report: _testReport, ...lotData } = lot;
+
           return {
-            ...lot,
+            ...lotData,
 
             // TeaTesting information
             test: [testing?.appearance, testing?.infusion, testing?.liquor]
               .map((value) => String(value ?? "").trim())
               .filter(Boolean)
               .join(" / "),
+
             liquor: testing?.liquor ?? "",
 
             // Current stock information
@@ -363,6 +358,8 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
       const documents = availableLots.filter(
         (lot): lot is NonNullable<typeof lot> => lot !== null,
       );
+
+      console.log(documents);
 
       return {
         documents,

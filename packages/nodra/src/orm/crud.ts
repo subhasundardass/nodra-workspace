@@ -149,6 +149,37 @@ export interface ORMOptions {
   ) => Document;
 }
 
+/**
+ * Defines a reverse Link relation loaded by getAll().
+ *
+ * The related DocType must contain a Link field pointing
+ * to the parent DocType.
+ */
+export interface RelationOptions {
+  /** Related DocType name. */
+  doctype: string;
+
+  /** Link field in the related DocType pointing to the parent. */
+  linkField: string;
+
+  /** Return the first matching row or all matching rows. */
+  type: "one" | "many";
+
+  /** Ordering of related rows. Important when type is "one". */
+  orderBy?: string;
+
+  /** Filters applied to related records. */
+  filters?: Filters;
+
+  /** Fields returned for each related record. */
+  fields?: string[];
+}
+
+/** Options for getAll(), including optional reverse relations. */
+export interface GetAllOptions extends ListOptions {
+  withRelations?: Record<string, RelationOptions>;
+}
+
 /** Shape read from doctype meta (all optional, cast so your schema type needs no change). */
 interface PermRule {
   role: string;
@@ -721,9 +752,209 @@ export class ORM {
     return toDocuments(rows);
   }
 
-  /** Plain row objects. Use this for aggregates / group_by / joined columns. */
-  async getAll(doctype: string, options: ListOptions = {}): Promise<Row[]> {
-    return this.queryRows(doctype, options);
+  /**
+   * Return plain rows with optional reverse Link relations.
+   *
+   * Relations are loaded in batches:
+   * - One query for the parent records.
+   * - One query per configured relation.
+   *
+   * getList() and its Document hydration are not affected.
+   */
+  async getAll(doctype: string, options: GetAllOptions = {}): Promise<Row[]> {
+    const relations = options.withRelations;
+
+    // Preserve the original getAll() query path when relations are not used.
+    if (!relations || Object.keys(relations).length === 0) {
+      return this.queryRows(doctype, options);
+    }
+
+    // Relations require ordinary parent records with a name field.
+    // Grouped and aggregate results do not necessarily represent documents.
+    if (
+      options.groupBy ||
+      options.distinct ||
+      options.fields?.some((field) => AGG.test(field.trim()))
+    ) {
+      throw new Error(
+        "withRelations cannot be used with groupBy, distinct, or aggregate fields.",
+      );
+    }
+
+    const requestedFields = options.fields;
+
+    // The parent name is needed to match related Link records.
+    const needsParentName =
+      !!requestedFields?.length &&
+      !requestedFields.includes("*") &&
+      !requestedFields.includes("name");
+
+    const parentFields = needsParentName
+      ? [...requestedFields, "name"]
+      : requestedFields;
+
+    // Fetch parent rows using the existing query compiler.
+    const parents = await this.queryRows(doctype, {
+      ...options,
+      fields: parentFields,
+    });
+
+    if (parents.length === 0) {
+      return [];
+    }
+
+    // Load each configured relation.
+    const result = await this.loadRelations(doctype, parents, relations);
+
+    // Remove the internally selected name field when the caller
+    // did not request it.
+    if (needsParentName) {
+      for (const row of result) {
+        delete row.name;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Load reverse relations for a set of parent rows.
+   *
+   * This method executes one related-record query per relation,
+   * then groups the results in memory by the configured Link field.
+   */
+  private async loadRelations(
+    parentDoctype: string,
+    parents: Row[],
+    relations: Record<string, RelationOptions>,
+  ): Promise<Row[]> {
+    const parentNames = parents
+      .map((parent) => parent.name)
+      .filter(
+        (name): name is string => typeof name === "string" && name.length > 0,
+      );
+
+    if (parentNames.length === 0) {
+      throw new Error(
+        `Cannot load relations for ${parentDoctype}: parent name was not selected.`,
+      );
+    }
+
+    // Clone parent rows so the original query results are not modified.
+    const result = parents.map((parent) => ({ ...parent }));
+
+    for (const [relationName, relation] of Object.entries(relations)) {
+      if (!relationName.trim()) {
+        throw new Error("Relation name cannot be empty.");
+      }
+
+      if (!relation.doctype || !relation.linkField) {
+        throw new Error(
+          `Invalid relation "${relationName}": doctype and linkField are required.`,
+        );
+      }
+
+      if (relation.type !== "one" && relation.type !== "many") {
+        throw new Error(
+          `Invalid relation type for "${relationName}". Use "one" or "many".`,
+        );
+      }
+
+      // Validate that the related DocType has a Link field
+      // pointing to the parent DocType.
+      const relatedMeta = this.registry.get(relation.doctype);
+
+      this.assertNotVirtual(relatedMeta, "load relation from");
+
+      const linkMeta = relatedMeta.fields.find(
+        (field) => field.fieldname === relation.linkField,
+      );
+
+      if (!linkMeta || ftype(linkMeta) !== "Link") {
+        throw new Error(
+          `${relation.doctype}.${relation.linkField} must be a Link field.`,
+        );
+      }
+
+      if (opts(linkMeta) !== parentDoctype) {
+        throw new Error(
+          `${relation.doctype}.${relation.linkField} links to ` +
+            `"${opts(linkMeta)}", not "${parentDoctype}".`,
+        );
+      }
+
+      // Preserve the caller's related filters and add the parent-name filter.
+      const relatedFilters: FilterTuple[] = normalize(relation.filters).map(
+        (condition): FilterTuple =>
+          condition.doctype
+            ? [
+                condition.doctype,
+                condition.field,
+                condition.op,
+                condition.value,
+              ]
+            : [condition.field, condition.op, condition.value],
+      );
+
+      relatedFilters.push([relation.linkField, "in", parentNames]);
+
+      // The Link field must be selected so we can group the rows.
+      const relatedFields = relation.fields?.length
+        ? [...relation.fields]
+        : undefined;
+
+      const addLinkField =
+        !!relatedFields &&
+        !relatedFields.includes("*") &&
+        !relatedFields.includes(relation.linkField);
+
+      if (addLinkField) {
+        relatedFields!.push(relation.linkField);
+      }
+
+      // Fetch all related records in one query for this relation.
+      const relatedRows = await this.queryRows(relation.doctype, {
+        filters: relatedFilters,
+        fields: relatedFields,
+        orderBy: relation.orderBy,
+      });
+
+      // Group related rows by their parent Link value.
+      const rowsByParent = new Map<string, Row[]>();
+
+      for (const relatedRow of relatedRows) {
+        const parentName = relatedRow[relation.linkField];
+
+        if (typeof parentName !== "string" || !parentName) {
+          continue;
+        }
+
+        const rows = rowsByParent.get(parentName) ?? [];
+
+        // Do not expose an internally selected Link field when
+        // the caller did not request it.
+        if (addLinkField) {
+          const { [relation.linkField]: _linkValue, ...cleanRow } = relatedRow;
+
+          rows.push(cleanRow);
+        } else {
+          rows.push(relatedRow);
+        }
+
+        rowsByParent.set(parentName, rows);
+      }
+
+      // Attach the relation to each parent.
+      for (const parent of result) {
+        const parentName = String(parent.name);
+        const related = rowsByParent.get(parentName) ?? [];
+
+        parent[relationName] =
+          relation.type === "one" ? (related[0] ?? null) : related;
+      }
+    }
+
+    return result;
   }
 
   // ===========================================================================
