@@ -377,6 +377,15 @@ export function registerSalesInvoiceMethods(registry: MethodRegistry): void {
           limit: 1000,
           offset: 0,
         }),
+        app.orm.getList("Factory", {
+          limit: 1000,
+          offset: 0,
+        }),
+
+        app.orm.getList("StockLedger", {
+          limit: 10000,
+          offset: 0,
+        }),
       ]);
 
       // --------------------------------------------------

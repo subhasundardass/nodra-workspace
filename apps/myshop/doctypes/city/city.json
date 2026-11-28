@@ -19,6 +19,7 @@
       "label": "City Name",
       "fieldtype": "Data",
       "reqd": true,
+      "unique": true,
       "in_list_view": true
     },
     {

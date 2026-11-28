@@ -83,6 +83,15 @@ function SaleEntryRoute() {
   const lotBags = Number(lot.bags ?? 0);
 
   async function handleSubmit(values: FormValues): Promise<void> {
+    const isConfirmed =
+      Number(lot.docstatus) === 51 ||
+      String(lot.workflow_state).toLowerCase() === "confirmed";
+
+    if (!isConfirmed) {
+      toast.error("Only confirmed Lots can be used for Sale Entry.");
+      return;
+    }
+
     const rate = Number(values.rate ?? 0);
     const soldBags = Number(values.sold_bags ?? 0);
     const soldQuantity = Number(values.sold_quantity ?? 0);
@@ -139,6 +148,33 @@ function SaleEntryRoute() {
     }
   }
 
+  // async function handleLotChange(lotName: string) {
+  //   if (!lotName) return;
+
+  //   try {
+  //     const result = await callMethod<{
+  //       document: DocumentRecord;
+  //     }>("document.get", {
+  //       doctype: "Lots",
+  //       name: lotName,
+  //     });
+
+  //     const selectedLot = result.document;
+
+  //     if (Number(selectedLot.docstatus) !== 51) {
+  //       toast.error("Only confirmed Lots can be selected.");
+  //       return;
+  //     }
+
+  //     // Continue with your existing stock validation here.
+  //     // Update the selected Lot details only after validation succeeds.
+  //   } catch (error) {
+  //     toast.error(
+  //       error instanceof Error ? error.message : "Unable to validate Lot.",
+  //     );
+  //   }
+  // }
+
   return (
     <DocTypeFormTemplate
       title="Edit Sale Entry"
@@ -163,7 +199,7 @@ function SaleEntryRoute() {
       onSubmit={handleSubmit}
       onCancel={() => navigate({ to: "/dashboard/salebook" })}
     >
-      {(form) => <SaleEntryForm form={form} lot={lot} />}
+      {(form) => <SaleEntryForm form={form} lot={lot} isEdit />}
     </DocTypeFormTemplate>
   );
 }

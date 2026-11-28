@@ -55,16 +55,32 @@ export class MigrateCommand implements Command {
   private async getExistingColumns(tableName: string): Promise<ColumnInfo[]> {
     const result = await this.pool.query<ColumnInfo>(
       `
-        SELECT
-          column_name,
-          data_type,
-          is_nullable,
-          column_default
-        FROM information_schema.columns
-        WHERE table_schema = current_schema()
-          AND table_name = $1
-        ORDER BY ordinal_position
-      `,
+      SELECT
+        c.column_name,
+        c.data_type,
+        c.is_nullable,
+        c.column_default,
+        EXISTS (
+          SELECT 1
+          FROM pg_index i
+          JOIN pg_class t ON t.oid = i.indrelid
+          JOIN pg_namespace n ON n.oid = t.relnamespace
+          JOIN pg_attribute a ON a.attrelid = t.oid
+            AND a.attnum = i.indkey[0]
+          WHERE n.nspname = c.table_schema
+            AND t.relname = c.table_name
+            AND a.attname = c.column_name
+            AND i.indisunique
+            AND i.indisvalid
+            AND i.indpred IS NULL
+            AND i.indexprs IS NULL
+            AND i.indnkeyatts = 1
+        ) AS is_unique
+      FROM information_schema.columns c
+      WHERE c.table_schema = current_schema()
+        AND c.table_name = $1
+      ORDER BY c.ordinal_position
+    `,
       [tableName],
     );
 

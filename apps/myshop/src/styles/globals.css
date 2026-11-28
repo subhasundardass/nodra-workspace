@@ -25,120 +25,15 @@
 
 @import "./theme.css";
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-    a,
-    button,
-    [role="button"],
-    input[type="button"],
-    input[type="submit"],
-    input[type="reset"],
-    summary {
-      cursor: pointer;
-    }
-    button:disabled,
-    [role="button"][aria-disabled="true"],
-    input:disabled,
-    select:disabled {
-      cursor: not-allowed;
-    }
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  /* Global scrollbar styling to match ScrollArea */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--muted-foreground);
-  }
-}
-
-/* View Transition Wave Effect */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
-  /* Ensure the outgoing view (old theme) is beneath */
-  z-index: 0;
-}
-
-::view-transition-new(root) {
-  /* Ensure the incoming view (new theme) is always on top */
-  z-index: 1;
-}
-
-@keyframes reveal {
-  from {
-    /* Use CSS variables for the origin, defaulting to center if not set */
-    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
-    opacity: 0.7;
-  }
-  to {
-    /* Use CSS variables for the origin, defaulting to center if not set */
-    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
-    opacity: 1;
-  }
-}
-
-/* Base UI sets --accordion-panel-height on Accordion.Panel, but tw-animate-css's
-   accordion keyframes only read the radix-era variable. Redefine them (later in
-   the cascade, so these win) with a Base UI fallback so expand/collapse animates
-   instead of snapping to `auto`. */
-@keyframes accordion-down {
-  from {
-    height: 0;
-  }
-  to {
-    height: var(
-      --radix-accordion-content-height,
-      var(--accordion-panel-height, auto)
-    );
-  }
-}
-
-@keyframes accordion-up {
-  from {
-    height: var(
-      --radix-accordion-content-height,
-      var(--accordion-panel-height, auto)
-    );
-  }
-  to {
-    height: 0;
-  }
-}
-
-::view-transition-new(root) {
-  /* Apply the reveal animation */
-  animation: reveal 0.4s ease-in-out forwards;
-}
+/* ============================================
+   Responsive Density Variables
+   ============================================ */
 
 :root {
+  --app-font-scale: 1;
+  --app-spacing-scale: 1;
+  --app-control-scale: 1;
+
   --sidebar: hsl(0 0% 98%);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
   --sidebar-primary: hsl(240 5.9% 10%);
@@ -159,6 +54,193 @@
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
+
+/* Compact desktop / laptop, tablet, and mobile (anything under 1400px) */
+@media (max-width: 1399px) {
+  :root {
+    --app-font-scale: 0.875;
+    --app-spacing-scale: 0.875;
+    --app-control-scale: 0.875;
+  }
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  html {
+    font-size: calc(100% * var(--app-font-scale));
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-width: 320px;
+  }
+
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Global scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}
+
+/* ============================================
+   Mobile Typography and Controls
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Default text */
+  body {
+    font-size: 0.875rem;
+  }
+
+  /* Form controls */
+  input,
+  textarea,
+  select {
+    font-size: 0.875rem;
+  }
+
+  /* Tables */
+  table {
+    font-size: 0.8125rem;
+  }
+
+  th,
+  td {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Dialogs */
+  [role="dialog"] {
+    max-width: calc(100vw - 1rem);
+  }
+
+  /* Prevent flex and grid children from forcing overflow */
+  main,
+  section,
+  article {
+    min-width: 0;
+  }
+
+  /* Better mobile text wrapping */
+  p,
+  label,
+  td,
+  th {
+    overflow-wrap: break-word;
+  }
+}
+
+/* ============================================
+   View Transition Wave Effect
+   ============================================ */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+    opacity: 0.7;
+  }
+
+  to {
+    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+    opacity: 1;
+  }
+}
+
+::view-transition-new(root) {
+  animation: reveal 0.4s ease-in-out forwards;
+}
+
+/* ============================================
+   Accordion Animation
+   ============================================ */
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+
+  to {
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
+  }
+
+  to {
+    height: 0;
+  }
+}
+
+/* ============================================
+   Tailwind Theme Variables
+   ============================================ */
 
 @theme inline {
   --color-sidebar: var(--sidebar);

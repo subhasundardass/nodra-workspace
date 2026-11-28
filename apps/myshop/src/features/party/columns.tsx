@@ -57,6 +57,7 @@ export function createColumns(
         <span className="font-medium">{displayValue(getValue())}</span>
       ),
     },
+
     {
       accessorKey: "phone",
       header: ({ column }) => (
@@ -73,14 +74,14 @@ export function createColumns(
       enableSorting: true,
       cell: ({ getValue }) => displayValue(getValue()),
     },
-    {
-      accessorKey: "state",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="State" />
-      ),
-      enableSorting: true,
-      cell: ({ getValue }) => displayValue(getValue()),
-    },
+    // {
+    //   accessorKey: "state",
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="State" />
+    //   ),
+    //   enableSorting: true,
+    //   cell: ({ getValue }) => displayValue(getValue()),
+    // },
     {
       accessorKey: "gstin",
       header: ({ column }) => (
@@ -89,14 +90,14 @@ export function createColumns(
       enableSorting: true,
       cell: ({ getValue }) => displayValue(getValue()),
     },
-    {
-      accessorKey: "pan",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="PAN" />
-      ),
-      enableSorting: true,
-      cell: ({ getValue }) => displayValue(getValue()),
-    },
+    // {
+    //   accessorKey: "pan",
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title="PAN" />
+    //   ),
+    //   enableSorting: true,
+    //   cell: ({ getValue }) => displayValue(getValue()),
+    // },
 
     {
       accessorKey: "is_active",

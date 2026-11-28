@@ -56,4 +56,18 @@ export function registerStockLedgerMethods(registry: MethodRegistry): void {
     },
     { requireAuth: true },
   );
+
+  registry.register("stock.get_lot_stock_info", async (ctx) => {
+    const app = await getNodra();
+
+    const lot = String(ctx.args.lot ?? "").trim();
+
+    if (!lot) {
+      throw new Error("Lot is required.");
+    }
+
+    const stockService = new StockService(app.orm);
+
+    return await stockService.stockLocation(lot);
+  });
 }

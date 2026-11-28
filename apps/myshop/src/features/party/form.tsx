@@ -151,6 +151,33 @@ export function PartyForm({ form, brokers = [] }: PartyFormProps) {
         title="Tax and Address Details"
         description="Enter the party's registration and address information."
       >
+        <form.Field name="billing_name">
+          {(field) => (
+            <FieldRow label="Billing Name" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="Billing Name"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
+
+        <form.Field name="tmco_number">
+          {(field) => (
+            <FieldRow label="TMCO Number" htmlFor={field.name}>
+              <DataField
+                id={field.name}
+                name={field.name}
+                value={String(field.state.value ?? "")}
+                onChange={field.handleChange}
+                placeholder="TMCO Number"
+              />
+            </FieldRow>
+          )}
+        </form.Field>
         <form.Field name="gstin">
           {(field) => (
             <FieldRow label="GSTIN" htmlFor={field.name} required>

@@ -36,14 +36,24 @@ export function registerAuthMethods(
     { requireAuth: false },
   );
 
+  // Authorization
   registry.register(
     "auth.me",
-    async (ctx) => ({
-      authenticated: true,
-      user: ctx.user,
-      expiresAt: ctx.session?.expiresAt ?? null,
-    }),
-    { requireAuth: true },
+    async (ctx) => {
+      if (!ctx.user) {
+        return {
+          authenticated: false,
+        };
+      }
+
+      return {
+        authenticated: true,
+        user: ctx.user,
+      };
+    },
+    {
+      requireAuth: false,
+    },
   );
 
   registry.register(

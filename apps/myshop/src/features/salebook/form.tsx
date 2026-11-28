@@ -6,6 +6,7 @@ import { DateField } from "@/components/doctype/fields/date-field";
 import { LinkField } from "@/components/doctype/fields/link-field";
 
 import type { NodraForm } from "@/components/doctype/templates/doctype-form-template";
+import { Badge } from "@/components/ui/badge";
 
 type DocumentRecord = Record<string, unknown>;
 
@@ -13,7 +14,8 @@ interface SaleEntryFormProps {
   form: NodraForm;
   lot: DocumentRecord;
   isEdit?: boolean;
-  onLotChange?: (lot: string) => void;
+  onLotChange?: (lot: string) => Promise<boolean>;
+  loadingLot?: boolean;
 }
 
 function FieldRow({
@@ -90,40 +92,67 @@ export function SaleEntryForm({
   lot,
   isEdit = false,
   onLotChange,
+  loadingLot = false,
 }: SaleEntryFormProps) {
-  const bags = Number(lot.bags ?? 0);
+  // Use available Factory stock, not original Lot quantity.
+  const bags = Number(lot.available_bags ?? lot.bags ?? 0);
   const kgPerBag = Number(lot.net_kg_per_bag ?? 0);
-  const totalKg = bags * kgPerBag;
+  const totalKg = Number(lot.available_quantity ?? bags * kgPerBag);
+
+  // Initialize the sale quantity when a new Lot is loaded.
+  React.useEffect(() => {
+    if (!lot.name || isEdit) return;
+
+    form.setFieldValue("sold_bags", bags);
+    form.setFieldValue("sold_quantity", totalKg);
+  }, [lot.name, bags, totalKg, isEdit]);
 
   return (
     <div className="space-y-5">
       {/* Lot Details */}
       <FormSection
         title="Lot Details"
-        description="Select a lot to load its details. Lot cannot be changed after the Sale Entry is created."
+        description="Select a lot with available Factory stock. Lot cannot be changed after the Sale Entry is created."
       >
-        <form.Field name="lot">
-          {(field) => (
-            <FieldRow label="Lot No" htmlFor={field.name} required>
-              <LinkField
-                doctype="Lots"
-                titleField="lot_no"
-                value={String(field.state.value ?? "")}
-                onChange={(value) => {
-                  field.handleChange(value);
-                  onLotChange?.(String(value ?? ""));
-                }}
-                filters={{ docstatus: 51 }}
-                disabled={isEdit}
-                className="w-full"
-                placeholder="Select Lot No..."
-              />
-            </FieldRow>
+        {isEdit ? (
+          <ReadOnlyField label="Lot No" name="lot" value={lot.lot_no} />
+        ) : (
+          <form.Field name="lot">
+            {(field) => (
+              <FieldRow label="Select" htmlFor={field.name} required>
+                <LinkField
+                  doctype="Lots"
+                  titleField="lot_no"
+                  value={String(field.state.value ?? "")}
+                  onChange={async (value) => {
+                    const lotName = String(value ?? "");
+                    field.handleChange(lotName);
+
+                    const valid = await onLotChange?.(lotName);
+
+                    if (valid === false) {
+                      field.handleChange("");
+                    }
+                  }}
+                  filters={{ docstatus: 51 }}
+                  searchMethod="salebook.search_available_lots"
+                  className="w-full"
+                  placeholder="Select"
+                />
+              </FieldRow>
+            )}
+          </form.Field>
+        )}
+
+        <div className="flex h-10 items-center justify-end">
+          {loadingLot ? (
+            <Badge variant="secondary">Validating...</Badge>
+          ) : (
+            <Badge variant="secondary">
+              {String(lot.workflow_state ?? "Not Selected")}
+            </Badge>
           )}
-        </form.Field>
-
-        {/* <ReadOnlyField label="Lot No" name="lot_no" value={lot.name} /> */}
-
+        </div>
         <ReadOnlyField label="Factory" name="factory" value={lot.factory} />
 
         <ReadOnlyField
@@ -134,7 +163,7 @@ export function SaleEntryForm({
 
         <ReadOnlyField label="Grade" name="grade" value={lot.grade} />
 
-        <ReadOnlyField label="Total Bags" name="total_bags" value={bags} />
+        <ReadOnlyField label="Available Bags" name="total_bags" value={bags} />
 
         <ReadOnlyField
           label="KG Per Bag"
@@ -142,7 +171,7 @@ export function SaleEntryForm({
           value={kgPerBag}
         />
 
-        <ReadOnlyField label="Total KG" name="total_kg" value={totalKg} />
+        <ReadOnlyField label="Available KG" name="total_kg" value={totalKg} />
       </FormSection>
 
       {/* Sale Details */}

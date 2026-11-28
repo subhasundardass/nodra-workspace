@@ -48,13 +48,15 @@ function FormSection({
   title,
   description,
   children,
+  columns = 2,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  columns?: 2 | 3;
 }) {
   return (
-    <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
+    <section className="w-full min-w-0 space-y-4 rounded-lg border bg-card p-4 md:p-5">
       <div className="space-y-1">
         <h3 className="text-base font-semibold">{title}</h3>
 
@@ -63,7 +65,11 @@ function FormSection({
         )}
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+      <div
+        className={`grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-2 ${
+          columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
+        }`}
+      >
         {children}
       </div>
     </section>
@@ -104,6 +110,14 @@ function NumberInput({
       className="bg-background text-right shadow-none"
     />
   );
+}
+
+function calculateTotalBags(from: number, to: number): number {
+  if (from <= 0 || to <= 0 || to < from) {
+    return 0;
+  }
+
+  return to - from + 1;
 }
 
 export function LotForm({ form }: LotFormProps) {
@@ -179,6 +193,7 @@ export function LotForm({ form }: LotFormProps) {
       <FormSection
         title="Tea Lot Details"
         description="Identify the lot and its tea grade and brand."
+        columns={3}
       >
         <form.Field name="lot_no">
           {(field) => (
@@ -228,6 +243,7 @@ export function LotForm({ form }: LotFormProps) {
       <FormSection
         title="Bag Information"
         description="Enter the quantity, bag serial range and net weight."
+        columns={3}
       >
         <form.Field name="bag_from_serial_no">
           {(field) => (
@@ -237,7 +253,14 @@ export function LotForm({ form }: LotFormProps) {
                 name={field.name}
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
-                onChange={field.handleChange}
+                onChange={(value) => {
+                  field.handleChange(value);
+
+                  const to = Number(
+                    form.getFieldValue("bag_to_serial_no") ?? 0,
+                  );
+                  form.setFieldValue("bags", calculateTotalBags(value, to));
+                }}
                 placeholder="Starting serial number"
               />
             </FieldRow>
@@ -252,12 +275,20 @@ export function LotForm({ form }: LotFormProps) {
                 name={field.name}
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
-                onChange={field.handleChange}
+                onChange={(value) => {
+                  field.handleChange(value);
+
+                  const from = Number(
+                    form.getFieldValue("bag_from_serial_no") ?? 0,
+                  );
+                  form.setFieldValue("bags", calculateTotalBags(from, value));
+                }}
                 placeholder="Ending serial number"
               />
             </FieldRow>
           )}
         </form.Field>
+
         <form.Field name="bags">
           {(field) => (
             <FieldRow label="Total Bags" htmlFor={field.name} required>
@@ -267,7 +298,7 @@ export function LotForm({ form }: LotFormProps) {
                 value={Number(field.state.value ?? 0)}
                 onBlur={field.handleBlur}
                 onChange={field.handleChange}
-                placeholder="Enter number of bags"
+                placeholder="Automatically calculated"
               />
             </FieldRow>
           )}

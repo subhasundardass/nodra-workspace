@@ -26,6 +26,8 @@ export const Route = createFileRoute("/dashboard/lot/")({
       }),
       callMethod<{ documents: DocumentRecord[] }>("document.list", {
         doctype: "Lots",
+        limit: 100,
+        offset: 0,
         fields: [
           "name",
           "id",
@@ -75,7 +77,7 @@ function LotListRoute() {
         params: { name: lot.name },
       }),
     ),
-    pageCount: 1,
+    // pageCount: Math.max(1, Math.ceil(lots.length / 20)),
     initialState: {
       pagination: { pageIndex: 0, pageSize: 20 },
     },

@@ -69,3 +69,13 @@ export function formatMoney(
     ...opts,
   }).format(parsed);
 }
+
+// Format Number
+export function formatNumber(value: unknown, decimals = 0): string {
+  const number = Number(value ?? 0);
+
+  return number.toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  });
+}

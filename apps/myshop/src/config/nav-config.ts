@@ -79,8 +79,15 @@ export const navGroups: NavGroup[] = [
             items: [],
           },
           {
-            title: "SaleBook",
+            title: "Sale Book",
             url: "/dashboard/salebook",
+            icon: "product",
+            isActive: false,
+            items: [],
+          },
+          {
+            title: "Sale Entry (Batch)",
+            url: "/dashboard/salebook/batch-sale",
             icon: "product",
             isActive: false,
             items: [],
@@ -205,32 +212,23 @@ export const navGroups: NavGroup[] = [
           // Lot Reports
           {
             title: "Lot Reports",
-            url: "#",
+            url: "/dashboard/reports/lot",
             icon: "product",
             isActive: false,
-            items: [
-              {
-                title: "Lot Registration",
-                url: "/dashboard/reports/lots",
-                icon: "page",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Lot Arrival Report",
-                url: "#",
-                icon: "calendar",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Mark / Grade-wise Lots",
-                url: "#",
-                icon: "forms",
-                isActive: false,
-                items: [],
-              },
-            ],
+          },
+          // Offer Reports
+          {
+            title: "Offer Reports",
+            url: "/dashboard/reports/offer",
+            icon: "product",
+            isActive: false,
+          },
+          // Sales Reports
+          {
+            title: "Sale Reports",
+            url: "/dashboard/reports/sale",
+            icon: "product",
+            isActive: false,
           },
 
           // Quality & Valuation Reports
@@ -251,89 +249,6 @@ export const navGroups: NavGroup[] = [
                 title: "Tea Valuation",
                 url: "/dashboard/reports/tea-valuation",
                 icon: "scale",
-                isActive: false,
-                items: [],
-              },
-            ],
-          },
-
-          // Offer Reports
-          {
-            title: "Offer Reports",
-            url: "#",
-            icon: "post",
-            isActive: false,
-            items: [
-              {
-                title: "Offer Register",
-                url: "#",
-                icon: "page",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Offered Lots",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Unoffered Lots",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Asking Rate Report",
-                url: "#",
-                icon: "scale",
-                isActive: false,
-                items: [],
-              },
-            ],
-          },
-
-          // Sales Reports
-          {
-            title: "Sales Reports",
-            url: "#",
-            icon: "creditCard",
-            isActive: false,
-            items: [
-              {
-                title: "Daily Sales Register",
-                url: "#",
-                icon: "calendar",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Broker-wise Sales",
-                url: "#",
-                icon: "user",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Buyer-wise Sales",
-                url: "#",
-                icon: "user",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Lot-wise Sales History",
-                url: "#",
-                icon: "product",
-                isActive: false,
-                items: [],
-              },
-              {
-                title: "Asking Rate vs Sale Rate",
-                url: "#",
-                icon: "trendingUp",
                 isActive: false,
                 items: [],
               },

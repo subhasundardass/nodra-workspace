@@ -1,21 +1,30 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { getQueryClient } from "@/lib/query-client";
+import type { AppContext } from "@/lib/app.context";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
   const queryClient = getQueryClient();
 
+  const context: AppContext = {
+    queryClient,
+    currentUser: null,
+    sessionId: null,
+  };
+
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
-    context: { queryClient },
+    context,
+
     defaultPendingComponent: () => (
       <div className="flex min-h-[50dvh] flex-1 items-center justify-center">
         <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     ),
+
     defaultNotFoundComponent: () => (
       <div className="absolute top-1/2 left-1/2 mb-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center">
         <span className="from-foreground bg-linear-to-b to-transparent bg-clip-text text-[10rem] leading-none font-extrabold text-transparent">

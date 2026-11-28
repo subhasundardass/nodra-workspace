@@ -20,6 +20,7 @@ export interface ColumnInfo {
   data_type: string;
   is_nullable: string; // 'YES' or 'NO'
   column_default: string | null;
+  is_unique: boolean;
 }
 
 // --- Reserved words that need quoting ---
@@ -140,11 +141,9 @@ export class SchemaSync {
     // Standard indexes.
     indexes.push(this.createIndexSql(tableName, "modified"));
     indexes.push(this.createIndexSql(tableName, "owner"));
+    indexes.push(this.createIndexSql(tableName, "docstatus"));
 
     // Child table indexes.
-    //
-    // These fields are already present in doctype.fields when
-    // injectStandardFields() has been applied.
     if (doctype.is_child) {
       indexes.push(this.createIndexSql(tableName, "parent"));
       indexes.push(this.createIndexSql(tableName, "parenttype"));
@@ -166,7 +165,8 @@ export class SchemaSync {
       }
     }
 
-    return indexes;
+    // Remove duplicate index statements.
+    return [...new Set(indexes)];
   }
 
   /**
@@ -184,23 +184,40 @@ export class SchemaSync {
     }
 
     const tableName = toTableName(doctype.name);
-    const existingColumnNames = new Set(
-      existingColumns.map((column) => column.column_name),
+
+    // PostgreSQL normalizes unquoted identifiers to lowercase.
+    const existingColumnMap = new Map(
+      existingColumns.map((column) => [
+        column.column_name.toLowerCase(),
+        column,
+      ]),
     );
 
     const alterStatements: string[] = [];
 
-    // doctype.fields is the complete field list after standard-field
-    // injection.
     for (const field of doctype.fields) {
       if (!isDataField(field.fieldtype)) {
         continue;
       }
 
-      if (existingColumnNames.has(field.fieldname)) {
+      const fieldName = field.fieldname.toLowerCase();
+      const existingColumn = existingColumnMap.get(fieldName);
+
+      // Existing column: add UNIQUE index if missing.
+      if (existingColumn) {
+        if (field.unique && !existingColumn.is_unique) {
+          const indexName = `uq_${tableName}_${fieldName}`;
+
+          alterStatements.push(
+            `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ` +
+              `ON ${tableName} (${quoteIdent(field.fieldname)})`,
+          );
+        }
+
         continue;
       }
 
+      // New column.
       const pgType = getPgType(field.fieldtype, field.max_length);
 
       if (!pgType) {
