@@ -1,35 +1,19 @@
 @import "tailwindcss";
-
 @import "tw-animate-css";
-
-/* Fontsource font imports */
-@import "@fontsource/geist-sans";
-@import "@fontsource/geist-mono";
 @import "@fontsource-variable/inter";
-@import "@fontsource-variable/dm-sans";
-@import "@fontsource-variable/instrument-sans";
-@import "@fontsource-variable/mulish";
-@import "@fontsource-variable/outfit";
-@import "@fontsource-variable/playfair-display";
-@import "@fontsource/merriweather/300.css";
-@import "@fontsource/merriweather/400.css";
-@import "@fontsource/merriweather/700.css";
-@import "@fontsource/architects-daughter/400.css";
-@import "@fontsource-variable/fira-code";
 @import "@fontsource-variable/jetbrains-mono";
-@import "@fontsource-variable/noto-sans-mono";
-@import "@fontsource/space-mono/400.css";
-@import "@fontsource/space-mono/700.css";
+@import "./theme.css";
 
 @custom-variant dark (&:is(.dark *));
 
-@import "./theme.css";
-
 /* ============================================
-   Responsive Density Variables
+   Global Variables
    ============================================ */
 
 :root {
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
   --app-font-scale: 1;
   --app-spacing-scale: 1;
   --app-control-scale: 1;
@@ -55,7 +39,10 @@
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-/* Compact desktop / laptop, tablet, and mobile (anything under 1400px) */
+/* ============================================
+   Responsive Density
+   ============================================ */
+
 @media (max-width: 1399px) {
   :root {
     --app-font-scale: 0.875;
@@ -84,6 +71,7 @@
   body {
     @apply bg-background text-foreground;
     min-width: 320px;
+    font-family: var(--font-sans);
   }
 
   a,
@@ -103,7 +91,7 @@
     cursor: not-allowed;
   }
 
-  /* Global scrollbar styling */
+  /* Scrollbars */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -126,23 +114,17 @@
 }
 
 /* ============================================
-   Mobile Typography and Controls
+   Mobile Styles
    ============================================ */
 
 @media (max-width: 767px) {
-  /* Default text */
-  body {
-    font-size: 0.875rem;
-  }
-
-  /* Form controls */
+  body,
   input,
   textarea,
   select {
     font-size: 0.875rem;
   }
 
-  /* Tables */
   table {
     font-size: 0.8125rem;
   }
@@ -153,19 +135,16 @@
     padding-bottom: 0.5rem;
   }
 
-  /* Dialogs */
   [role="dialog"] {
     max-width: calc(100vw - 1rem);
   }
 
-  /* Prevent flex and grid children from forcing overflow */
   main,
   section,
   article {
     min-width: 0;
   }
 
-  /* Better mobile text wrapping */
   p,
   label,
   td,
@@ -175,20 +154,18 @@
 }
 
 /* ============================================
-   View Transition Wave Effect
+   View Transitions
    ============================================ */
 
-::view-transition-old(root),
-::view-transition-new(root) {
+::view-transition-old(root) {
   animation: none;
   mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
   z-index: 0;
 }
 
 ::view-transition-new(root) {
+  animation: reveal 0.4s ease-in-out forwards;
+  mix-blend-mode: normal;
   z-index: 1;
 }
 
@@ -204,12 +181,8 @@
   }
 }
 
-::view-transition-new(root) {
-  animation: reveal 0.4s ease-in-out forwards;
-}
-
 /* ============================================
-   Accordion Animation
+   Accordion Animations
    ============================================ */
 
 @keyframes accordion-down {

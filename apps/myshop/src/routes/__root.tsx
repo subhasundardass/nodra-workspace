@@ -106,7 +106,7 @@ function RootErrorComponent({
         </p>
 
         {forbidden && (
-          <p className="mt-4 break-words rounded-md bg-muted p-3 text-left text-sm">
+          <p className="mt-4 wrap-break-word rounded-md bg-muted p-3 text-left text-sm">
             {message}
           </p>
         )}
@@ -165,26 +165,44 @@ function RootDocument() {
   return (
     <html lang="en" suppressHydrationWarning data-theme={activeTheme}>
       <head>
-        <HeadContent />
+        {/* Apply theme before CSS is loaded */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              try {
-                if (
-                  localStorage.theme === 'dark' ||
-                  (
-                    (!('theme' in localStorage) || localStorage.theme === 'system') &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches
-                  )
-                ) {
-                  document
-                    .querySelector('meta[name="theme-color"]')
-                    ?.setAttribute('content', '${META_THEME_COLORS.dark}');
-                }
-              } catch (_) {}
-            `,
+        try {
+          const storedTheme = localStorage.getItem('theme');
+          const systemDark = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+          ).matches;
+
+          const isDark =
+            storedTheme === 'dark' ||
+            (
+              (!storedTheme || storedTheme === 'system') &&
+              systemDark
+            );
+
+          const theme = isDark ? 'dark' : 'light';
+          const root = document.documentElement;
+
+          root.classList.remove('light', 'dark');
+          root.classList.add(theme);
+          root.style.colorScheme = theme;
+
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute(
+              'content',
+              isDark
+                ? '${META_THEME_COLORS.dark}'
+                : '${META_THEME_COLORS.light}'
+            );
+        } catch (_) {}
+      `,
           }}
         />
+
+        <HeadContent />
       </head>
 
       <body className="overflow-x-hidden overscroll-none bg-background font-sans antialiased">
