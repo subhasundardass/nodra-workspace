@@ -222,7 +222,7 @@ export function TeaTestingForm({ form, lot }: TeaTestingFormProps) {
   }, [lot.grade]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Registration information: reference only */}
       <FormSection
         title="Lot Registration Details"

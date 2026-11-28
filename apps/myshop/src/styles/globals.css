@@ -43,10 +43,36 @@
    Responsive Density
    ============================================ */
 
+/* Standard desktop */
+:root {
+  --app-font-scale: 1;
+  --app-spacing-scale: 1;
+  --app-control-scale: 1;
+}
+
+/* Laptop and lower-resolution desktop */
 @media (max-width: 1399px) {
   :root {
     --app-font-scale: 0.875;
-    --app-spacing-scale: 0.875;
+    --app-spacing-scale: 0.9;
+    --app-control-scale: 0.9;
+  }
+}
+
+/* Small laptop and tablet */
+@media (max-width: 1023px) {
+  :root {
+    --app-font-scale: 0.85;
+    --app-spacing-scale: 0.85;
+    --app-control-scale: 0.875;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  :root {
+    --app-font-scale: 0.875;
+    --app-spacing-scale: 0.85;
     --app-control-scale: 0.875;
   }
 }

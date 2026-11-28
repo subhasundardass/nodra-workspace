@@ -289,7 +289,7 @@ export function DocTypeListTemplate<TRecord extends object>({
 
   return (
     <PageContainer>
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <GlobalToolbar
           title={title ?? listName}
           description={
