@@ -48,13 +48,15 @@ function FormSection({
   title,
   description,
   children,
+  columns = 2,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  columns?: 2 | 3;
 }) {
   return (
-    <section className="space-y-4 rounded-lg border bg-card p-4 md:p-5">
+    <section className="w-full min-w-0 space-y-4 rounded-lg border bg-card p-4 md:p-5">
       <div className="space-y-1">
         <h3 className="text-base font-semibold">{title}</h3>
 
@@ -63,7 +65,11 @@ function FormSection({
         )}
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+      <div
+        className={`grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-2 ${
+          columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
+        }`}
+      >
         {children}
       </div>
     </section>
@@ -187,6 +193,7 @@ export function LotForm({ form }: LotFormProps) {
       <FormSection
         title="Tea Lot Details"
         description="Identify the lot and its tea grade and brand."
+        columns={3}
       >
         <form.Field name="lot_no">
           {(field) => (
@@ -236,6 +243,7 @@ export function LotForm({ form }: LotFormProps) {
       <FormSection
         title="Bag Information"
         description="Enter the quantity, bag serial range and net weight."
+        columns={3}
       >
         <form.Field name="bag_from_serial_no">
           {(field) => (

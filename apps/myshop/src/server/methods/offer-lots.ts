@@ -6,10 +6,9 @@
  * Register this module from the app's method bootstrap.
  */
 import type { MethodRegistry } from "nodra";
-import { Filters, ListOptions } from "nodra/orm/crud";
-import { OfferLots } from "../../../doctypes/offer-lots/offer-lots";
 import { getNodra } from "../nodra-app";
 import { serialise } from "../http";
+import { StockService } from "../services/stock.service";
 
 type RecordData = Record<string, unknown>;
 
@@ -17,14 +16,17 @@ function isRecord(value: unknown): value is RecordData {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function getRequiredName(value: unknown): string {
-  const name = String(value ?? "").trim();
+function toNumber(value: unknown): number {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
 
-  if (!name) {
-    throw new Error("OfferLots name is required");
-  }
+function toDateValue(value: unknown): number {
+  if (!value) return 0;
 
-  return name;
+  const timestamp = new Date(String(value)).getTime();
+
+  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
 export function registerOfferLotsMethods(registry: MethodRegistry): void {
@@ -190,6 +192,181 @@ export function registerOfferLotsMethods(registry: MethodRegistry): void {
         total_count: totalCount,
         limit,
         offset,
+      };
+    },
+    {
+      requireAuth: true,
+    },
+  );
+
+  /**
+   * Get previous confirmed offers for a Lot.
+   */
+  registry.register(
+    "offers.get_previous_by_lot",
+    async (ctx) => {
+      const app = await getNodra();
+
+      const lotName = String(ctx.args.lot ?? "").trim();
+
+      if (!lotName) {
+        throw new Error("Lot is required.");
+      }
+
+      const offerSheets = await app.orm.getList("OfferSheet", {
+        limit: 1000,
+        offset: 0,
+        orderBy: "offer_date desc",
+        filters: {
+          docstatus: 51,
+        },
+      });
+
+      const documents: RecordData[] = [];
+
+      for (const document of offerSheets) {
+        const offer = serialise(document);
+
+        const offerLots = Array.isArray(offer.offer_lots)
+          ? offer.offer_lots
+          : [];
+
+        for (const item of offerLots) {
+          if (!isRecord(item)) continue;
+
+          if (String(item.lot ?? "").trim() !== lotName) {
+            continue;
+          }
+
+          documents.push({
+            offer_name: String(offer.name ?? ""),
+            offer_date: offer.offer_date ?? null,
+            broker_type: offer.broker_type ?? "",
+            asking_rate: toNumber(item.asking_rate),
+            remarks: item.remarks ?? "",
+          });
+        }
+      }
+
+      documents.sort((a, b) => {
+        const dateDifference =
+          toDateValue(b.offer_date) - toDateValue(a.offer_date);
+
+        if (dateDifference !== 0) {
+          return dateDifference;
+        }
+
+        return String(b.offer_name ?? "").localeCompare(
+          String(a.offer_name ?? ""),
+        );
+      });
+
+      return {
+        documents,
+        total_count: documents.length,
+      };
+    },
+    {
+      requireAuth: true,
+    },
+  );
+
+  /**
+   * Avaiable lots
+   */
+  registry.register(
+    "offers.available_lots",
+    async () => {
+      const app = await getNodra();
+      const stockService = new StockService(app.orm);
+
+      const [lotDocuments, teaTestingDocuments] = await Promise.all([
+        app.orm.getList("Lots", {
+          limit: 1000,
+          offset: 0,
+          filters: {
+            docstatus: 51,
+          },
+        }),
+
+        app.orm.getList("TeaTesting", {
+          limit: 1000,
+          offset: 0,
+          orderBy: "sample_date desc",
+          filters: {
+            docstatus: 51,
+          },
+        }),
+      ]);
+
+      // Latest confirmed TeaTesting record for each Lot.
+      const testingByLot = new Map<string, RecordData>();
+
+      for (const document of teaTestingDocuments) {
+        const testing = serialise(document);
+        const lotName = String(testing.lot ?? "").trim();
+
+        if (!lotName || testingByLot.has(lotName)) {
+          continue;
+        }
+
+        testingByLot.set(lotName, testing);
+      }
+
+      // Check actual stock balance for each confirmed Lot.
+      const availableLots = await Promise.all(
+        lotDocuments.map(async (document) => {
+          const lot = serialise(document);
+          const lotName = String(lot.name ?? "").trim();
+
+          if (!lotName) return null;
+
+          const stock = await stockService.getLotStockBalance(lotName);
+
+          // Lot must have remaining Factory stock.
+          if (stock.factory_bags <= 0 || stock.factory_quantity <= 0) {
+            return null;
+          }
+
+          // Lot must not have stock transferred to Warehouse.
+          if (stock.warehouse_bags > 0 || stock.warehouse_quantity > 0) {
+            return null;
+          }
+
+          const testing = testingByLot.get(lotName);
+
+          const bags = toNumber(lot.bags);
+          const netKgPerBag = toNumber(lot.net_kg_per_bag);
+
+          return {
+            ...lot,
+
+            // TeaTesting information
+            test: [testing?.appearance, testing?.infusion, testing?.liquor]
+              .map((value) => String(value ?? "").trim())
+              .filter(Boolean)
+              .join(" / "),
+            liquor: testing?.liquor ?? "",
+
+            // Current stock information
+            factory_stock: stock.factory_bags,
+            factory_quantity: stock.factory_quantity,
+
+            // Lot quantities
+            bags,
+            net_kg_per_bag: netKgPerBag,
+            total_kg: bags * netKgPerBag,
+          };
+        }),
+      );
+
+      const documents = availableLots.filter(
+        (lot): lot is NonNullable<typeof lot> => lot !== null,
+      );
+
+      return {
+        documents,
+        total_count: documents.length,
       };
     },
     {

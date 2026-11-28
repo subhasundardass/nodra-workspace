@@ -5,6 +5,24 @@ export const lotsHooks: WorkflowActionHooks = {
   "Lots.Confirm": async ({ orm, doc }) => {
     const lot = doc.name;
 
+    const stockService = new StockService(orm);
+
+    // Check whether initial stock was already created.
+    const existingReceipt = await orm.getList("StockLedger", {
+      filters: {
+        voucher_type: "Lots",
+        voucher_no: lot,
+        voucher_detail_no: "",
+        movement_type: "Lot Receipt",
+      },
+      limit: 1,
+    });
+
+    // Already received: don't create duplicate stock.
+    if (existingReceipt.length > 0) {
+      return;
+    }
+
     const bags = Number(doc.get("bags") ?? 0);
     const netKgPerBag = Number(doc.get("net_kg_per_bag") ?? 0);
     const quantity = bags * netKgPerBag;
@@ -12,7 +30,6 @@ export const lotsHooks: WorkflowActionHooks = {
     const factory = String(doc.get("factory") ?? "").trim();
     const warehouse = String(doc.get("warehouse") ?? "").trim();
 
-    // Determine initial stock location.
     let destination;
 
     if (factory && !warehouse) {
@@ -30,8 +47,6 @@ export const lotsHooks: WorkflowActionHooks = {
         `Lot ${lot} must have exactly one initial stock location: Factory or Warehouse.`,
       );
     }
-
-    const stockService = new StockService(orm);
 
     await stockService.moveStock({
       lot,
